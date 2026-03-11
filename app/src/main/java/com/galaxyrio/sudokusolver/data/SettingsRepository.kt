@@ -34,6 +34,18 @@ class SettingsRepository(context: Context) {
     private val _isAmoled = MutableStateFlow(prefs.getBoolean("is_amoled", false))
     val isAmoled: StateFlow<Boolean> = _isAmoled.asStateFlow()
 
+    private val _coloredBoard = MutableStateFlow(prefs.getBoolean("colored_board", false))
+    val coloredBoard: StateFlow<Boolean> = _coloredBoard.asStateFlow()
+
+    private val _positionLines = MutableStateFlow(prefs.getBoolean("position_lines", true))
+    val positionLines: StateFlow<Boolean> = _positionLines.asStateFlow()
+
+    private val _positionBlock = MutableStateFlow(prefs.getBoolean("position_block", true))
+    val positionBlock: StateFlow<Boolean> = _positionBlock.asStateFlow()
+
+    private val _alternativeErrorColor = MutableStateFlow(prefs.getBoolean("alternative_error_color", false))
+    val alternativeErrorColor: StateFlow<Boolean> = _alternativeErrorColor.asStateFlow()
+
     fun setThemeMode(mode: ThemeMode) {
         prefs.edit().putInt("theme_mode", mode.ordinal).apply()
         _themeMode.value = mode
@@ -58,5 +70,24 @@ class SettingsRepository(context: Context) {
         prefs.edit().putBoolean("is_amoled", enabled).apply()
         _isAmoled.value = enabled
     }
-}
 
+    fun setColoredBoard(enabled: Boolean) {
+        prefs.edit().putBoolean("colored_board", enabled).apply()
+        _coloredBoard.value = enabled
+    }
+
+    fun setPositionLines(enabled: Boolean) {
+        prefs.edit().putBoolean("position_lines", enabled).apply()
+        _positionLines.value = enabled
+    }
+
+    fun setPositionBlock(enabled: Boolean) {
+        prefs.edit().putBoolean("position_block", enabled).apply()
+        _positionBlock.value = enabled
+    }
+
+    fun setAlternativeErrorColor(enabled: Boolean) {
+        prefs.edit().putBoolean("alternative_error_color", enabled).apply()
+        _alternativeErrorColor.value = enabled
+    }
+}

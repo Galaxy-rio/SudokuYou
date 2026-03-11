@@ -43,6 +43,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val isAmoled: StateFlow<Boolean> = repository.isAmoled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    val coloredBoard: StateFlow<Boolean> = repository.coloredBoard
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val positionLines: StateFlow<Boolean> = repository.positionLines
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val positionBlock: StateFlow<Boolean> = repository.positionBlock
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val alternativeErrorColor: StateFlow<Boolean> = repository.alternativeErrorColor
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     fun setThemeMode(mode: ThemeMode) {
         repository.setThemeMode(mode)
     }
@@ -73,5 +85,21 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun setIsAmoled(enabled: Boolean) {
         repository.setIsAmoled(enabled)
+    }
+
+    fun setColoredBoard(enabled: Boolean) {
+        repository.setColoredBoard(enabled)
+    }
+
+    fun setPositionLines(enabled: Boolean) {
+        repository.setPositionLines(enabled)
+    }
+
+    fun setPositionBlock(enabled: Boolean) {
+        repository.setPositionBlock(enabled)
+    }
+
+    fun setAlternativeErrorColor(enabled: Boolean) {
+        repository.setAlternativeErrorColor(enabled)
     }
 }

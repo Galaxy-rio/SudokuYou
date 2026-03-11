@@ -219,10 +219,10 @@ fun PlayMenuScreen(
                 item {
                     Text(
                         text = "Recent Games",
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .padding(start = 4.dp)
+                            .padding(start = 4.dp, top =8.dp, bottom = 8.dp)
                     )
                 }
                 with(sharedTransitionScope) {
@@ -347,7 +347,7 @@ fun PlayMenuScreen(
                                             containerColor = MaterialTheme.colorScheme.secondaryContainer
                                         )
                                     } else {
-                                        ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface)
+                                        ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright)
                                     },
                                 modifier = Modifier
                                     .sharedBounds(

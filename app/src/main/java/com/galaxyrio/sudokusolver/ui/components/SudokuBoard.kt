@@ -19,13 +19,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import com.galaxyrio.sudokusolver.game.Sudoku
-import com.galaxyrio.sudokusolver.game.Cell
 import com.galaxyrio.sudokusolver.game.validator.SudokuValidator
+
+data class BoardConfig(
+    val useColoredBoard: Boolean = false,
+    val highlightCross: Boolean = true,
+    val highlightBlock: Boolean = true,
+    val useAltErrorColor: Boolean = false,
+)
 
 @Composable
 fun SudokuBoard(
@@ -34,12 +40,26 @@ fun SudokuBoard(
     modifier: Modifier = Modifier,
     selectedRow: Int? = null,
     selectedCol: Int? = null,
-    highlightNumber: Int? = null
+    highlightNumber: Int? = null,
+    config: BoardConfig = BoardConfig()
 ) {
+
+
+
     val thickLine = 2.dp
     val thinLine = 1.dp
     val cornerRadius = 8.dp
-    val boardColor = MaterialTheme.colorScheme.onSurface
+    val lineColor = if(!config.useColoredBoard){
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }else{
+        MaterialTheme.colorScheme.secondary
+    }
+    val boardColor = if(!config.useColoredBoard){
+        MaterialTheme.colorScheme.onSurface
+    }else{
+        MaterialTheme.colorScheme.primary
+    }
+
 
     Box(
         modifier = modifier
@@ -64,7 +84,7 @@ fun SudokuBoard(
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxHeight()
-                                .background(boardColor), // Background for thin lines
+                                .background(lineColor), // Background for thin lines
                             verticalArrangement = Arrangement.spacedBy(thinLine)
                         ) {
                             repeat(3) { cellRowInBlock ->
@@ -80,7 +100,7 @@ fun SudokuBoard(
                                         val isError = !cell.isFixed && cell.value != 0 && SudokuValidator.checkContradiction(sudoku, row, col)
                                         val isSelected = (row == selectedRow && col == selectedCol)
                                         val isSelectedCross = (selectedRow != null && selectedCol != null) && (row == selectedRow || col == selectedCol)
-                                        val isSelectedCell = (selectedRow != null && selectedCol != null) && ((row / 3 == selectedRow.div(3) && col / 3 == selectedCol.div(
+                                        val isSelectedBoard = (selectedRow != null && selectedCol != null) && ((row / 3 == selectedRow.div(3) && col / 3 == selectedCol.div(
                                             3
                                         )))
 
@@ -104,11 +124,12 @@ fun SudokuBoard(
                                             highlightNumber = highlightNumber,
                                             isValueHighlighted = isValueHighlighted,
                                             isSelectedCross = isSelectedCross,
-                                            isSelectedCell = isSelectedCell,
+                                            isSelectedBoard = isSelectedBoard,
                                             onClick = { onCellClick(row, col) },
                                             modifier = Modifier
                                                 .weight(1f)
-                                                .fillMaxHeight()
+                                                .fillMaxHeight(),
+                                            config = config
                                         )
                                     }
                                 }
@@ -134,15 +155,37 @@ fun SudokuCell(
     highlightNumber: Int? = null,
     isValueHighlighted: Boolean = false,
     isSelectedCross: Boolean = false,
-    isSelectedCell: Boolean = false,
+    isSelectedBoard: Boolean = false,
+    config: BoardConfig = BoardConfig()
 ) {
+    val errorColor = if(!config.useAltErrorColor){
+        MaterialTheme.colorScheme.error
+    }else{
+        Color(0xFF4c662b)
+    }
+    val errorContainerColor = if(!config.useAltErrorColor){
+        MaterialTheme.colorScheme.errorContainer
+    }else{
+        Color(0xFFcdeda3)
+    }
+    val onErrorColor = if(!config.useAltErrorColor){
+        MaterialTheme.colorScheme.onError
+    }else{
+        Color(0xFFffffff)
+    }
+    val onErrorContainerColor = if(!config.useAltErrorColor){
+        MaterialTheme.colorScheme.onErrorContainer
+    }else{
+        Color(0xFF354e16)
+    }
+
     val backgroundColor = when {
-        isError && isSelected -> MaterialTheme.colorScheme.error
-        isError -> MaterialTheme.colorScheme.errorContainer
+        isError && isSelected -> errorColor
+        isError -> errorContainerColor
         isSelected && isFixed -> MaterialTheme.colorScheme.primary
         isSelected -> MaterialTheme.colorScheme.primaryContainer
-        isSelectedCross && !isError -> MaterialTheme.colorScheme.surfaceContainerHighest
-        isSelectedCell && !isError -> MaterialTheme.colorScheme.surfaceContainer
+        config.highlightCross && isSelectedCross && !isError -> MaterialTheme.colorScheme.surfaceContainerHighest
+        config.highlightBlock && isSelectedBoard && !isError -> MaterialTheme.colorScheme.surfaceContainer
         isValueHighlighted && !isError -> MaterialTheme.colorScheme.secondaryContainer
         else -> MaterialTheme.colorScheme.surface
     }
@@ -155,8 +198,8 @@ fun SudokuCell(
     ) {
         if (value != null && value != 0) {
             val textColor = when {
-                isError && isSelected -> MaterialTheme.colorScheme.onError
-                isError -> MaterialTheme.colorScheme.onErrorContainer
+                isError && isSelected -> onErrorColor
+                isError -> onErrorContainerColor
                 isSelected && isFixed -> MaterialTheme.colorScheme.onPrimary
                 isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
                 isFixed -> MaterialTheme.colorScheme.onSurface
@@ -194,7 +237,7 @@ fun SudokuCell(
                                     .then(
                                         if (isCandidateHighlighted) {
                                             val candidateBackground = when{
-                                                errorCandidates.contains(candidateNum) -> MaterialTheme.colorScheme.errorContainer
+                                                errorCandidates.contains(candidateNum) -> errorContainerColor
                                                 else -> MaterialTheme.colorScheme.secondaryContainer
                                             }
                                             Modifier.background(
@@ -208,7 +251,7 @@ fun SudokuCell(
                             ) {
                                 if (candidates.contains(candidateNum)) {
                                     val candidateColor = when {
-                                        errorCandidates.contains(candidateNum) -> MaterialTheme.colorScheme.error
+                                        errorCandidates.contains(candidateNum) -> errorColor
                                         isCandidateHighlighted -> MaterialTheme.colorScheme.onSecondaryContainer
                                         isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
                                         else -> MaterialTheme.colorScheme.secondary
@@ -231,22 +274,4 @@ fun SudokuCell(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SudokuBoardPreview() {
-    val sampleCells = List(81) { i ->
-        Cell(
-            value = if (i % 5 == 0) (i % 9) + 1 else 0,
-            isFixed = (i % 5 == 0)
-        )
-    }
-    val sampleSudoku = Sudoku(sampleCells)
-
-    SudokuBoard(
-        sudoku = sampleSudoku,
-        onCellClick = { _, _ -> },
-        modifier = Modifier.padding(16.dp)
-    )
 }

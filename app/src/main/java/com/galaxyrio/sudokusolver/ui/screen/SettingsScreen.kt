@@ -79,7 +79,7 @@ fun SettingsScreen(
             items(SettingsCategory.entries) { category ->
                 SegmentedListItem(
                     onClick = {onNavigateTo(category)},
-                    shapes = ListItemDefaults.segmentedShapes(index = category.idx, count = 6),
+                    shapes = ListItemDefaults.segmentedShapes(index = category.idx, count = SettingsCategory.entries.size),
 
                     leadingContent = {
                         Box(
@@ -103,7 +103,7 @@ fun SettingsScreen(
                     },
                     content = { Text(category.title) },
                     supportingContent = { Text(category.subtitle) },
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
 
 
                 )

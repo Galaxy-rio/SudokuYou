@@ -44,6 +44,7 @@ import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -67,7 +68,9 @@ import com.galaxyrio.sudokusolver.game.generator.SudokuGenerator
 import com.galaxyrio.sudokusolver.game.validator.SudokuValidator
 import com.galaxyrio.sudokusolver.ui.components.NumberPad
 import com.galaxyrio.sudokusolver.ui.components.SudokuBoard
+import com.galaxyrio.sudokusolver.ui.components.BoardConfig
 import com.galaxyrio.sudokusolver.ui.screen.Difficulty
+import com.galaxyrio.sudokusolver.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
@@ -83,6 +86,7 @@ fun SudokuGameScreen(
     difficulty: Difficulty,
     gameId: Long? = null,
     onBack: () -> Unit,
+    viewModel: SettingsViewModel,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -100,6 +104,11 @@ fun SudokuGameScreen(
     // Initialize the board using the generator
     // We use a nullable state to show loading until we check the DB
     var sudokuState by remember { mutableStateOf<Sudoku?>(null) }
+
+    val coloredBoard by viewModel.coloredBoard.collectAsState()
+    val showLines by viewModel.positionLines.collectAsState()
+    val showBlock by viewModel.positionBlock.collectAsState()
+    val altErrorColor by viewModel.alternativeErrorColor.collectAsState()
 
     LaunchedEffect(key1 = gameId, key2 = difficulty) {
         withContext(Dispatchers.IO) {
@@ -510,7 +519,14 @@ fun SudokuGameScreen(
                                     selectedCol!!
                                 ).value.takeIf { it != 0 }
                             } else null,
+                        config = BoardConfig(
+                            useColoredBoard = coloredBoard,
+                            highlightCross = showLines,     // 是否高亮行列
+                            highlightBlock = showBlock,     // 是否高亮九宫格
+                            useAltErrorColor = altErrorColor // 是否用替代错误色
+                        ),
                         modifier = boardModifier,
+
 
                     )
                 }

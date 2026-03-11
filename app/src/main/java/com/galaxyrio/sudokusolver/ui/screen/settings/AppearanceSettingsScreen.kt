@@ -35,6 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedListItem
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -56,6 +57,20 @@ import com.galaxyrio.sudokusolver.data.ThemeMode
 import com.galaxyrio.sudokusolver.ui.viewmodel.SettingsViewModel
 import com.materialkolor.PaletteStyle
 
+enum class SettingThemeCategory(val title: String, val subtitle:String) {
+    ACCENT_COLOR("Accent Color","Dynamic or Custom"),
+    PALETTE_STYLE("Palette Style", "Material You color scheme style"),
+    THEME_MODE("Theme Mode", "System, Light or Dark"),
+    AMOLED_MODE("AMOLED Mode", "True black dark theme")
+}
+
+enum class SettingBoardCategory(val title: String, val subtitle:String) {
+    COLORED_BOARD("Colored Board", "Apply theme colors to the board "),
+    POSITION_LINES("Position Lines", "Highlight rows, columns of the selected cell"),
+    POSITION_BLOCK("Position Block", "Highlight the block of the selected cell"),
+    ALTERNATIVE_ERROR_COLOR("Alternative Error Color", "Helpful when using red theme"),
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppearanceSettingsScreen(
@@ -70,8 +85,17 @@ fun AppearanceSettingsScreen(
     val themeColor by viewModel.themeColor.collectAsState()
     val useDynamicColors by viewModel.useDynamicColors.collectAsState()
     val paletteStyle by viewModel.paletteStyle.collectAsState()
+    val isAmoled by viewModel.isAmoled.collectAsState()
+
+    val coloredBoard by viewModel.coloredBoard.collectAsState()
+    val positionLines by viewModel.positionLines.collectAsState()
+    val positionBlock by viewModel.positionBlock.collectAsState()
+    val alternativeErrorColor by viewModel.alternativeErrorColor.collectAsState()
 
     var showPaletteStyleDialog by remember { mutableStateOf(false) }
+    var showThemeModeDialog by remember { mutableStateOf(false) }
+
+
 
     if (showPaletteStyleDialog) {
         AlertDialog(
@@ -113,6 +137,51 @@ fun AppearanceSettingsScreen(
         )
     }
 
+    if (showThemeModeDialog) {
+        AlertDialog(
+            onDismissRequest = { showThemeModeDialog = false },
+            title = { Text("Theme Mode") },
+            text = {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState())
+                ) {
+                    val modes = listOf(
+                        ThemeMode.SYSTEM to "System Default",
+                        ThemeMode.LIGHT to "Light",
+                        ThemeMode.DARK to "Dark"
+                    )
+                    modes.forEach { (mode, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.setThemeMode(mode)
+                                    showThemeModeDialog = false
+                                }
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = (mode == themeMode),
+                                onClick = null
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showThemeModeDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -136,11 +205,13 @@ fun AppearanceSettingsScreen(
         }
     ) { innerPadding ->
         LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp),
         ) {
+
 
             item {
                 Text(
@@ -152,19 +223,17 @@ fun AppearanceSettingsScreen(
             }
 
 
-
             item {
                 SegmentedListItem(
-                    onClick = { null },
-                    shapes = ListItemDefaults.segmentedShapes(index = 0, count = 2),
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
+                    onClick = {  },
+                    shapes = ListItemDefaults.segmentedShapes(index = 0, count = SettingThemeCategory.entries.size),
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
 
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(bottom = ListItemDefaults.SegmentedGap)
                 ) {
                     Column(modifier = Modifier) {
-                        Text("Accent Color", style = MaterialTheme.typography.bodyMedium)
+                        Text(SettingThemeCategory.ACCENT_COLOR.title,)
                         Spacer(modifier = Modifier.height(12.dp))
                         ColorPicker(
                             isDynamic = useDynamicColors,
@@ -184,8 +253,8 @@ fun AppearanceSettingsScreen(
             item {
                 SegmentedListItem(
                     onClick = { showPaletteStyleDialog = true },
-                    shapes = ListItemDefaults.segmentedShapes(index = 1, count = 2),
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
+                    shapes = ListItemDefaults.segmentedShapes(index = 1, count = SettingThemeCategory.entries.size),
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
                     modifier = Modifier.fillMaxSize(),
 
                     supportingContent = { Text(paletteStyle.name) },
@@ -198,59 +267,130 @@ fun AppearanceSettingsScreen(
 
 
             item {
+                SegmentedListItem(
+                    onClick = { showThemeModeDialog = true },
+
+                    shapes = ListItemDefaults.segmentedShapes(index = 2, count = SettingThemeCategory.entries.size),
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
+                    modifier = Modifier.fillMaxSize(),
+
+                    supportingContent = {
+                        val text = when (themeMode) {
+                            ThemeMode.SYSTEM -> "System Default"
+                            ThemeMode.LIGHT -> "Light"
+                            ThemeMode.DARK -> "Dark"
+                        }
+                        Text(text)
+                    }
+                ) {
+                    Text("Theme Mode")
+                }
+            }
+
+            item {
+                SegmentedListItem(
+                    onClick = { viewModel.setIsAmoled(!isAmoled) },
+                    shapes = ListItemDefaults.segmentedShapes(index = 3, count = SettingThemeCategory.entries.size),
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
+                    modifier = Modifier.fillMaxSize(),
+                    trailingContent = {
+                        Switch(
+                            checked = isAmoled,
+                            onCheckedChange = { viewModel.setIsAmoled(it) }
+                        )
+                    },
+                    supportingContent = { Text(SettingThemeCategory.AMOLED_MODE.subtitle) }
+                ) {
+                    Text(SettingThemeCategory.AMOLED_MODE.title)
+                }
+            }
+
+            item {
                 Text(
-                    text = "Mode",
+                    text = "Board",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(start = 4.dp, top = 16.dp, bottom = 8.dp)
                 )
             }
 
             item {
-                Column(Modifier.padding(horizontal = 16.dp)) {
-                    ThemeModeOption(
-                        "System Default",
-                        themeMode == ThemeMode.SYSTEM
-                    ) { viewModel.setThemeMode(ThemeMode.SYSTEM) }
-                    ThemeModeOption("Light", themeMode == ThemeMode.LIGHT) {
-                        viewModel.setThemeMode(
-                            ThemeMode.LIGHT
+                SegmentedListItem(
+                    onClick = { viewModel.setColoredBoard(!coloredBoard) },
+                    shapes = ListItemDefaults.segmentedShapes(index = 0, count = SettingBoardCategory.entries.size),
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
+                    modifier = Modifier.fillMaxSize(),
+                    trailingContent = {
+                        Switch(
+                            checked = coloredBoard,
+                            onCheckedChange = { viewModel.setColoredBoard(it) }
                         )
-                    }
-                    ThemeModeOption("Dark", themeMode == ThemeMode.DARK) {
-                        viewModel.setThemeMode(
-                            ThemeMode.DARK
-                        )
-                    }
+                    },
+                    supportingContent = { Text(SettingBoardCategory.COLORED_BOARD.subtitle) }
+                ) {
+                    Text(SettingBoardCategory.COLORED_BOARD.title)
                 }
             }
 
+            item {
+                SegmentedListItem(
+                    onClick = { viewModel.setPositionLines(!positionLines) },
+                    shapes = ListItemDefaults.segmentedShapes(index = 1, count = SettingBoardCategory.entries.size),
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
+                    modifier = Modifier.fillMaxSize(),
+                    trailingContent = {
+                        Switch(
+                            checked = positionLines,
+                            onCheckedChange = { viewModel.setPositionLines(it) }
+                        )
+                    },
+                    supportingContent = { Text(SettingBoardCategory.POSITION_LINES.subtitle) }
+                ) {
+                    Text(SettingBoardCategory.POSITION_LINES.title)
+                }
+            }
+
+            item {
+                SegmentedListItem(
+                    onClick = { viewModel.setPositionBlock(!positionBlock) },
+                    shapes = ListItemDefaults.segmentedShapes(index = 2, count = SettingBoardCategory.entries.size),
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
+                    modifier = Modifier.fillMaxSize(),
+                    trailingContent = {
+                        Switch(
+                            checked = positionBlock,
+                            onCheckedChange = { viewModel.setPositionBlock(it) }
+                        )
+                    },
+                    supportingContent = { Text(SettingBoardCategory.POSITION_BLOCK.subtitle) }
+                ) {
+                    Text(SettingBoardCategory.POSITION_BLOCK.title)
+                }
+            }
+
+            item {
+                SegmentedListItem(
+                    onClick = { viewModel.setAlternativeErrorColor(!alternativeErrorColor) },
+                    shapes = ListItemDefaults.segmentedShapes(index = 3, count = SettingBoardCategory.entries.size),
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
+                    modifier = Modifier.fillMaxSize(),
+                    trailingContent = {
+                        Switch(
+                            checked = alternativeErrorColor,
+                            onCheckedChange = { viewModel.setAlternativeErrorColor(it) }
+                        )
+                    },
+                    supportingContent = { Text(SettingBoardCategory.ALTERNATIVE_ERROR_COLOR.subtitle) }
+                ) {
+                    Text(SettingBoardCategory.ALTERNATIVE_ERROR_COLOR.title)
+                }
+            }
 
         }
     }
 }
 
-@Composable
-fun ThemeModeOption(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RadioButton(
-            selected = selected,
-            onClick = null
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = text, style = MaterialTheme.typography.bodyLarge)
-    }
-}
+
 
 @Composable
 fun ColorPicker(

@@ -211,7 +211,8 @@ fun SudokuSolverApp(
                         difficulty = difficulty,
                         gameId = gameId,
                         onBack = { navController.popBackStack() },
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
+                        viewModel = settingsViewModel
                     )
                 }
 
