@@ -218,7 +218,7 @@ fun AppearanceSettingsScreen(
                     text = "Theme",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 4.dp, top = 0.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(start = 4.dp, top = 24.dp, bottom = 8.dp)
                 )
             }
 
@@ -232,7 +232,7 @@ fun AppearanceSettingsScreen(
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
-                    Column(modifier = Modifier) {
+                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
                         Text(SettingThemeCategory.ACCENT_COLOR.title,)
                         Spacer(modifier = Modifier.height(12.dp))
                         ColorPicker(
@@ -256,12 +256,9 @@ fun AppearanceSettingsScreen(
                     shapes = ListItemDefaults.segmentedShapes(index = 1, count = SettingThemeCategory.entries.size),
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
                     modifier = Modifier.fillMaxSize(),
-
-                    supportingContent = { Text(paletteStyle.name) },
-
-                    ) {
-                    Text("Palette Style")
-                }
+                    content = { Text(SettingThemeCategory.PALETTE_STYLE.title, modifier=modifier.padding(top=4.dp))},
+                    supportingContent = { Text(paletteStyle.name, modifier = modifier.padding(bottom = 4.dp)) },
+                    )
 
             }
 
@@ -273,18 +270,16 @@ fun AppearanceSettingsScreen(
                     shapes = ListItemDefaults.segmentedShapes(index = 2, count = SettingThemeCategory.entries.size),
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
                     modifier = Modifier.fillMaxSize(),
-
+                    content = { Text(SettingThemeCategory.THEME_MODE.title, modifier = Modifier.padding(top = 4.dp)) },
                     supportingContent = {
                         val text = when (themeMode) {
                             ThemeMode.SYSTEM -> "System Default"
                             ThemeMode.LIGHT -> "Light"
                             ThemeMode.DARK -> "Dark"
                         }
-                        Text(text)
+                        Text(text, modifier = Modifier.padding(bottom = 4.dp))
                     }
-                ) {
-                    Text("Theme Mode")
-                }
+                )
             }
 
             item {
@@ -299,10 +294,9 @@ fun AppearanceSettingsScreen(
                             onCheckedChange = { viewModel.setIsAmoled(it) }
                         )
                     },
-                    supportingContent = { Text(SettingThemeCategory.AMOLED_MODE.subtitle) }
-                ) {
-                    Text(SettingThemeCategory.AMOLED_MODE.title)
-                }
+                    content = { Text(SettingThemeCategory.AMOLED_MODE.title, modifier = Modifier.padding(top = 4.dp)) },
+                    supportingContent = { Text(SettingThemeCategory.AMOLED_MODE.subtitle, modifier = Modifier.padding(bottom = 4.dp)) }
+                )
             }
 
             item {
@@ -310,7 +304,7 @@ fun AppearanceSettingsScreen(
                     text = "Board",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 4.dp, top = 16.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(start = 4.dp, top = 24.dp, bottom = 8.dp)
                 )
             }
 
@@ -326,10 +320,9 @@ fun AppearanceSettingsScreen(
                             onCheckedChange = { viewModel.setColoredBoard(it) }
                         )
                     },
-                    supportingContent = { Text(SettingBoardCategory.COLORED_BOARD.subtitle) }
-                ) {
-                    Text(SettingBoardCategory.COLORED_BOARD.title)
-                }
+                    content = { Text(SettingBoardCategory.COLORED_BOARD.title, modifier = Modifier.padding(top = 4.dp)) },
+                    supportingContent = { Text(SettingBoardCategory.COLORED_BOARD.subtitle, modifier = Modifier.padding(bottom = 4.dp)) }
+                )
             }
 
             item {
@@ -344,10 +337,9 @@ fun AppearanceSettingsScreen(
                             onCheckedChange = { viewModel.setPositionLines(it) }
                         )
                     },
-                    supportingContent = { Text(SettingBoardCategory.POSITION_LINES.subtitle) }
-                ) {
-                    Text(SettingBoardCategory.POSITION_LINES.title)
-                }
+                    content = { Text(SettingBoardCategory.POSITION_LINES.title, modifier = Modifier.padding(top = 4.dp)) },
+                    supportingContent = { Text(SettingBoardCategory.POSITION_LINES.subtitle, modifier = Modifier.padding(bottom = 4.dp)) }
+                )
             }
 
             item {
@@ -362,10 +354,9 @@ fun AppearanceSettingsScreen(
                             onCheckedChange = { viewModel.setPositionBlock(it) }
                         )
                     },
-                    supportingContent = { Text(SettingBoardCategory.POSITION_BLOCK.subtitle) }
-                ) {
-                    Text(SettingBoardCategory.POSITION_BLOCK.title)
-                }
+                    content = { Text(SettingBoardCategory.POSITION_BLOCK.title, modifier = Modifier.padding(top = 4.dp)) },
+                    supportingContent = { Text(SettingBoardCategory.POSITION_BLOCK.subtitle, modifier = Modifier.padding(bottom = 4.dp)) }
+                )
             }
 
             item {
@@ -380,10 +371,9 @@ fun AppearanceSettingsScreen(
                             onCheckedChange = { viewModel.setAlternativeErrorColor(it) }
                         )
                     },
-                    supportingContent = { Text(SettingBoardCategory.ALTERNATIVE_ERROR_COLOR.subtitle) }
-                ) {
-                    Text(SettingBoardCategory.ALTERNATIVE_ERROR_COLOR.title)
-                }
+                    content = { Text(SettingBoardCategory.ALTERNATIVE_ERROR_COLOR.title, modifier = Modifier.padding(top = 4.dp)) },
+                    supportingContent = { Text(SettingBoardCategory.ALTERNATIVE_ERROR_COLOR.subtitle, modifier = Modifier.padding(bottom = 4.dp)) }
+                )
             }
 
         }

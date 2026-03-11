@@ -87,7 +87,7 @@ fun SudokuGameScreen(
     gameId: Long? = null,
     onBack: () -> Unit,
     viewModel: SettingsViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val dao = remember { AppDatabase.getDatabase(context).sudokuDao() }
@@ -261,6 +261,7 @@ fun SudokuGameScreen(
     fun undo() {
         if (history.isNotEmpty()) {
             sudoku = history.removeAt(history.lastIndex)
+            sudokuState = sudoku
         }
     }
 
@@ -650,7 +651,7 @@ private fun ToolbarActionButton(
             .fillMaxSize()
             .clickable(
                 interactionSource = interactionSource,
-                indication = ripple(bounded = false, radius = 400.dp),  //大于屏幕宽度的半径确保整个按钮都有水波纹效果
+                indication = ripple(bounded = false, radius = 400.dp),  // Radius larger than screen width ensures ripple effect covers entire button
                 onClick = onClick
             ),
         contentAlignment = Alignment.Center

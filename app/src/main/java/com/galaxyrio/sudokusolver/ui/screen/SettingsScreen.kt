@@ -74,6 +74,7 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
+                .padding(top = 24.dp)
         ) {
 
             items(SettingsCategory.entries) { category ->
@@ -83,9 +84,6 @@ fun SettingsScreen(
 
                     leadingContent = {
                         Box(
-                            modifier = Modifier
-                                .width(40.dp)
-                                .height(50.dp),
                             contentAlignment = Alignment.Center
                         ){
                             Box(
@@ -101,8 +99,8 @@ fun SettingsScreen(
                             )
                         }
                     },
-                    content = { Text(category.title) },
-                    supportingContent = { Text(category.subtitle) },
+                    content = { Text(category.title, modifier = Modifier.padding(top = 4.dp)) },
+                    supportingContent = { Text(category.subtitle, modifier = Modifier.padding(top = 4.dp)) },
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
 
 
