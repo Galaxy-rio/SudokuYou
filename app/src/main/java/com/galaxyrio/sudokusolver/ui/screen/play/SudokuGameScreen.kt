@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,7 +27,6 @@ import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,7 +36,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -76,6 +75,11 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import nl.dionsegijn.konfetti.compose.KonfettiView
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -126,7 +130,7 @@ fun SudokuGameScreen(
             } else {
                 // New Game
                 val clues = when (difficulty) {
-                    Difficulty.EASY -> 40
+                    Difficulty.EASY -> 80
                     Difficulty.MEDIUM -> 30
                     Difficulty.HARD -> 24
                 }
@@ -336,8 +340,9 @@ fun SudokuGameScreen(
                                 ToolbarActionButton(
                                     onClick = { undo() },
                                     icon = Icons.AutoMirrored.Filled.Undo,
-                                    contentDescription = "Undo"
-                            )
+                                    contentDescription = "Undo",
+                                    enabled = !showWinDialog
+                                )
                             }
                             Box(
                                 modifier = Modifier.weight(1f),
@@ -358,8 +363,9 @@ fun SudokuGameScreen(
                                         }
                                     },
                                     icon = Icons.AutoMirrored.Filled.Backspace,
-                                    contentDescription = "Delete"
-                            )
+                                    contentDescription = "Delete",
+                                    enabled = !showWinDialog
+                                )
                             }
                             // Edit Button
                             Box(
@@ -370,7 +376,8 @@ fun SudokuGameScreen(
                                     onClick = { isNoteMode = !isNoteMode },
                                     icon = Icons.Default.Edit,
                                     contentDescription = "Note Mode",
-                                    isSelected = isNoteMode
+                                    isSelected = isNoteMode,
+                                    enabled = !showWinDialog
                                 )
                             }
                             Box(
@@ -386,8 +393,9 @@ fun SudokuGameScreen(
                                         )
                                     },
                                     icon = Icons.Default.AutoAwesome,
-                                    contentDescription = "Auto Candidates"
-                            )
+                                    contentDescription = "Auto Candidates",
+                                    enabled = !showWinDialog
+                                )
                             }
                             Box(
                                 modifier = Modifier.weight(1f),
@@ -398,32 +406,15 @@ fun SudokuGameScreen(
                                         showBottomSheet = true
                                     },
                                     icon = Icons.Default.Lightbulb,
-                                    contentDescription = "Hint"
-                            )
+                                    contentDescription = "Hint",
+                                    enabled = !showWinDialog
+                                )
                             }
                         }
                     }
                 )
             }
         ) { paddingValues ->
-            if (showWinDialog) {
-                AlertDialog(
-                    onDismissRequest = { showWinDialog = false },
-                    title = { Text(text = "Well Done!") },
-                    text = { Text(text = "You have successfully solved the Sudoku puzzle.") },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                showWinDialog = false
-                                onBack()
-                            }
-                        ) {
-                            Text("Awesome")
-                        }
-                    }
-                )
-            }
-
             val backgroundModifier = if (gameId != null) {
                 Modifier
                     .fillMaxSize()
@@ -554,43 +545,96 @@ fun SudokuGameScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .fillMaxHeight()
                             .weight(1f), // Take available space
                         contentAlignment = Alignment.Center
                     ) {
-                        NumberPad(
-                            selectedNumber = selectedNumber,
-                            onNumberClick = { number ->
-                                // Logic update: If a cell is selected (Cell First Mode), fill it and Clear selection
-                                if (selectedRow != null && selectedCol != null) {
-                                    val row = selectedRow!!
-                                    val col = selectedCol!!
-                                    val currentCell = sudoku.getCell(row, col)
+                        if (showWinDialog) {
 
-                                    if (!currentCell.isFixed) {
-                                        if (isNoteMode) {
-                                            if (currentCell.value == 0) {
-                                                updateSudoku(
-                                                    sudoku.toggleCandidate(
-                                                        row,
-                                                        col,
-                                                        number
-                                                    )
-                                                )
-                                            }
-                                        } else {
-                                            if (currentCell.value != number) {
-                                                updateSudoku(sudoku.setCell(row, col, number))
-                                            }
-                                        }
-                                    }
-                                    // Cell First detected: clear the number selection so user isn't stuck in "fill mode" for this number
-                                    selectedNumber = null
-                                } else {
-                                    // Digit First Mode: Toggle number selection
-                                    selectedNumber = if (selectedNumber == number) null else number
+                            androidx.compose.material3.Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = "Game Completed",
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "Congratulations! You've solved it!",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = "Time: ${formatTime(timeSpentSeconds)}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
                             }
-                        )
+                            val party = remember {
+                                Party(
+                                    speed = 0f,
+                                    maxSpeed = 30f,
+                                    damping = 0.9f,
+                                    spread = 360,
+                                    colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
+                                    position = Position.Relative(0.5, 0.3),
+                                    emitter = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100)
+                                )
+                            }
+
+                            KonfettiView(
+                                modifier = Modifier.fillMaxSize(),
+                                parties = listOf(party),
+                            )
+                        } else {
+                            NumberPad(
+                                selectedNumber = selectedNumber,
+                                onNumberClick = { number ->
+                                    // Logic update: If a cell is selected (Cell First Mode), fill it and Clear selection
+                                    if (selectedRow != null && selectedCol != null) {
+                                        val row = selectedRow!!
+                                        val col = selectedCol!!
+                                        val currentCell = sudoku.getCell(row, col)
+
+                                        if (!currentCell.isFixed) {
+                                            if (isNoteMode) {
+                                                if (currentCell.value == 0) {
+                                                    updateSudoku(
+                                                        sudoku.toggleCandidate(
+                                                            row,
+                                                            col,
+                                                            number
+                                                        )
+                                                    )
+                                                }
+                                            } else {
+                                                if (currentCell.value != number) {
+                                                    updateSudoku(sudoku.setCell(row, col, number))
+                                                }
+                                            }
+                                        }
+                                        // Cell First detected: clear the number selection so user isn't stuck in "fill mode" for this number
+                                        selectedNumber = null
+                                    } else {
+                                        // Digit First Mode: Toggle number selection
+                                        selectedNumber =
+                                            if (selectedNumber == number) null else number
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -633,6 +677,7 @@ private fun ToolbarActionButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     contentDescription: String,
     isSelected: Boolean = false,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -644,9 +689,10 @@ private fun ToolbarActionButton(
     )
 
     val containerColor =
-        if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+        if (isSelected && enabled) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
     val contentColor =
-        if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+        if (!enabled) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+        else if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
 
     Box(
         modifier = modifier
@@ -654,7 +700,8 @@ private fun ToolbarActionButton(
             .clickable(
                 interactionSource = interactionSource,
                 indication = ripple(bounded = false, radius = 400.dp),  // Radius larger than screen width ensures ripple effect covers entire button
-                onClick = onClick
+                onClick = onClick,
+                enabled = enabled
             ),
         contentAlignment = Alignment.Center
     ) {
