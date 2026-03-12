@@ -618,7 +618,7 @@ fun SudokuGameScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(360.dp)
+                    .height(300.dp)
             )
         }
     }
