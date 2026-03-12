@@ -21,8 +21,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {
-            // 通常只需 arm64-v8a，如果是旧设备则加 armeabi-v7a
-            // 移除 x86_64 和 x86 (通常只用于模拟器)
             abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a"))
         }
     }
@@ -62,6 +60,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.materialKolor)
+    implementation(libs.konfetti.compose)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

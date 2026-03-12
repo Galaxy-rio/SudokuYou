@@ -250,8 +250,10 @@ fun SudokuGameScreen(
         if (isFull && SudokuValidator.isBoardValid(newSudoku)) {
             showWinDialog = true
             // Clear saved game on win
+            val idToDelete = currentGameId
+            currentGameId = null
             scope.launch(Dispatchers.IO) {
-                currentGameId?.let { id ->
+                idToDelete?.let { id ->
                     dao.deleteGame(id)
                 }
             }
@@ -532,7 +534,7 @@ fun SudokuGameScreen(
                     )
                 }
 
-                // Remaining space for Number Pad
+                // Number Pad
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
