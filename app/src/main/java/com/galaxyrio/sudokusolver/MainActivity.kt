@@ -8,9 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -37,26 +35,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+
+
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+
 import com.galaxyrio.sudokusolver.data.ThemeMode
+import com.galaxyrio.sudokusolver.navigation.AppNavHost
 import com.galaxyrio.sudokusolver.ui.screens.info.InfoScreen
 import com.galaxyrio.sudokusolver.ui.screens.play.Difficulty
 import com.galaxyrio.sudokusolver.ui.screens.play.PlayMenuScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsCategory
 import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsViewModel
-import com.galaxyrio.sudokusolver.ui.screens.settings.details.AboutSettingsScreen
-import com.galaxyrio.sudokusolver.ui.screens.settings.details.AppearanceSettingsScreen
-import com.galaxyrio.sudokusolver.ui.screens.settings.details.AssistanceSettingsScreen
-import com.galaxyrio.sudokusolver.ui.screens.settings.details.FilesSettingsScreen
-import com.galaxyrio.sudokusolver.ui.screens.settings.details.GameSettingsScreen
-import com.galaxyrio.sudokusolver.ui.screens.settings.details.LanguageSettingsScreen
-import com.galaxyrio.sudokusolver.ui.screens.sudokugame.SudokuGameScreen
+
 import com.galaxyrio.sudokusolver.ui.theme.SudokuSolverTheme
 
 class MainActivity : ComponentActivity() {
@@ -87,173 +78,12 @@ class MainActivity : ComponentActivity() {
                 colorSeed = themeColor,
                 paletteStyle = paletteStyle
             ) {
-                SudokuSolverApp(navController, settingsViewModel)
+                AppNavHost(navController, settingsViewModel)
             }
         }
     }
 }
 
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
-@Composable
-fun SudokuSolverApp(
-    navController: androidx.navigation.NavHostController,
-    settingsViewModel: SettingsViewModel = viewModel()
-) {
-    val motionScheme = MaterialTheme.motionScheme
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.surfaceContainer
-    ) {
-        SharedTransitionLayout {
-            NavHost(
-                navController = navController,
-                startDestination = "home",
-                enterTransition = {
-                    slideInHorizontally(
-                        animationSpec = motionScheme.defaultSpatialSpec(),
-                        initialOffsetX = { it }
-                    ) + fadeIn(
-                        animationSpec = motionScheme.defaultEffectsSpec(),
-                        initialAlpha = 1f
-                    )
-                },
-
-                exitTransition = {
-                    slideOutHorizontally(
-                        animationSpec = motionScheme.defaultSpatialSpec(),
-                        targetOffsetX = { -it / 3 }
-                    ) + fadeOut(
-                        animationSpec = motionScheme.defaultEffectsSpec(),
-                        targetAlpha = 1f
-                    )
-                },
-
-                popEnterTransition = {
-                    slideInHorizontally(
-                        animationSpec = motionScheme.defaultSpatialSpec(),
-                        initialOffsetX = { -it / 3 }
-                    ) + fadeIn(
-                        animationSpec = motionScheme.defaultEffectsSpec(),
-                        initialAlpha = 1f
-                    )
-                },
-
-                popExitTransition = {
-                    slideOutHorizontally(
-                        animationSpec = motionScheme.defaultSpatialSpec(),
-                        targetOffsetX = { it }
-                    ) + fadeOut(
-                        animationSpec = motionScheme.defaultEffectsSpec(),
-                        targetAlpha = 0f
-                    )
-                },
-
-                sizeTransform = {
-                    SizeTransform(
-                        clip = false,
-                        sizeAnimationSpec = { _, _ ->
-                            motionScheme.defaultSpatialSpec()
-                        }
-                    )
-                }
-            ) {
-                composable(
-                    route = "home",
-                ) {
-                    HomeScreen(
-                        sharedTransitionScope = this@SharedTransitionLayout,
-                        animatedVisibilityScope = this@composable,
-                        onStartGame = { difficulty ->
-                            navController.navigate("game/${difficulty.name}")
-                        },
-                        onContinueGame = { gameId ->
-                            navController.navigate("game/MEDIUM?gameId=$gameId")
-                        },
-                        onNavigateToSettings = { category ->
-                            navController.navigate("settings/${category.name}")
-                        }
-                    )
-                }
-
-                composable(
-                    route = "game/{difficulty}?gameId={gameId}",
-                    arguments = listOf(
-                        navArgument("difficulty") { type = NavType.StringType },
-                        navArgument("gameId") {
-                            type = NavType.LongType
-                            defaultValue = -1L
-                        }
-                    )
-                ) { backStackEntry ->
-                    val difficultyStr =
-                        backStackEntry.arguments?.getString("difficulty") ?: "MEDIUM"
-                    val gameIdArg = backStackEntry.arguments?.getLong("gameId") ?: -1L
-
-                    val difficulty = try {
-                        Difficulty.valueOf(difficultyStr)
-                    } catch (_: Exception) {
-                        Difficulty.MEDIUM
-                    }
-                    val gameId = if (gameIdArg == -1L) null else gameIdArg
-
-                    SudokuGameScreen(
-                        sharedTransitionScope = this@SharedTransitionLayout,
-                        animatedVisibilityScope = this@composable,
-                        difficulty = difficulty,
-                        gameId = gameId,
-                        onBack = { navController.popBackStack() },
-                        modifier = Modifier.fillMaxSize(),
-                        viewModel = settingsViewModel
-                    )
-                }
-
-                composable(
-                    route = "settings/{category}",
-                    arguments = listOf(navArgument("category") { type = NavType.StringType }),
-
-                    ) { backStackEntry ->
-                    val categoryStr = backStackEntry.arguments?.getString("category")
-                    val category = SettingsCategory.entries.find { it.name == categoryStr }
-
-                    val onBack: () -> Unit = { navController.popBackStack() }
-                    val modifier = Modifier.fillMaxSize()
-
-                    if (category != null) {
-                        // Determine specific settings screen
-                        when (category) {
-                            SettingsCategory.APPEARANCE -> AppearanceSettingsScreen(
-                                onBack,
-                                settingsViewModel,
-                                modifier
-                            )
-
-                            SettingsCategory.GAME -> GameSettingsScreen(onBack, modifier)
-                            SettingsCategory.ASSISTANCE -> AssistanceSettingsScreen(
-                                onBack,
-                                modifier
-                            )
-
-                            SettingsCategory.FILES -> FilesSettingsScreen(onBack, modifier)
-                            SettingsCategory.LANGUAGE -> LanguageSettingsScreen(onBack, modifier)
-                            SettingsCategory.ABOUT -> AboutSettingsScreen(onBack, modifier)
-                        }
-                    }
-                }
-                composable(
-                    route = "info",
-                ) {
-                    InfoScreen(
-                        modifier = Modifier.fillMaxSize()
-                    )
-
-                }
-
-
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
