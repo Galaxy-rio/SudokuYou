@@ -1,13 +1,11 @@
-package com.galaxyrio.sudokusolver.ui.screen
+package com.galaxyrio.sudokusolver.ui.screens.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -38,13 +36,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 
-enum class SettingsCategory(val title: String, val icon: ImageVector, val subtitle: String, val idx: Int) {
-    APPEARANCE("Appearance", Icons.Default.Palette,"Theme", 0),
-    GAME("Game", Icons.Default.SportsEsports,"Input, Rules", 1),
-    ASSISTANCE("Assistance", Icons.AutoMirrored.Filled.Help,"Learning", 2),
-    FILES("Files", Icons.Default.Folder,"Import & Export", 3),
-    LANGUAGE("Language", Icons.Default.Language,"English", 4),
-    ABOUT("About", Icons.Default.Info,"Version", 5)
+enum class SettingsCategory(
+    val title: String,
+    val icon: ImageVector,
+    val subtitle: String,
+    val idx: Int
+) {
+    APPEARANCE("Appearance", Icons.Default.Palette, "Theme", 0),
+    GAME("Game", Icons.Default.SportsEsports, "Input, Rules", 1),
+    ASSISTANCE("Assistance", Icons.AutoMirrored.Filled.Help, "Learning", 2),
+    FILES("Files", Icons.Default.Folder, "Import & Export", 3),
+    LANGUAGE("Language", Icons.Default.Language, "English", 4),
+    ABOUT("About", Icons.Default.Info, "Version", 5)
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -53,17 +56,19 @@ fun SettingsScreen(
     onNavigateTo: (SettingsCategory) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
             LargeFlexibleTopAppBar(
-                title = { Text("Settings", modifier= Modifier.padding(start = 4.dp)) },
+                title = { Text("Settings", modifier = Modifier.padding(start = 4.dp)) },
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer),
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
                 // scrollBehavior = scrollBehavior // 设置列表较短，暂时不需要滚动收缩
             )
         }
@@ -79,19 +84,22 @@ fun SettingsScreen(
 
             items(SettingsCategory.entries) { category ->
                 SegmentedListItem(
-                    onClick = {onNavigateTo(category)},
-                    shapes = ListItemDefaults.segmentedShapes(index = category.idx, count = SettingsCategory.entries.size),
+                    onClick = { onNavigateTo(category) },
+                    shapes = ListItemDefaults.segmentedShapes(
+                        index = category.idx,
+                        count = SettingsCategory.entries.size
+                    ),
 
                     leadingContent = {
                         Box(
                             contentAlignment = Alignment.Center
-                        ){
+                        ) {
                             Box(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(MaterialTheme.colorScheme.secondaryContainer),
-                            ){}
+                            ) {}
                             Icon(
                                 imageVector = category.icon,
                                 contentDescription = category.title,
@@ -100,11 +108,16 @@ fun SettingsScreen(
                         }
                     },
                     content = { Text(category.title, modifier = Modifier.padding(top = 4.dp)) },
-                    supportingContent = { Text(category.subtitle, modifier = Modifier.padding(top = 4.dp)) },
+                    supportingContent = {
+                        Text(
+                            category.subtitle,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    },
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
 
 
-                )
+                    )
             }
         }
     }

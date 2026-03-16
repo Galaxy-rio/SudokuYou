@@ -50,7 +50,13 @@ class SudokuGenerator {
         for (r in 0 until 9) {
             for (c in 0 until 9) {
                 val value = grid[r][c]
-                cells.add(Cell(value, if (value != 0) emptySet() else emptySet(), isFixed = (value != 0)))
+                cells.add(
+                    Cell(
+                        value,
+                        if (value != 0) emptySet() else emptySet(),
+                        isFixed = (value != 0)
+                    )
+                )
             }
         }
         return Sudoku(cells)
@@ -90,7 +96,8 @@ class SudokuGenerator {
     private fun isValid(grid: Array<IntArray>, row: Int, col: Int, number: Int): Boolean {
         for (i in 0 until 9) {
             if (grid[row][i] == number || grid[i][col] == number ||
-                grid[row - row % 3 + i / 3][col - col % 3 + i % 3] == number) {
+                grid[row - row % 3 + i / 3][col - col % 3 + i % 3] == number
+            ) {
                 return false
             }
         }

@@ -1,4 +1,4 @@
-package com.galaxyrio.sudokusolver.ui.screen
+package com.galaxyrio.sudokusolver.ui.screens.info
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

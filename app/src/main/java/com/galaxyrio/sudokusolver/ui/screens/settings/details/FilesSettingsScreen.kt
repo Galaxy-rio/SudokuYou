@@ -1,4 +1,4 @@
-package com.galaxyrio.sudokusolver.ui.screen.settings
+package com.galaxyrio.sudokusolver.ui.screens.settings.details
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -21,7 +21,8 @@ fun FilesSettingsScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),

@@ -1,4 +1,4 @@
-package com.galaxyrio.sudokusolver.ui.viewmodel
+package com.galaxyrio.sudokusolver.ui.screens.settings
 
 import android.app.Application
 import androidx.compose.ui.graphics.Color
@@ -18,13 +18,17 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val repository = SettingsRepository(application)
 
     val themeMode: StateFlow<ThemeMode> = repository.themeMode
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ThemeMode.SYSTEM)
+        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), ThemeMode.SYSTEM)
 
     val themeColor: StateFlow<Color> = repository.themeColorArgb.map { Color(it) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Color.Blue)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Companion.WhileSubscribed(5000),
+            Color.Companion.Blue
+        )
 
     val paletteStyle: StateFlow<PaletteStyle> = repository.paletteStyle.map {
-        when(it) {
+        when (it) {
             PaletteStyleOption.TonalSpot -> PaletteStyle.TonalSpot
             PaletteStyleOption.Neutral -> PaletteStyle.Neutral
             PaletteStyleOption.Vibrant -> PaletteStyle.Vibrant
@@ -35,25 +39,29 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             PaletteStyleOption.Fidelity -> PaletteStyle.Fidelity
             PaletteStyleOption.Content -> PaletteStyle.Content
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PaletteStyle.TonalSpot)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.Companion.WhileSubscribed(5000),
+        PaletteStyle.TonalSpot
+    )
 
     val useDynamicColors: StateFlow<Boolean> = repository.useDynamicColors
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), true)
 
     val isAmoled: StateFlow<Boolean> = repository.isAmoled
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), false)
 
     val coloredBoard: StateFlow<Boolean> = repository.coloredBoard
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), false)
 
     val positionLines: StateFlow<Boolean> = repository.positionLines
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), true)
 
     val positionBlock: StateFlow<Boolean> = repository.positionBlock
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), true)
 
     val alternativeErrorColor: StateFlow<Boolean> = repository.alternativeErrorColor
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), false)
 
     fun setThemeMode(mode: ThemeMode) {
         repository.setThemeMode(mode)
@@ -64,7 +72,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun setPaletteStyle(style: PaletteStyle) {
-        val option = when(style) {
+        val option = when (style) {
             PaletteStyle.TonalSpot -> PaletteStyleOption.TonalSpot
             PaletteStyle.Neutral -> PaletteStyleOption.Neutral
             PaletteStyle.Vibrant -> PaletteStyleOption.Vibrant

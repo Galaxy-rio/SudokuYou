@@ -15,16 +15,24 @@ enum class PaletteStyleOption {
 }
 
 class SettingsRepository(context: Context) {
-    private val prefs: SharedPreferences = context.getSharedPreferences("sudoku_settings", Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences("sudoku_settings", Context.MODE_PRIVATE)
 
-    private val _themeMode = MutableStateFlow(ThemeMode.entries[prefs.getInt("theme_mode", ThemeMode.SYSTEM.ordinal)])
+    private val _themeMode =
+        MutableStateFlow(ThemeMode.entries[prefs.getInt("theme_mode", ThemeMode.SYSTEM.ordinal)])
     val themeMode: StateFlow<ThemeMode> = _themeMode.asStateFlow()
 
     // Default Blue color
-    private val _themeColorArgb = MutableStateFlow(prefs.getInt("theme_color", -16776961)) // Color.Blue default
+    private val _themeColorArgb =
+        MutableStateFlow(prefs.getInt("theme_color", -16776961)) // Color.Blue default
     val themeColorArgb: StateFlow<Int> = _themeColorArgb.asStateFlow()
 
-    private val _paletteStyle = MutableStateFlow(PaletteStyleOption.entries[prefs.getInt("palette_style", PaletteStyleOption.TonalSpot.ordinal)])
+    private val _paletteStyle = MutableStateFlow(
+        PaletteStyleOption.entries[prefs.getInt(
+            "palette_style",
+            PaletteStyleOption.TonalSpot.ordinal
+        )]
+    )
     val paletteStyle: StateFlow<PaletteStyleOption> = _paletteStyle.asStateFlow()
 
     // Default true for dynamic colors on supported devices
@@ -43,7 +51,8 @@ class SettingsRepository(context: Context) {
     private val _positionBlock = MutableStateFlow(prefs.getBoolean("position_block", true))
     val positionBlock: StateFlow<Boolean> = _positionBlock.asStateFlow()
 
-    private val _alternativeErrorColor = MutableStateFlow(prefs.getBoolean("alternative_error_color", false))
+    private val _alternativeErrorColor =
+        MutableStateFlow(prefs.getBoolean("alternative_error_color", false))
     val alternativeErrorColor: StateFlow<Boolean> = _alternativeErrorColor.asStateFlow()
 
     fun setThemeMode(mode: ThemeMode) {

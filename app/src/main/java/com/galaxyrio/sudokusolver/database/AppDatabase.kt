@@ -26,8 +26,8 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "sudoku_database"
                 )
-                .fallbackToDestructiveMigration()
-                .build()
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = newInstance
                 newInstance
             }

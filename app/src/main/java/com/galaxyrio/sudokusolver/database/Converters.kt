@@ -3,7 +3,7 @@ package com.galaxyrio.sudokusolver.database
 import androidx.room.TypeConverter
 import com.galaxyrio.sudokusolver.game.Cell
 import com.galaxyrio.sudokusolver.game.Sudoku
-import com.galaxyrio.sudokusolver.ui.screen.Difficulty
+import com.galaxyrio.sudokusolver.ui.screens.play.Difficulty
 
 class Converters {
     @TypeConverter
@@ -21,7 +21,8 @@ class Converters {
             val value = parts[0].toIntOrNull() ?: 0
             val isFixed = parts.getOrNull(1)?.toBoolean() ?: false
             val candidatesStr = parts.getOrNull(2) ?: ""
-            val candidates = if (candidatesStr.isEmpty()) emptySet() else candidatesStr.split(",").mapNotNull { it.toIntOrNull() }.toSet()
+            val candidates = if (candidatesStr.isEmpty()) emptySet() else candidatesStr.split(",")
+                .mapNotNull { it.toIntOrNull() }.toSet()
 
             Cell(value, candidates, isFixed)
         }

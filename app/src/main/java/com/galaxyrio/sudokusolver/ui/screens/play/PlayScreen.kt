@@ -1,4 +1,4 @@
-package com.galaxyrio.sudokusolver.ui.screen
+package com.galaxyrio.sudokusolver.ui.screens.play
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
@@ -71,7 +71,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.galaxyrio.sudokusolver.ui.viewmodel.PlayViewModel
+import java.time.Duration
 
 
 enum class Difficulty {
@@ -222,7 +222,7 @@ fun PlayMenuScreen(
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
-                            .padding(start = 4.dp, top =8.dp, bottom = 8.dp)
+                            .padding(start = 4.dp, top = 8.dp, bottom = 8.dp)
                     )
                 }
                 with(sharedTransitionScope) {
@@ -429,7 +429,7 @@ fun SudokuThumbnail(
 
 @SuppressLint("DefaultLocale")
 fun formatSecondsToTime(totalSeconds: Long): String {
-    val duration = java.time.Duration.ofSeconds(totalSeconds)
+    val duration = Duration.ofSeconds(totalSeconds)
     val hours = duration.toHours()
     val minutes = duration.toMinutesPart()
     val seconds = duration.toSecondsPart()

@@ -1,5 +1,6 @@
 package com.galaxyrio.sudokusolver
 
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,6 +16,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -24,8 +26,6 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-
-
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
@@ -35,7 +35,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -45,21 +44,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.galaxyrio.sudokusolver.data.ThemeMode
+import com.galaxyrio.sudokusolver.ui.screens.info.InfoScreen
+import com.galaxyrio.sudokusolver.ui.screens.play.Difficulty
+import com.galaxyrio.sudokusolver.ui.screens.play.PlayMenuScreen
+import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsCategory
+import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsScreen
+import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsViewModel
+import com.galaxyrio.sudokusolver.ui.screens.settings.details.AboutSettingsScreen
+import com.galaxyrio.sudokusolver.ui.screens.settings.details.AppearanceSettingsScreen
+import com.galaxyrio.sudokusolver.ui.screens.settings.details.AssistanceSettingsScreen
+import com.galaxyrio.sudokusolver.ui.screens.settings.details.FilesSettingsScreen
+import com.galaxyrio.sudokusolver.ui.screens.settings.details.GameSettingsScreen
+import com.galaxyrio.sudokusolver.ui.screens.settings.details.LanguageSettingsScreen
+import com.galaxyrio.sudokusolver.ui.screens.sudokugame.SudokuGameScreen
 import com.galaxyrio.sudokusolver.ui.theme.SudokuSolverTheme
-import com.galaxyrio.sudokusolver.ui.screen.InfoScreen
-import com.galaxyrio.sudokusolver.ui.screen.PlayMenuScreen
-import com.galaxyrio.sudokusolver.ui.screen.play.SudokuGameScreen
-import com.galaxyrio.sudokusolver.ui.screen.SettingsScreen
-import com.galaxyrio.sudokusolver.ui.screen.SettingsCategory
-import com.galaxyrio.sudokusolver.ui.screen.Difficulty
-
-import com.galaxyrio.sudokusolver.ui.screen.settings.AppearanceSettingsScreen
-import com.galaxyrio.sudokusolver.ui.screen.settings.GameSettingsScreen
-import com.galaxyrio.sudokusolver.ui.screen.settings.AssistanceSettingsScreen
-import com.galaxyrio.sudokusolver.ui.screen.settings.FilesSettingsScreen
-import com.galaxyrio.sudokusolver.ui.screen.settings.LanguageSettingsScreen
-import com.galaxyrio.sudokusolver.ui.screen.settings.AboutSettingsScreen
-import com.galaxyrio.sudokusolver.ui.viewmodel.SettingsViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +73,7 @@ class MainActivity : ComponentActivity() {
             val useDynamicColors by settingsViewModel.useDynamicColors.collectAsState()
             val paletteStyle by settingsViewModel.paletteStyle.collectAsState()
 
-            val darkTheme = when(themeMode) {
+            val darkTheme = when (themeMode) {
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
                 ThemeMode.DARK -> true
                 ThemeMode.LIGHT -> false
@@ -188,7 +186,8 @@ fun SudokuSolverApp(
                         }
                     )
                 ) { backStackEntry ->
-                    val difficultyStr = backStackEntry.arguments?.getString("difficulty") ?: "MEDIUM"
+                    val difficultyStr =
+                        backStackEntry.arguments?.getString("difficulty") ?: "MEDIUM"
                     val gameIdArg = backStackEntry.arguments?.getLong("gameId") ?: -1L
 
                     val difficulty = try {
@@ -223,9 +222,18 @@ fun SudokuSolverApp(
                     if (category != null) {
                         // Determine specific settings screen
                         when (category) {
-                            SettingsCategory.APPEARANCE -> AppearanceSettingsScreen(onBack, settingsViewModel, modifier)
+                            SettingsCategory.APPEARANCE -> AppearanceSettingsScreen(
+                                onBack,
+                                settingsViewModel,
+                                modifier
+                            )
+
                             SettingsCategory.GAME -> GameSettingsScreen(onBack, modifier)
-                            SettingsCategory.ASSISTANCE -> AssistanceSettingsScreen(onBack, modifier)
+                            SettingsCategory.ASSISTANCE -> AssistanceSettingsScreen(
+                                onBack,
+                                modifier
+                            )
+
                             SettingsCategory.FILES -> FilesSettingsScreen(onBack, modifier)
                             SettingsCategory.LANGUAGE -> LanguageSettingsScreen(onBack, modifier)
                             SettingsCategory.ABOUT -> AboutSettingsScreen(onBack, modifier)
@@ -293,13 +301,13 @@ fun HomeScreen(
                         ) + fadeIn(
                             animationSpec = motionScheme.defaultEffectsSpec()
                         )) togetherWith (
-                            slideOutHorizontally(
-                                animationSpec = motionScheme.fastSpatialSpec(),
-                                targetOffsetX = { -it }
-                            ) + fadeOut(
-                                animationSpec = motionScheme.fastEffectsSpec()
-                            )
-                        )
+                                slideOutHorizontally(
+                                    animationSpec = motionScheme.fastSpatialSpec(),
+                                    targetOffsetX = { -it }
+                                ) + fadeOut(
+                                    animationSpec = motionScheme.fastEffectsSpec()
+                                )
+                                )
                     } else {
                         (slideInHorizontally(
                             animationSpec = motionScheme.defaultSpatialSpec(),
@@ -307,13 +315,13 @@ fun HomeScreen(
                         ) + fadeIn(
                             animationSpec = motionScheme.defaultEffectsSpec()
                         )) togetherWith (
-                            slideOutHorizontally(
-                                animationSpec = motionScheme.fastSpatialSpec(),
-                                targetOffsetX = { it }
-                            ) + fadeOut(
-                                animationSpec = motionScheme.fastEffectsSpec()
-                            )
-                        )
+                                slideOutHorizontally(
+                                    animationSpec = motionScheme.fastSpatialSpec(),
+                                    targetOffsetX = { it }
+                                ) + fadeOut(
+                                    animationSpec = motionScheme.fastEffectsSpec()
+                                )
+                                )
                     }
                 }
             ) { targetScreen ->
@@ -332,6 +340,7 @@ fun HomeScreen(
                             onContinueGame(gameId)
                         }
                     )
+
                     AppDestinations.SETTINGS -> SettingsScreen(
                         onNavigateTo = onNavigateToSettings,
                         modifier = modifier

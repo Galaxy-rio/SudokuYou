@@ -1,11 +1,10 @@
-package com.galaxyrio.sudokusolver.ui.viewmodel
+package com.galaxyrio.sudokusolver.ui.screens.play
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.galaxyrio.sudokusolver.database.AppDatabase
 import com.galaxyrio.sudokusolver.database.SudokuEntity
-import com.galaxyrio.sudokusolver.ui.screen.SavedGame
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -16,7 +15,7 @@ import java.util.Date
 import java.util.Locale
 
 class PlayViewModel(application: Application) : AndroidViewModel(application) {
-    private val sudokuDao = AppDatabase.getDatabase(application).sudokuDao()
+    private val sudokuDao = AppDatabase.Companion.getDatabase(application).sudokuDao()
 
     val savedGames: StateFlow<List<SavedGame>> = sudokuDao.getAllGames()
         .map { entities ->
@@ -34,7 +33,7 @@ class PlayViewModel(application: Application) : AndroidViewModel(application) {
         }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Companion.WhileSubscribed(5000),
             initialValue = emptyList()
         )
 

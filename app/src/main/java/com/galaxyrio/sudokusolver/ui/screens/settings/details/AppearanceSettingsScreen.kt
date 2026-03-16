@@ -1,4 +1,4 @@
-package com.galaxyrio.sudokusolver.ui.screen.settings
+package com.galaxyrio.sudokusolver.ui.screens.settings.details
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,17 +54,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.galaxyrio.sudokusolver.data.ThemeMode
-import com.galaxyrio.sudokusolver.ui.viewmodel.SettingsViewModel
+import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsViewModel
 import com.materialkolor.PaletteStyle
 
-enum class SettingThemeCategory(val title: String, val subtitle:String) {
-    ACCENT_COLOR("Accent Color","Dynamic or Custom"),
+enum class SettingThemeCategory(val title: String, val subtitle: String) {
+    ACCENT_COLOR("Accent Color", "Dynamic or Custom"),
     PALETTE_STYLE("Palette Style", "Material You color scheme style"),
     THEME_MODE("Theme Mode", "System, Light or Dark"),
     AMOLED_MODE("AMOLED Mode", "True black dark theme")
 }
 
-enum class SettingBoardCategory(val title: String, val subtitle:String) {
+enum class SettingBoardCategory(val title: String, val subtitle: String) {
     COLORED_BOARD("Colored Board", "Apply theme colors to the board "),
     POSITION_LINES("Position Lines", "Highlight rows, columns of the selected cell"),
     POSITION_BLOCK("Position Block", "Highlight the block of the selected cell"),
@@ -225,15 +225,18 @@ fun AppearanceSettingsScreen(
 
             item {
                 SegmentedListItem(
-                    onClick = {  },
-                    shapes = ListItemDefaults.segmentedShapes(index = 0, count = SettingThemeCategory.entries.size),
+                    onClick = { },
+                    shapes = ListItemDefaults.segmentedShapes(
+                        index = 0,
+                        count = SettingThemeCategory.entries.size
+                    ),
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
 
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
                     Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                        Text(SettingThemeCategory.ACCENT_COLOR.title,)
+                        Text(SettingThemeCategory.ACCENT_COLOR.title)
                         Spacer(modifier = Modifier.height(12.dp))
                         ColorPicker(
                             isDynamic = useDynamicColors,
@@ -253,12 +256,25 @@ fun AppearanceSettingsScreen(
             item {
                 SegmentedListItem(
                     onClick = { showPaletteStyleDialog = true },
-                    shapes = ListItemDefaults.segmentedShapes(index = 1, count = SettingThemeCategory.entries.size),
+                    shapes = ListItemDefaults.segmentedShapes(
+                        index = 1,
+                        count = SettingThemeCategory.entries.size
+                    ),
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
                     modifier = Modifier.fillMaxSize(),
-                    content = { Text(SettingThemeCategory.PALETTE_STYLE.title, modifier=modifier.padding(top=4.dp))},
-                    supportingContent = { Text(paletteStyle.name, modifier = modifier.padding(bottom = 4.dp)) },
-                    )
+                    content = {
+                        Text(
+                            SettingThemeCategory.PALETTE_STYLE.title,
+                            modifier = modifier.padding(top = 4.dp)
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            paletteStyle.name,
+                            modifier = modifier.padding(bottom = 4.dp)
+                        )
+                    },
+                )
 
             }
 
@@ -267,10 +283,18 @@ fun AppearanceSettingsScreen(
                 SegmentedListItem(
                     onClick = { showThemeModeDialog = true },
 
-                    shapes = ListItemDefaults.segmentedShapes(index = 2, count = SettingThemeCategory.entries.size),
+                    shapes = ListItemDefaults.segmentedShapes(
+                        index = 2,
+                        count = SettingThemeCategory.entries.size
+                    ),
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
                     modifier = Modifier.fillMaxSize(),
-                    content = { Text(SettingThemeCategory.THEME_MODE.title, modifier = Modifier.padding(top = 4.dp)) },
+                    content = {
+                        Text(
+                            SettingThemeCategory.THEME_MODE.title,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    },
                     supportingContent = {
                         val text = when (themeMode) {
                             ThemeMode.SYSTEM -> "System Default"
@@ -285,7 +309,10 @@ fun AppearanceSettingsScreen(
             item {
                 SegmentedListItem(
                     onClick = { viewModel.setIsAmoled(!isAmoled) },
-                    shapes = ListItemDefaults.segmentedShapes(index = 3, count = SettingThemeCategory.entries.size),
+                    shapes = ListItemDefaults.segmentedShapes(
+                        index = 3,
+                        count = SettingThemeCategory.entries.size
+                    ),
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
                     modifier = Modifier.fillMaxSize(),
                     trailingContent = {
@@ -294,8 +321,18 @@ fun AppearanceSettingsScreen(
                             onCheckedChange = { viewModel.setIsAmoled(it) }
                         )
                     },
-                    content = { Text(SettingThemeCategory.AMOLED_MODE.title, modifier = Modifier.padding(top = 4.dp)) },
-                    supportingContent = { Text(SettingThemeCategory.AMOLED_MODE.subtitle, modifier = Modifier.padding(bottom = 4.dp)) }
+                    content = {
+                        Text(
+                            SettingThemeCategory.AMOLED_MODE.title,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            SettingThemeCategory.AMOLED_MODE.subtitle,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
                 )
             }
 
@@ -311,7 +348,10 @@ fun AppearanceSettingsScreen(
             item {
                 SegmentedListItem(
                     onClick = { viewModel.setColoredBoard(!coloredBoard) },
-                    shapes = ListItemDefaults.segmentedShapes(index = 0, count = SettingBoardCategory.entries.size),
+                    shapes = ListItemDefaults.segmentedShapes(
+                        index = 0,
+                        count = SettingBoardCategory.entries.size
+                    ),
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
                     modifier = Modifier.fillMaxSize(),
                     trailingContent = {
@@ -320,15 +360,28 @@ fun AppearanceSettingsScreen(
                             onCheckedChange = { viewModel.setColoredBoard(it) }
                         )
                     },
-                    content = { Text(SettingBoardCategory.COLORED_BOARD.title, modifier = Modifier.padding(top = 4.dp)) },
-                    supportingContent = { Text(SettingBoardCategory.COLORED_BOARD.subtitle, modifier = Modifier.padding(bottom = 4.dp)) }
+                    content = {
+                        Text(
+                            SettingBoardCategory.COLORED_BOARD.title,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            SettingBoardCategory.COLORED_BOARD.subtitle,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
                 )
             }
 
             item {
                 SegmentedListItem(
                     onClick = { viewModel.setPositionLines(!positionLines) },
-                    shapes = ListItemDefaults.segmentedShapes(index = 1, count = SettingBoardCategory.entries.size),
+                    shapes = ListItemDefaults.segmentedShapes(
+                        index = 1,
+                        count = SettingBoardCategory.entries.size
+                    ),
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
                     modifier = Modifier.fillMaxSize(),
                     trailingContent = {
@@ -337,15 +390,28 @@ fun AppearanceSettingsScreen(
                             onCheckedChange = { viewModel.setPositionLines(it) }
                         )
                     },
-                    content = { Text(SettingBoardCategory.POSITION_LINES.title, modifier = Modifier.padding(top = 4.dp)) },
-                    supportingContent = { Text(SettingBoardCategory.POSITION_LINES.subtitle, modifier = Modifier.padding(bottom = 4.dp)) }
+                    content = {
+                        Text(
+                            SettingBoardCategory.POSITION_LINES.title,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            SettingBoardCategory.POSITION_LINES.subtitle,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
                 )
             }
 
             item {
                 SegmentedListItem(
                     onClick = { viewModel.setPositionBlock(!positionBlock) },
-                    shapes = ListItemDefaults.segmentedShapes(index = 2, count = SettingBoardCategory.entries.size),
+                    shapes = ListItemDefaults.segmentedShapes(
+                        index = 2,
+                        count = SettingBoardCategory.entries.size
+                    ),
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
                     modifier = Modifier.fillMaxSize(),
                     trailingContent = {
@@ -354,15 +420,28 @@ fun AppearanceSettingsScreen(
                             onCheckedChange = { viewModel.setPositionBlock(it) }
                         )
                     },
-                    content = { Text(SettingBoardCategory.POSITION_BLOCK.title, modifier = Modifier.padding(top = 4.dp)) },
-                    supportingContent = { Text(SettingBoardCategory.POSITION_BLOCK.subtitle, modifier = Modifier.padding(bottom = 4.dp)) }
+                    content = {
+                        Text(
+                            SettingBoardCategory.POSITION_BLOCK.title,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            SettingBoardCategory.POSITION_BLOCK.subtitle,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
                 )
             }
 
             item {
                 SegmentedListItem(
                     onClick = { viewModel.setAlternativeErrorColor(!alternativeErrorColor) },
-                    shapes = ListItemDefaults.segmentedShapes(index = 3, count = SettingBoardCategory.entries.size),
+                    shapes = ListItemDefaults.segmentedShapes(
+                        index = 3,
+                        count = SettingBoardCategory.entries.size
+                    ),
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
                     modifier = Modifier.fillMaxSize(),
                     trailingContent = {
@@ -371,15 +450,24 @@ fun AppearanceSettingsScreen(
                             onCheckedChange = { viewModel.setAlternativeErrorColor(it) }
                         )
                     },
-                    content = { Text(SettingBoardCategory.ALTERNATIVE_ERROR_COLOR.title, modifier = Modifier.padding(top = 4.dp)) },
-                    supportingContent = { Text(SettingBoardCategory.ALTERNATIVE_ERROR_COLOR.subtitle, modifier = Modifier.padding(bottom = 4.dp)) }
+                    content = {
+                        Text(
+                            SettingBoardCategory.ALTERNATIVE_ERROR_COLOR.title,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            SettingBoardCategory.ALTERNATIVE_ERROR_COLOR.subtitle,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
                 )
             }
 
         }
     }
 }
-
 
 
 @Composable

@@ -43,7 +43,8 @@ class ValidSudokuGenerator {
     private fun isValid(grid: Array<IntArray>, row: Int, col: Int, number: Int): Boolean {
         for (i in 0 until 9) {
             if (grid[row][i] == number || grid[i][col] == number ||
-                grid[row - row % 3 + i / 3][col - col % 3 + i % 3] == number) {
+                grid[row - row % 3 + i / 3][col - col % 3 + i % 3] == number
+            ) {
                 return false
             }
         }

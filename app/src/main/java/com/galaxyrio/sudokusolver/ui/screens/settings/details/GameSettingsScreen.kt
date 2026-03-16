@@ -1,4 +1,4 @@
-package com.galaxyrio.sudokusolver.ui.screen.settings
+package com.galaxyrio.sudokusolver.ui.screens.settings.details
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -17,17 +17,18 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AboutSettingsScreen(
+fun GameSettingsScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior =
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
-                title = { Text("About") },
+                title = { Text("Game") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -41,7 +42,7 @@ fun AboutSettingsScreen(
         }
     ) { innerPadding ->
         Text(
-            text = "About Settings Content",
+            text = "Game Settings Content",
             modifier = Modifier.padding(innerPadding)
         )
     }

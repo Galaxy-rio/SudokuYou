@@ -6,10 +6,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -41,7 +41,7 @@ fun NumberPad(
         rows.forEach { rowNumbers ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp,Alignment.CenterHorizontally)
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
             ) {
                 rowNumbers.forEach { number ->
                     NumberButton(
@@ -76,9 +76,9 @@ fun NumberButton(
     )
 
     val containerColor = if (isSelected) MaterialTheme.colorScheme.primary
-        else MaterialTheme.colorScheme.secondaryContainer
+    else MaterialTheme.colorScheme.secondaryContainer
     val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary
-        else MaterialTheme.colorScheme.onSecondaryContainer
+    else MaterialTheme.colorScheme.onSecondaryContainer
 
     Button(
         onClick = onClick,

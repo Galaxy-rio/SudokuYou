@@ -3,7 +3,7 @@ package com.galaxyrio.sudokusolver.database
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.galaxyrio.sudokusolver.game.Sudoku
-import com.galaxyrio.sudokusolver.ui.screen.Difficulty
+import com.galaxyrio.sudokusolver.ui.screens.play.Difficulty
 
 @Entity(tableName = "games")
 data class SudokuEntity(

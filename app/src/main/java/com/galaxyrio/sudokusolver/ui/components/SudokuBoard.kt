@@ -18,11 +18,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import com.galaxyrio.sudokusolver.game.Sudoku
 import com.galaxyrio.sudokusolver.game.validator.SudokuValidator
 
@@ -45,18 +45,17 @@ fun SudokuBoard(
 ) {
 
 
-
     val thickLine = 2.dp
     val thinLine = 1.dp
     val cornerRadius = 8.dp
-    val lineColor = if(!config.useColoredBoard){
+    val lineColor = if (!config.useColoredBoard) {
         MaterialTheme.colorScheme.onSurfaceVariant
-    }else{
+    } else {
         MaterialTheme.colorScheme.secondary
     }
-    val boardColor = if(!config.useColoredBoard){
+    val boardColor = if (!config.useColoredBoard) {
         MaterialTheme.colorScheme.onSurface
-    }else{
+    } else {
         MaterialTheme.colorScheme.primary
     }
 
@@ -97,18 +96,33 @@ fun SudokuBoard(
                                         val col = blockCol * 3 + cellColInBlock
                                         val cell = sudoku.getCell(row, col)
 
-                                        val isError = !cell.isFixed && cell.value != 0 && SudokuValidator.checkContradiction(sudoku, row, col)
+                                        val isError =
+                                            !cell.isFixed && cell.value != 0 && SudokuValidator.checkContradiction(
+                                                sudoku,
+                                                row,
+                                                col
+                                            )
                                         val isSelected = (row == selectedRow && col == selectedCol)
-                                        val isSelectedCross = (selectedRow != null && selectedCol != null) && (row == selectedRow || col == selectedCol)
-                                        val isSelectedBoard = (selectedRow != null && selectedCol != null) && ((row / 3 == selectedRow.div(3) && col / 3 == selectedCol.div(
-                                            3
-                                        )))
+                                        val isSelectedCross =
+                                            (selectedRow != null && selectedCol != null) && (row == selectedRow || col == selectedCol)
+                                        val isSelectedBoard =
+                                            (selectedRow != null && selectedCol != null) && ((row / 3 == selectedRow.div(
+                                                3
+                                            ) && col / 3 == selectedCol.div(
+                                                3
+                                            )))
 
-                                        val isValueHighlighted = (highlightNumber != null && cell.value == highlightNumber)
+                                        val isValueHighlighted =
+                                            (highlightNumber != null && cell.value == highlightNumber)
 
                                         val errorCandidates = if (cell.value == 0) {
                                             cell.candidates.filter { candidate ->
-                                                SudokuValidator.checkContradiction(sudoku, row, col, candidate)
+                                                SudokuValidator.checkContradiction(
+                                                    sudoku,
+                                                    row,
+                                                    col,
+                                                    candidate
+                                                )
                                             }.toSet()
                                         } else {
                                             emptySet()
@@ -158,24 +172,24 @@ fun SudokuCell(
     isSelectedBoard: Boolean = false,
     config: BoardConfig = BoardConfig()
 ) {
-    val errorColor = if(!config.useAltErrorColor){
+    val errorColor = if (!config.useAltErrorColor) {
         MaterialTheme.colorScheme.error
-    }else{
+    } else {
         Color(0xFF4c662b)
     }
-    val errorContainerColor = if(!config.useAltErrorColor){
+    val errorContainerColor = if (!config.useAltErrorColor) {
         MaterialTheme.colorScheme.errorContainer
-    }else{
+    } else {
         Color(0xFFcdeda3)
     }
-    val onErrorColor = if(!config.useAltErrorColor){
+    val onErrorColor = if (!config.useAltErrorColor) {
         MaterialTheme.colorScheme.onError
-    }else{
+    } else {
         Color(0xFFffffff)
     }
-    val onErrorContainerColor = if(!config.useAltErrorColor){
+    val onErrorContainerColor = if (!config.useAltErrorColor) {
         MaterialTheme.colorScheme.onErrorContainer
-    }else{
+    } else {
         Color(0xFF354e16)
     }
 
@@ -217,17 +231,25 @@ fun SudokuCell(
             )
         } else if (candidates.isNotEmpty()) {
             Column(
-                modifier = Modifier.fillMaxWidth().aspectRatio(1f).padding(1.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .padding(1.dp),
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
                 (0..2).forEach { rowOffset ->
                     Row(
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         (1..3).forEach { colOffset ->
                             val candidateNum = rowOffset * 3 + colOffset
-                            val isCandidateHighlighted = (highlightNumber != null && candidateNum == highlightNumber && candidates.contains(candidateNum))
+                            val isCandidateHighlighted =
+                                (highlightNumber != null && candidateNum == highlightNumber && candidates.contains(
+                                    candidateNum
+                                ))
 
                             Box(
                                 contentAlignment = Alignment.Center,
@@ -236,7 +258,7 @@ fun SudokuCell(
                                     .aspectRatio(1f)
                                     .then(
                                         if (isCandidateHighlighted) {
-                                            val candidateBackground = when{
+                                            val candidateBackground = when {
                                                 errorCandidates.contains(candidateNum) -> errorContainerColor
                                                 else -> MaterialTheme.colorScheme.secondaryContainer
                                             }
