@@ -3,8 +3,8 @@ package com.galaxyrio.sudokusolver.ui.screens.play
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.galaxyrio.sudokusolver.database.AppDatabase
-import com.galaxyrio.sudokusolver.database.SudokuEntity
+import com.galaxyrio.sudokusolver.gamedata.AppDatabase
+import com.galaxyrio.sudokusolver.gamedata.SudokuEntity
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map

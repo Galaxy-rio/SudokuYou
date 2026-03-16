@@ -1,4 +1,4 @@
-package com.galaxyrio.sudokusolver.database
+package com.galaxyrio.sudokusolver.gamedata
 
 import androidx.room.TypeConverter
 import com.galaxyrio.sudokusolver.game.Cell

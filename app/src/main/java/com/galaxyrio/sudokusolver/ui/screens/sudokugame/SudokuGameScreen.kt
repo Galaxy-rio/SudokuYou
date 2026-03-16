@@ -65,8 +65,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.galaxyrio.sudokusolver.database.AppDatabase
-import com.galaxyrio.sudokusolver.database.SudokuEntity
+import com.galaxyrio.sudokusolver.gamedata.AppDatabase
+import com.galaxyrio.sudokusolver.gamedata.SudokuEntity
 import com.galaxyrio.sudokusolver.game.Sudoku
 import com.galaxyrio.sudokusolver.game.generator.CandidateCalculator
 import com.galaxyrio.sudokusolver.game.generator.SudokuGenerator

@@ -1,4 +1,4 @@
-package com.galaxyrio.sudokusolver.database
+package com.galaxyrio.sudokusolver.gamedata
 
 import androidx.room.Dao
 import androidx.room.Insert
