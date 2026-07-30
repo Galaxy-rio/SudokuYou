@@ -1,113 +1,107 @@
 package com.galaxyrio.sudokusolver.ui.screens.settings
 
-import android.app.Application
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.galaxyrio.sudokusolver.data.PaletteStyleOption
-import com.galaxyrio.sudokusolver.data.SettingsRepository
-import com.galaxyrio.sudokusolver.data.ThemeMode
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.galaxyrio.sudokusolver.data.settings.AppSettings
+import com.galaxyrio.sudokusolver.data.settings.PaletteStyleOption
+import com.galaxyrio.sudokusolver.data.settings.SettingsRepository
+import com.galaxyrio.sudokusolver.data.settings.ThemeMode
 import com.materialkolor.PaletteStyle
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class SettingsViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = SettingsRepository(application)
+data class SettingsUiState(
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val themeColor: Color = Color(AppSettings.DEFAULT_THEME_COLOR),
+    val paletteStyle: PaletteStyle = PaletteStyle.TonalSpot,
+    val useDynamicColors: Boolean = true,
+    val isAmoled: Boolean = false,
+    val coloredBoard: Boolean = false,
+    val positionLines: Boolean = true,
+    val positionBlock: Boolean = true,
+    val alternativeErrorColor: Boolean = false,
+)
 
-    val themeMode: StateFlow<ThemeMode> = repository.themeMode
-        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), ThemeMode.SYSTEM)
+class SettingsViewModel(
+    private val repository: SettingsRepository,
+) : ViewModel() {
 
-    val themeColor: StateFlow<Color> = repository.themeColorArgb.map { Color(it) }
+    val uiState: StateFlow<SettingsUiState> = repository.settings
+        .map(AppSettings::asUiState)
         .stateIn(
-            viewModelScope,
-            SharingStarted.Companion.WhileSubscribed(5000),
-            Color.Companion.Blue
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
+            initialValue = repository.settings.value.asUiState(),
         )
 
-    val paletteStyle: StateFlow<PaletteStyle> = repository.paletteStyle.map {
-        when (it) {
-            PaletteStyleOption.TonalSpot -> PaletteStyle.TonalSpot
-            PaletteStyleOption.Neutral -> PaletteStyle.Neutral
-            PaletteStyleOption.Vibrant -> PaletteStyle.Vibrant
-            PaletteStyleOption.Expressive -> PaletteStyle.Expressive
-            PaletteStyleOption.Rainbow -> PaletteStyle.Rainbow
-            PaletteStyleOption.FruitSalad -> PaletteStyle.FruitSalad
-            PaletteStyleOption.Monochrome -> PaletteStyle.Monochrome
-            PaletteStyleOption.Fidelity -> PaletteStyle.Fidelity
-            PaletteStyleOption.Content -> PaletteStyle.Content
-        }
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.Companion.WhileSubscribed(5000),
-        PaletteStyle.TonalSpot
-    )
+    fun setThemeMode(mode: ThemeMode) = repository.setThemeMode(mode)
 
-    val useDynamicColors: StateFlow<Boolean> = repository.useDynamicColors
-        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), true)
+    fun setThemeColor(color: Color) = repository.setThemeColorArgb(color.toArgb())
 
-    val isAmoled: StateFlow<Boolean> = repository.isAmoled
-        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), false)
+    fun setPaletteStyle(style: PaletteStyle) =
+        repository.setPaletteStyle(style.asDataOption())
 
-    val coloredBoard: StateFlow<Boolean> = repository.coloredBoard
-        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), false)
+    fun setUseDynamicColors(enabled: Boolean) = repository.setUseDynamicColors(enabled)
 
-    val positionLines: StateFlow<Boolean> = repository.positionLines
-        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), true)
+    fun setIsAmoled(enabled: Boolean) = repository.setIsAmoled(enabled)
 
-    val positionBlock: StateFlow<Boolean> = repository.positionBlock
-        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), true)
+    fun setColoredBoard(enabled: Boolean) = repository.setColoredBoard(enabled)
 
-    val alternativeErrorColor: StateFlow<Boolean> = repository.alternativeErrorColor
-        .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), false)
+    fun setPositionLines(enabled: Boolean) = repository.setPositionLines(enabled)
 
-    fun setThemeMode(mode: ThemeMode) {
-        repository.setThemeMode(mode)
-    }
+    fun setPositionBlock(enabled: Boolean) = repository.setPositionBlock(enabled)
 
-    fun setThemeColor(color: Color) {
-        repository.setThemeColorArgb(color.toArgb())
-    }
-
-    fun setPaletteStyle(style: PaletteStyle) {
-        val option = when (style) {
-            PaletteStyle.TonalSpot -> PaletteStyleOption.TonalSpot
-            PaletteStyle.Neutral -> PaletteStyleOption.Neutral
-            PaletteStyle.Vibrant -> PaletteStyleOption.Vibrant
-            PaletteStyle.Expressive -> PaletteStyleOption.Expressive
-            PaletteStyle.Rainbow -> PaletteStyleOption.Rainbow
-            PaletteStyle.FruitSalad -> PaletteStyleOption.FruitSalad
-            PaletteStyle.Monochrome -> PaletteStyleOption.Monochrome
-            PaletteStyle.Fidelity -> PaletteStyleOption.Fidelity
-            PaletteStyle.Content -> PaletteStyleOption.Content
-            else -> PaletteStyleOption.TonalSpot
-        }
-        repository.setPaletteStyle(option)
-    }
-
-    fun setUseDynamicColors(enabled: Boolean) {
-        repository.setUseDynamicColors(enabled)
-    }
-
-    fun setIsAmoled(enabled: Boolean) {
-        repository.setIsAmoled(enabled)
-    }
-
-    fun setColoredBoard(enabled: Boolean) {
-        repository.setColoredBoard(enabled)
-    }
-
-    fun setPositionLines(enabled: Boolean) {
-        repository.setPositionLines(enabled)
-    }
-
-    fun setPositionBlock(enabled: Boolean) {
-        repository.setPositionBlock(enabled)
-    }
-
-    fun setAlternativeErrorColor(enabled: Boolean) {
+    fun setAlternativeErrorColor(enabled: Boolean) =
         repository.setAlternativeErrorColor(enabled)
+
+    companion object {
+        fun factory(repository: SettingsRepository): ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                SettingsViewModel(repository)
+            }
+        }
     }
+}
+
+private fun AppSettings.asUiState(): SettingsUiState = SettingsUiState(
+    themeMode = themeMode,
+    themeColor = Color(themeColorArgb),
+    paletteStyle = paletteStyle.asUiStyle(),
+    useDynamicColors = useDynamicColors,
+    isAmoled = isAmoled,
+    coloredBoard = coloredBoard,
+    positionLines = positionLines,
+    positionBlock = positionBlock,
+    alternativeErrorColor = alternativeErrorColor,
+)
+
+private fun PaletteStyleOption.asUiStyle(): PaletteStyle = when (this) {
+    PaletteStyleOption.TONAL_SPOT -> PaletteStyle.TonalSpot
+    PaletteStyleOption.NEUTRAL -> PaletteStyle.Neutral
+    PaletteStyleOption.VIBRANT -> PaletteStyle.Vibrant
+    PaletteStyleOption.EXPRESSIVE -> PaletteStyle.Expressive
+    PaletteStyleOption.RAINBOW -> PaletteStyle.Rainbow
+    PaletteStyleOption.FRUIT_SALAD -> PaletteStyle.FruitSalad
+    PaletteStyleOption.MONOCHROME -> PaletteStyle.Monochrome
+    PaletteStyleOption.FIDELITY -> PaletteStyle.Fidelity
+    PaletteStyleOption.CONTENT -> PaletteStyle.Content
+}
+
+private fun PaletteStyle.asDataOption(): PaletteStyleOption = when (this) {
+    PaletteStyle.TonalSpot -> PaletteStyleOption.TONAL_SPOT
+    PaletteStyle.Neutral -> PaletteStyleOption.NEUTRAL
+    PaletteStyle.Vibrant -> PaletteStyleOption.VIBRANT
+    PaletteStyle.Expressive -> PaletteStyleOption.EXPRESSIVE
+    PaletteStyle.Rainbow -> PaletteStyleOption.RAINBOW
+    PaletteStyle.FruitSalad -> PaletteStyleOption.FRUIT_SALAD
+    PaletteStyle.Monochrome -> PaletteStyleOption.MONOCHROME
+    PaletteStyle.Fidelity -> PaletteStyleOption.FIDELITY
+    PaletteStyle.Content -> PaletteStyleOption.CONTENT
 }

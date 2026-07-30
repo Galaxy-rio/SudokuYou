@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">数独</string>
+
+    <string name="nav_info">说明</string>
+    <string name="nav_play">游玩</string>
+    <string name="nav_settings">设置</string>
+
+    <string name="common_back">返回</string>
+    <string name="common_cancel">取消</string>
+    <string name="common_close">关闭</string>
+    <string name="common_delete">删除</string>
+    <string name="common_retry">重试</string>
+    <string name="common_selected">已选择</string>
+
+    <string name="difficulty_easy">简单</string>
+    <string name="difficulty_medium">中等</string>
+    <string name="difficulty_hard">困难</string>
+
+    <string name="play_title">数独</string>
+    <string name="play_recent_games">最近对局</string>
+    <string name="play_new_game">新对局</string>
+    <string name="play_no_saved_games">没有已保存的%1$s难度对局</string>
+    <string name="play_load_error">无法载入已保存的对局。</string>
+    <string name="play_action_error">无法删除选中的对局。</string>
+    <string name="play_completion">已完成 %1$d%%</string>
+    <string name="play_close_selection">退出选择</string>
+    <string name="play_delete_selected">删除选中的对局</string>
+    <string name="play_start_new_game">开始新对局</string>
+    <string name="play_resume_game">继续对局</string>
+    <string name="play_select_game">选择对局</string>
+    <plurals name="play_selected_count">
+        <item quantity="other">已选择 %1$d 项</item>
+    </plurals>
+    <plurals name="play_numbers_left">
+        <item quantity="other">还剩 %1$d 格</item>
+    </plurals>
+
+    <string name="settings_title">设置</string>
+    <string name="settings_appearance">外观</string>
+    <string name="settings_appearance_summary">主题与棋盘</string>
+    <string name="settings_game">游戏</string>
+    <string name="settings_game_summary">输入与规则</string>
+    <string name="settings_assistance">辅助</string>
+    <string name="settings_assistance_summary">学习辅助</string>
+    <string name="settings_files">文件</string>
+    <string name="settings_files_summary">导入与导出</string>
+    <string name="settings_language">语言</string>
+    <string name="settings_about">关于</string>
+    <string name="settings_about_summary">版本与应用信息</string>
+
+    <string name="appearance_title">外观</string>
+    <string name="appearance_theme_section">主题</string>
+    <string name="appearance_board_section">棋盘</string>
+    <string name="appearance_accent_color">强调色</string>
+    <string name="appearance_dynamic_or_custom">动态或自定义</string>
+    <string name="appearance_palette_style">调色板样式</string>
+    <string name="appearance_theme_mode">主题模式</string>
+    <string name="appearance_amoled_mode">AMOLED 模式</string>
+    <string name="appearance_amoled_mode_summary">深色主题使用纯黑背景</string>
+    <string name="appearance_colored_board">彩色棋盘</string>
+    <string name="appearance_colored_board_summary">将主题颜色应用到棋盘</string>
+    <string name="appearance_position_lines">行列高亮</string>
+    <string name="appearance_position_lines_summary">高亮所选单元格所在的行和列</string>
+    <string name="appearance_position_block">宫格高亮</string>
+    <string name="appearance_position_block_summary">高亮所选单元格所在的 3 × 3 宫格</string>
+    <string name="appearance_alternative_error_color">替代错误颜色</string>
+    <string name="appearance_alternative_error_color_summary">红色主题下改用绿色标记错误</string>
+    <string name="appearance_dynamic_color">动态配色</string>
+    <string name="appearance_custom_color">自定义强调色</string>
+
+    <string name="theme_mode_system">跟随系统</string>
+    <string name="theme_mode_light">浅色</string>
+    <string name="theme_mode_dark">深色</string>
+
+    <string name="palette_tonal_spot">色调点缀</string>
+    <string name="palette_neutral">中性</string>
+    <string name="palette_vibrant">鲜明</string>
+    <string name="palette_expressive">表现力</string>
+    <string name="palette_rainbow">彩虹</string>
+    <string name="palette_fruit_salad">水果沙拉</string>
+    <string name="palette_monochrome">单色</string>
+    <string name="palette_fidelity">忠实</string>
+    <string name="palette_content">内容</string>
+
+    <string name="language_title">语言</string>
+    <string name="language_description">选择本应用使用的语言。此选择也会同步到 Android 的应用语言设置。</string>
+    <string name="language_system">跟随系统</string>
+    <string name="language_system_summary">使用设备语言</string>
+    <string name="language_english">English</string>
+    <string name="language_english_summary">英语</string>
+    <string name="language_chinese_simplified">简体中文</string>
+    <string name="language_chinese_simplified_summary">简体中文</string>
+
+    <string name="game_settings_title">游戏</string>
+    <string name="game_settings_placeholder">游戏选项将在后续版本中开放。</string>
+    <string name="assistance_settings_title">辅助</string>
+    <string name="assistance_settings_placeholder">学习与辅助选项将在后续版本中开放。</string>
+    <string name="files_settings_title">文件</string>
+    <string name="files_settings_placeholder">导入与导出选项将在后续版本中开放。</string>
+    <string name="about_title">关于</string>
+    <string name="about_app_description">一款使用 Jetpack Compose 与 Material 3 Expressive 构建的原生数独应用。</string>
+    <string name="about_version">版本 %1$s</string>
+
+    <string name="info_title">数独说明</string>
+    <string name="info_body">在每一行、每一列和每个 3 × 3 宫格中填入 1 到 9，且数字不能重复。</string>
+
+    <string name="game_title">数独</string>
+    <string name="game_loading">正在准备题目…</string>
+    <string name="game_load_error">无法载入对局。</string>
+    <string name="game_save_error">无法保存最近的更改。</string>
+    <string name="game_undo">撤销</string>
+    <string name="game_erase">擦除</string>
+    <string name="game_note_mode">笔记</string>
+    <string name="game_auto_candidates">自动候选数</string>
+    <string name="game_clear_selection">清除选择</string>
+    <string name="game_hint">提示</string>
+    <string name="game_completed">完成题目</string>
+    <string name="game_congratulations">恭喜，你解开了这道题！</string>
+    <string name="game_completion_time">用时：%1$s</string>
+    <string name="game_hint_title">提示</string>
+    <string name="game_hint_content">寻找只有一个可能数字的空格。使用自动候选数可以显示可填选项。</string>
+    <string name="game_hint_apply">填入唯一候选数</string>
+    <string name="game_hint_no_single">目前没有只含一个候选数的单元格。</string>
+    <string name="game_cell_empty">第 %1$d 行，第 %2$d 列，空白</string>
+    <string name="game_cell_value">第 %1$d 行，第 %2$d 列，数字 %3$d</string>
+    <string name="game_cell_fixed">题目数字</string>
+    <string name="game_cell_editable">可编辑</string>
+</resources>

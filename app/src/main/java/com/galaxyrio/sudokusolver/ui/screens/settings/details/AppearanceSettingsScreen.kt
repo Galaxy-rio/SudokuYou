@@ -1,5 +1,6 @@
 package com.galaxyrio.sudokusolver.ui.screens.settings.details
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,28 +23,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,158 +43,67 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.galaxyrio.sudokusolver.data.ThemeMode
-import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsViewModel
+import com.galaxyrio.sudokusolver.R
+import com.galaxyrio.sudokusolver.data.settings.ThemeMode
+import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsUiState
+import com.galaxyrio.sudokusolver.ui.util.label
 import com.materialkolor.PaletteStyle
 
-enum class SettingThemeCategory(val title: String, val subtitle: String) {
-    ACCENT_COLOR("Accent Color", "Dynamic or Custom"),
-    PALETTE_STYLE("Palette Style", "Material You color scheme style"),
-    THEME_MODE("Theme Mode", "System, Light or Dark"),
-    AMOLED_MODE("AMOLED Mode", "True black dark theme")
-}
-
-enum class SettingBoardCategory(val title: String, val subtitle: String) {
-    COLORED_BOARD("Colored Board", "Apply theme colors to the board "),
-    POSITION_LINES("Position Lines", "Highlight rows, columns of the selected cell"),
-    POSITION_BLOCK("Position Block", "Highlight the block of the selected cell"),
-    ALTERNATIVE_ERROR_COLOR("Alternative Error Color", "Helpful when using red theme"),
-}
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppearanceSettingsScreen(
+    uiState: SettingsUiState,
+    onThemeModeChange: (ThemeMode) -> Unit,
+    onThemeColorChange: (Color) -> Unit,
+    onPaletteStyleChange: (PaletteStyle) -> Unit,
+    onDynamicColorsChange: (Boolean) -> Unit,
+    onAmoledChange: (Boolean) -> Unit,
+    onColoredBoardChange: (Boolean) -> Unit,
+    onPositionLinesChange: (Boolean) -> Unit,
+    onPositionBlockChange: (Boolean) -> Unit,
+    onAlternativeErrorColorChange: (Boolean) -> Unit,
     onBack: () -> Unit,
-    viewModel: SettingsViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val scrollBehavior =
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    var dialog by remember { mutableStateOf<AppearanceDialog?>(null) }
 
-    val themeMode by viewModel.themeMode.collectAsState()
-    val themeColor by viewModel.themeColor.collectAsState()
-    val useDynamicColors by viewModel.useDynamicColors.collectAsState()
-    val paletteStyle by viewModel.paletteStyle.collectAsState()
-    val isAmoled by viewModel.isAmoled.collectAsState()
-
-    val coloredBoard by viewModel.coloredBoard.collectAsState()
-    val positionLines by viewModel.positionLines.collectAsState()
-    val positionBlock by viewModel.positionBlock.collectAsState()
-    val alternativeErrorColor by viewModel.alternativeErrorColor.collectAsState()
-
-    var showPaletteStyleDialog by remember { mutableStateOf(false) }
-    var showThemeModeDialog by remember { mutableStateOf(false) }
-
-
-
-    if (showPaletteStyleDialog) {
-        AlertDialog(
-            onDismissRequest = { showPaletteStyleDialog = false },
-            title = { Text("Palette Style") },
-            text = {
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState())
-                ) {
-                    PaletteStyle.entries.forEach { style ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.setPaletteStyle(style)
-                                    showPaletteStyleDialog = false
-                                }
-                                .padding(vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = (style == paletteStyle),
-                                onClick = null
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = style.name,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    }
-                }
+    when (dialog) {
+        AppearanceDialog.PALETTE_STYLE -> SelectionDialog(
+            titleResource = R.string.appearance_palette_style,
+            items = supportedPaletteStyles,
+            selectedItem = uiState.paletteStyle,
+            itemLabel = { it.label() },
+            onSelect = {
+                onPaletteStyleChange(it)
+                dialog = null
             },
-            confirmButton = {
-                TextButton(onClick = { showPaletteStyleDialog = false }) {
-                    Text("Cancel")
-                }
-            }
+            onDismiss = { dialog = null },
         )
+
+        AppearanceDialog.THEME_MODE -> SelectionDialog(
+            titleResource = R.string.appearance_theme_mode,
+            items = ThemeMode.entries,
+            selectedItem = uiState.themeMode,
+            itemLabel = { it.label() },
+            onSelect = {
+                onThemeModeChange(it)
+                dialog = null
+            },
+            onDismiss = { dialog = null },
+        )
+
+        null -> Unit
     }
 
-    if (showThemeModeDialog) {
-        AlertDialog(
-            onDismissRequest = { showThemeModeDialog = false },
-            title = { Text("Theme Mode") },
-            text = {
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState())
-                ) {
-                    val modes = listOf(
-                        ThemeMode.SYSTEM to "System Default",
-                        ThemeMode.LIGHT to "Light",
-                        ThemeMode.DARK to "Dark"
-                    )
-                    modes.forEach { (mode, label) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.setThemeMode(mode)
-                                    showThemeModeDialog = false
-                                }
-                                .padding(vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = (mode == themeMode),
-                                onClick = null
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showThemeModeDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
-
-    Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        topBar = {
-            LargeFlexibleTopAppBar(
-                title = { Text("Appearance", modifier = Modifier.padding(start = 4.dp)) },
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer
-                ),
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                scrollBehavior = scrollBehavior
-            )
-        }
+    SettingsDetailScaffold(
+        titleResource = R.string.appearance_title,
+        onBack = onBack,
+        modifier = modifier,
     ) { innerPadding ->
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
@@ -211,331 +112,339 @@ fun AppearanceSettingsScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp),
         ) {
-
-
-            item {
-                Text(
-                    text = "Theme",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 4.dp, top = 24.dp, bottom = 8.dp)
-                )
+            item(key = "theme_heading") {
+                SettingsSectionHeading(R.string.appearance_theme_section)
             }
 
-
-            item {
+            item(key = "accent_color") {
                 SegmentedListItem(
-                    onClick = { },
-                    shapes = ListItemDefaults.segmentedShapes(
-                        index = 0,
-                        count = SettingThemeCategory.entries.size
-                    ),
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
-
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                        Text(SettingThemeCategory.ACCENT_COLOR.title)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        ColorPicker(
-                            isDynamic = useDynamicColors,
-                            selectedColor = themeColor,
-                            onDynamicSelected = { viewModel.setUseDynamicColors(true) },
-                            onColorSelected = {
-                                viewModel.setUseDynamicColors(false)
-                                viewModel.setThemeColor(it)
-                            }
-                        )
-                    }
-                }
-
-            }
-
-
-            item {
-                SegmentedListItem(
-                    onClick = { showPaletteStyleDialog = true },
-                    shapes = ListItemDefaults.segmentedShapes(
-                        index = 1,
-                        count = SettingThemeCategory.entries.size
-                    ),
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
-                    modifier = Modifier.fillMaxSize(),
+                    onClick = { onDynamicColorsChange(true) },
+                    shapes = ListItemDefaults.segmentedShapes(index = 0, count = 4),
+                    colors = settingsItemColors(),
                     content = {
-                        Text(
-                            SettingThemeCategory.PALETTE_STYLE.title,
-                            modifier = modifier.padding(top = 4.dp)
-                        )
-                    },
-                    supportingContent = {
-                        Text(
-                            paletteStyle.name,
-                            modifier = modifier.padding(bottom = 4.dp)
-                        )
-                    },
-                )
-
-            }
-
-
-            item {
-                SegmentedListItem(
-                    onClick = { showThemeModeDialog = true },
-
-                    shapes = ListItemDefaults.segmentedShapes(
-                        index = 2,
-                        count = SettingThemeCategory.entries.size
-                    ),
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
-                    modifier = Modifier.fillMaxSize(),
-                    content = {
-                        Text(
-                            SettingThemeCategory.THEME_MODE.title,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    },
-                    supportingContent = {
-                        val text = when (themeMode) {
-                            ThemeMode.SYSTEM -> "System Default"
-                            ThemeMode.LIGHT -> "Light"
-                            ThemeMode.DARK -> "Dark"
+                        Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                            Text(stringResource(R.string.appearance_accent_color))
+                            Text(
+                                text = stringResource(R.string.appearance_dynamic_or_custom),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            ColorPicker(
+                                isDynamic = uiState.useDynamicColors,
+                                selectedColor = uiState.themeColor,
+                                onDynamicSelected = { onDynamicColorsChange(true) },
+                                onColorSelected = {
+                                    onDynamicColorsChange(false)
+                                    onThemeColorChange(it)
+                                },
+                                modifier = Modifier.padding(top = 12.dp),
+                            )
                         }
-                        Text(text, modifier = Modifier.padding(bottom = 4.dp))
-                    }
+                    },
                 )
             }
 
-            item {
-                SegmentedListItem(
-                    onClick = { viewModel.setIsAmoled(!isAmoled) },
-                    shapes = ListItemDefaults.segmentedShapes(
-                        index = 3,
-                        count = SettingThemeCategory.entries.size
-                    ),
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
-                    modifier = Modifier.fillMaxSize(),
-                    trailingContent = {
-                        Switch(
-                            checked = isAmoled,
-                            onCheckedChange = { viewModel.setIsAmoled(it) }
-                        )
-                    },
-                    content = {
-                        Text(
-                            SettingThemeCategory.AMOLED_MODE.title,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    },
-                    supportingContent = {
-                        Text(
-                            SettingThemeCategory.AMOLED_MODE.subtitle,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
+            item(key = "palette_style") {
+                SettingsActionItem(
+                    titleResource = R.string.appearance_palette_style,
+                    summary = uiState.paletteStyle.label(),
+                    index = 1,
+                    count = 4,
+                    onClick = { dialog = AppearanceDialog.PALETTE_STYLE },
                 )
             }
 
-            item {
-                Text(
-                    text = "Board",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 4.dp, top = 24.dp, bottom = 8.dp)
+            item(key = "theme_mode") {
+                SettingsActionItem(
+                    titleResource = R.string.appearance_theme_mode,
+                    summary = uiState.themeMode.label(),
+                    index = 2,
+                    count = 4,
+                    onClick = { dialog = AppearanceDialog.THEME_MODE },
                 )
             }
 
-            item {
-                SegmentedListItem(
-                    onClick = { viewModel.setColoredBoard(!coloredBoard) },
-                    shapes = ListItemDefaults.segmentedShapes(
-                        index = 0,
-                        count = SettingBoardCategory.entries.size
-                    ),
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
-                    modifier = Modifier.fillMaxSize(),
-                    trailingContent = {
-                        Switch(
-                            checked = coloredBoard,
-                            onCheckedChange = { viewModel.setColoredBoard(it) }
-                        )
-                    },
-                    content = {
-                        Text(
-                            SettingBoardCategory.COLORED_BOARD.title,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    },
-                    supportingContent = {
-                        Text(
-                            SettingBoardCategory.COLORED_BOARD.subtitle,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
+            item(key = "amoled") {
+                SettingsSwitchItem(
+                    titleResource = R.string.appearance_amoled_mode,
+                    summaryResource = R.string.appearance_amoled_mode_summary,
+                    checked = uiState.isAmoled,
+                    index = 3,
+                    count = 4,
+                    onCheckedChange = onAmoledChange,
                 )
             }
 
-            item {
-                SegmentedListItem(
-                    onClick = { viewModel.setPositionLines(!positionLines) },
-                    shapes = ListItemDefaults.segmentedShapes(
-                        index = 1,
-                        count = SettingBoardCategory.entries.size
-                    ),
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
-                    modifier = Modifier.fillMaxSize(),
-                    trailingContent = {
-                        Switch(
-                            checked = positionLines,
-                            onCheckedChange = { viewModel.setPositionLines(it) }
-                        )
-                    },
-                    content = {
-                        Text(
-                            SettingBoardCategory.POSITION_LINES.title,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    },
-                    supportingContent = {
-                        Text(
-                            SettingBoardCategory.POSITION_LINES.subtitle,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
+            item(key = "board_heading") {
+                SettingsSectionHeading(R.string.appearance_board_section)
+            }
+
+            item(key = "colored_board") {
+                SettingsSwitchItem(
+                    titleResource = R.string.appearance_colored_board,
+                    summaryResource = R.string.appearance_colored_board_summary,
+                    checked = uiState.coloredBoard,
+                    index = 0,
+                    count = 4,
+                    onCheckedChange = onColoredBoardChange,
                 )
             }
 
-            item {
-                SegmentedListItem(
-                    onClick = { viewModel.setPositionBlock(!positionBlock) },
-                    shapes = ListItemDefaults.segmentedShapes(
-                        index = 2,
-                        count = SettingBoardCategory.entries.size
-                    ),
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
-                    modifier = Modifier.fillMaxSize(),
-                    trailingContent = {
-                        Switch(
-                            checked = positionBlock,
-                            onCheckedChange = { viewModel.setPositionBlock(it) }
-                        )
-                    },
-                    content = {
-                        Text(
-                            SettingBoardCategory.POSITION_BLOCK.title,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    },
-                    supportingContent = {
-                        Text(
-                            SettingBoardCategory.POSITION_BLOCK.subtitle,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
+            item(key = "position_lines") {
+                SettingsSwitchItem(
+                    titleResource = R.string.appearance_position_lines,
+                    summaryResource = R.string.appearance_position_lines_summary,
+                    checked = uiState.positionLines,
+                    index = 1,
+                    count = 4,
+                    onCheckedChange = onPositionLinesChange,
                 )
             }
 
-            item {
-                SegmentedListItem(
-                    onClick = { viewModel.setAlternativeErrorColor(!alternativeErrorColor) },
-                    shapes = ListItemDefaults.segmentedShapes(
-                        index = 3,
-                        count = SettingBoardCategory.entries.size
-                    ),
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
-                    modifier = Modifier.fillMaxSize(),
-                    trailingContent = {
-                        Switch(
-                            checked = alternativeErrorColor,
-                            onCheckedChange = { viewModel.setAlternativeErrorColor(it) }
-                        )
-                    },
-                    content = {
-                        Text(
-                            SettingBoardCategory.ALTERNATIVE_ERROR_COLOR.title,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    },
-                    supportingContent = {
-                        Text(
-                            SettingBoardCategory.ALTERNATIVE_ERROR_COLOR.subtitle,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
+            item(key = "position_block") {
+                SettingsSwitchItem(
+                    titleResource = R.string.appearance_position_block,
+                    summaryResource = R.string.appearance_position_block_summary,
+                    checked = uiState.positionBlock,
+                    index = 2,
+                    count = 4,
+                    onCheckedChange = onPositionBlockChange,
                 )
             }
 
+            item(key = "alternative_error_color") {
+                SettingsSwitchItem(
+                    titleResource = R.string.appearance_alternative_error_color,
+                    summaryResource = R.string.appearance_alternative_error_color_summary,
+                    checked = uiState.alternativeErrorColor,
+                    index = 3,
+                    count = 4,
+                    onCheckedChange = onAlternativeErrorColorChange,
+                )
+            }
+
+            item(key = "bottom_spacing") {
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
 }
 
+@Composable
+private fun SettingsSectionHeading(@StringRes textResource: Int) {
+    Text(
+        text = stringResource(textResource),
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 4.dp, top = 24.dp, bottom = 8.dp),
+    )
+}
 
 @Composable
-fun ColorPicker(
+private fun SettingsActionItem(
+    @StringRes titleResource: Int,
+    summary: String,
+    index: Int,
+    count: Int,
+    onClick: () -> Unit,
+) {
+    SegmentedListItem(
+        onClick = onClick,
+        shapes = ListItemDefaults.segmentedShapes(index = index, count = count),
+        colors = settingsItemColors(),
+        content = { Text(stringResource(titleResource)) },
+        supportingContent = { Text(summary) },
+    )
+}
+
+@Composable
+private fun SettingsSwitchItem(
+    @StringRes titleResource: Int,
+    @StringRes summaryResource: Int,
+    checked: Boolean,
+    index: Int,
+    count: Int,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    SegmentedListItem(
+        onClick = { onCheckedChange(!checked) },
+        shapes = ListItemDefaults.segmentedShapes(index = index, count = count),
+        colors = settingsItemColors(),
+        content = { Text(stringResource(titleResource)) },
+        supportingContent = { Text(stringResource(summaryResource)) },
+        trailingContent = {
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+            )
+        },
+    )
+}
+
+@Composable
+private fun settingsItemColors() = ListItemDefaults.segmentedColors(
+    containerColor = MaterialTheme.colorScheme.surfaceBright,
+)
+
+@Composable
+private fun <T> SelectionDialog(
+    @StringRes titleResource: Int,
+    items: List<T>,
+    selectedItem: T,
+    itemLabel: @Composable (T) -> String,
+    onSelect: (T) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(titleResource)) },
+        text = {
+            Column(
+                modifier = Modifier
+                    .heightIn(max = 440.dp)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                items.forEach { item ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelect(item) }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(
+                            selected = item == selectedItem,
+                            onClick = { onSelect(item) },
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = itemLabel(item),
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.common_cancel))
+            }
+        },
+    )
+}
+
+@Composable
+private fun ColorPicker(
     isDynamic: Boolean,
     selectedColor: Color,
     onDynamicSelected: () -> Unit,
-    onColorSelected: (Color) -> Unit
+    onColorSelected: (Color) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val colors = listOf(
-        Color(0xFF6750A4), // Purple
-        Color(0xFFB3261E), // Red
-        Color(0xFFE27C33), // Orange
-        Color(0xFF7D5260), // Pink
-        Color(0xFF3F51B5), // Indigo
-        Color(0xFF009688), // Teal
-        Color(0xFF4CAF50), // Green
-        Color(0xFFFFEB3B), // Yellow
-    )
-
     LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .clickable { onDynamicSelected() }
-                    .then(
-                        if (isDynamic) {
-                            Modifier.border(2.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
-                        } else Modifier
-                    ),
-                contentAlignment = Alignment.Center
+        item(key = "dynamic") {
+            ColorOption(
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                selected = isDynamic,
+                showSelectedIcon = false,
+                contentDescription = stringResource(R.string.appearance_dynamic_color),
+                onClick = onDynamicSelected,
             ) {
                 Icon(
                     imageVector = Icons.Default.BrightnessAuto,
-                    contentDescription = "Dynamic",
-                    tint = if (isDynamic) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
 
-        items(colors) { color ->
-            val isSelected = !isDynamic && selectedColor == color
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(color)
-                    .clickable { onColorSelected(color) }
-                    .then(
-                        if (isSelected) {
-                            Modifier.border(2.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
-                        } else Modifier
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                if (isSelected) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Selected",
-                        tint = Color.White
-                    )
-                }
-            }
+        items(
+            items = accentColors,
+            key = { it.value.toLong() },
+        ) { color ->
+            ColorOption(
+                color = color,
+                selected = !isDynamic && selectedColor == color,
+                contentDescription = stringResource(R.string.appearance_custom_color),
+                onClick = { onColorSelected(color) },
+            )
         }
     }
 }
+
+@Composable
+private fun ColorOption(
+    color: Color,
+    selected: Boolean,
+    showSelectedIcon: Boolean = true,
+    contentDescription: String,
+    onClick: () -> Unit,
+    content: @Composable (() -> Unit)? = null,
+) {
+    Box(
+        modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .background(color)
+            .then(
+                if (selected) {
+                    Modifier.border(
+                        width = 3.dp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        shape = CircleShape,
+                    )
+                } else {
+                    Modifier
+                }
+            )
+            .semantics {
+                this.contentDescription = contentDescription
+                this.selected = selected
+            }
+            .clickable(
+                onClickLabel = contentDescription,
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        content?.invoke()
+        if (selected && showSelectedIcon) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = stringResource(R.string.common_selected),
+                tint = if (color.luminance() > 0.5f) Color.Black else Color.White,
+            )
+        }
+    }
+}
+
+private enum class AppearanceDialog {
+    PALETTE_STYLE,
+    THEME_MODE,
+}
+
+private val supportedPaletteStyles = listOf(
+    PaletteStyle.TonalSpot,
+    PaletteStyle.Neutral,
+    PaletteStyle.Vibrant,
+    PaletteStyle.Expressive,
+    PaletteStyle.Rainbow,
+    PaletteStyle.FruitSalad,
+    PaletteStyle.Monochrome,
+    PaletteStyle.Fidelity,
+    PaletteStyle.Content,
+)
+
+private val accentColors = listOf(
+    Color(0xFF6750A4),
+    Color(0xFFB3261E),
+    Color(0xFFE27C33),
+    Color(0xFF7D5260),
+    Color(0xFF3F51B5),
+    Color(0xFF009688),
+    Color(0xFF4CAF50),
+    Color(0xFFF9A825),
+)

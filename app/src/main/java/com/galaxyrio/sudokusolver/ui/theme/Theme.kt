@@ -1,7 +1,9 @@
 package com.galaxyrio.sudokusolver.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -11,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.PaletteStyle
-
+import com.materialkolor.dynamiccolor.ColorSpec
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -19,35 +21,63 @@ fun SudokuSolverTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
     amoled: Boolean = false,
-    colorSeed: Color = Color.Green,
+    colorSeed: Color = Color(0xFF6750A4),
     paletteStyle: PaletteStyle = PaletteStyle.TonalSpot,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     if (dynamicColor) {
         val context = LocalContext.current
-        val colorScheme =
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
-            motionScheme = MotionScheme.expressive(),
-            content = content
+        val platformColorScheme = if (darkTheme) {
+            dynamicDarkColorScheme(context)
+        } else {
+            dynamicLightColorScheme(context)
+        }
+        ExpressiveTheme(
+            colorScheme = if (darkTheme && amoled) {
+                platformColorScheme.withAmoledSurfaces()
+            } else {
+                platformColorScheme
+            },
+            content = content,
         )
     } else {
         DynamicMaterialTheme(
             seedColor = colorSeed,
             isDark = darkTheme,
             style = paletteStyle,
-            isAmoled = amoled,
-            typography = Typography,
-            content = {
-                MaterialTheme(
-                    colorScheme = MaterialTheme.colorScheme,
-                    typography = Typography,
-                    motionScheme = MotionScheme.expressive(),
-                    content = content
-                )
-            }
-        )
+            isAmoled = darkTheme && amoled,
+            specVersion = ColorSpec.SpecVersion.SPEC_2025,
+        ) {
+            ExpressiveTheme(
+                colorScheme = MaterialTheme.colorScheme,
+                content = content,
+            )
+        }
     }
 }
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun ExpressiveTheme(
+    colorScheme: ColorScheme,
+    content: @Composable () -> Unit,
+) {
+    MaterialExpressiveTheme(
+        colorScheme = colorScheme,
+        motionScheme = MotionScheme.expressive(),
+        typography = Typography,
+        content = content,
+    )
+}
+
+private fun ColorScheme.withAmoledSurfaces(): ColorScheme = copy(
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceDim = Color.Black,
+    surfaceContainerLowest = Color.Black,
+    surfaceContainerLow = Color.Black,
+    surfaceContainer = Color(0xFF050505),
+    surfaceContainerHigh = Color(0xFF0A0A0A),
+    surfaceContainerHighest = Color(0xFF121212),
+    surfaceBright = Color(0xFF1B1B1B),
+)
