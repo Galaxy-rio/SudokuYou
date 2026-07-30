@@ -1,57 +1,73 @@
 package com.galaxyrio.sudokusolver.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.galaxyrio.sudokusolver.R
 
 @Composable
 fun GameHintPanel(
-    onBackClick: () -> Unit,
-    onApplyClick: () -> Unit,
-    modifier: Modifier = Modifier
+    isHintUnavailable: Boolean,
+    onDismiss: () -> Unit,
+    onApply: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Box(
+    Column(
         modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .navigationBarsPadding()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.fillMaxWidth()
+        Text(
+            text = stringResource(R.string.game_hint_title),
+            style = MaterialTheme.typography.headlineSmall,
+        )
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = stringResource(
+                    if (isHintUnavailable) {
+                        R.string.game_hint_no_single
+                    } else {
+                        R.string.game_hint_content
+                    }
+                ),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(20.dp),
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.weight(1f),
             ) {
-                Box(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Hint content placeholder...",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                Text(stringResource(R.string.common_close))
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+            Button(
+                onClick = onApply,
+                modifier = Modifier.weight(1f),
             ) {
-                Button(onClick = onApplyClick) { Text("Apply") }
+                Text(stringResource(R.string.game_hint_apply))
             }
         }
     }
 }
-

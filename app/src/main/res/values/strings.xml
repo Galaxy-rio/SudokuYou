@@ -1,3 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Sudoku Solver</string>
+
+    <string name="nav_info">Info</string>
+    <string name="nav_play">Play</string>
+    <string name="nav_settings">Settings</string>
+
+    <string name="common_back">Back</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_close">Close</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_selected">Selected</string>
+
+    <string name="difficulty_easy">Easy</string>
+    <string name="difficulty_medium">Medium</string>
+    <string name="difficulty_hard">Hard</string>
+
+    <string name="play_title">Sudoku</string>
+    <string name="play_recent_games">Recent games</string>
+    <string name="play_new_game">New game</string>
+    <string name="play_no_saved_games">No saved %1$s games</string>
+    <string name="play_load_error">Saved games could not be loaded.</string>
+    <string name="play_action_error">The selected games could not be deleted.</string>
+    <string name="play_completion">%1$d%% complete</string>
+    <string name="play_close_selection">Close selection</string>
+    <string name="play_delete_selected">Delete selected games</string>
+    <string name="play_start_new_game">Start a new game</string>
+    <string name="play_resume_game">Resume game</string>
+    <string name="play_select_game">Select game</string>
+    <plurals name="play_selected_count">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+    <plurals name="play_numbers_left">
+        <item quantity="one">%1$d number left</item>
+        <item quantity="other">%1$d numbers left</item>
+    </plurals>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_appearance_summary">Theme and board</string>
+    <string name="settings_game">Game</string>
+    <string name="settings_game_summary">Input and rules</string>
+    <string name="settings_assistance">Assistance</string>
+    <string name="settings_assistance_summary">Learning aids</string>
+    <string name="settings_files">Files</string>
+    <string name="settings_files_summary">Import and export</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_summary">Version and app information</string>
+
+    <string name="appearance_title">Appearance</string>
+    <string name="appearance_theme_section">Theme</string>
+    <string name="appearance_board_section">Board</string>
+    <string name="appearance_accent_color">Accent color</string>
+    <string name="appearance_dynamic_or_custom">Dynamic or custom</string>
+    <string name="appearance_palette_style">Palette style</string>
+    <string name="appearance_theme_mode">Theme mode</string>
+    <string name="appearance_amoled_mode">AMOLED mode</string>
+    <string name="appearance_amoled_mode_summary">Use true black in the dark theme</string>
+    <string name="appearance_colored_board">Colored board</string>
+    <string name="appearance_colored_board_summary">Apply theme colors to the board</string>
+    <string name="appearance_position_lines">Position lines</string>
+    <string name="appearance_position_lines_summary">Highlight the selected cell’s row and column</string>
+    <string name="appearance_position_block">Position block</string>
+    <string name="appearance_position_block_summary">Highlight the selected cell’s 3 × 3 block</string>
+    <string name="appearance_alternative_error_color">Alternative error color</string>
+    <string name="appearance_alternative_error_color_summary">Use a green error color for red themes</string>
+    <string name="appearance_dynamic_color">Dynamic color</string>
+    <string name="appearance_custom_color">Custom accent color</string>
+
+    <string name="theme_mode_system">System default</string>
+    <string name="theme_mode_light">Light</string>
+    <string name="theme_mode_dark">Dark</string>
+
+    <string name="palette_tonal_spot">Tonal spot</string>
+    <string name="palette_neutral">Neutral</string>
+    <string name="palette_vibrant">Vibrant</string>
+    <string name="palette_expressive">Expressive</string>
+    <string name="palette_rainbow">Rainbow</string>
+    <string name="palette_fruit_salad">Fruit salad</string>
+    <string name="palette_monochrome">Monochrome</string>
+    <string name="palette_fidelity">Fidelity</string>
+    <string name="palette_content">Content</string>
+
+    <string name="language_title">Language</string>
+    <string name="language_description">Choose the language used by this app. The selection is also reflected in Android’s app language settings.</string>
+    <string name="language_system">Follow system</string>
+    <string name="language_system_summary">Use the device language</string>
+    <string name="language_english">English</string>
+    <string name="language_english_summary">English</string>
+    <string name="language_chinese_simplified">简体中文</string>
+    <string name="language_chinese_simplified_summary">Simplified Chinese</string>
+
+    <string name="game_settings_title">Game</string>
+    <string name="game_settings_placeholder">Game options will be available in a future version.</string>
+    <string name="assistance_settings_title">Assistance</string>
+    <string name="assistance_settings_placeholder">Learning and assistance options will be available in a future version.</string>
+    <string name="files_settings_title">Files</string>
+    <string name="files_settings_placeholder">Import and export options will be available in a future version.</string>
+    <string name="about_title">About</string>
+    <string name="about_app_description">A native Sudoku app built with Jetpack Compose and Material 3 Expressive.</string>
+    <string name="about_version">Version %1$s</string>
+
+    <string name="info_title">About Sudoku</string>
+    <string name="info_body">Fill every row, column, and 3 × 3 block with the digits 1 through 9 without repeating a digit.</string>
+
+    <string name="game_title">Sudoku</string>
+    <string name="game_loading">Preparing your puzzle…</string>
+    <string name="game_load_error">The game could not be loaded.</string>
+    <string name="game_save_error">Your latest changes could not be saved.</string>
+    <string name="game_undo">Undo</string>
+    <string name="game_erase">Erase</string>
+    <string name="game_note_mode">Notes</string>
+    <string name="game_auto_candidates">Auto candidates</string>
+    <string name="game_clear_selection">Clear selection</string>
+    <string name="game_hint">Hint</string>
+    <string name="game_completed">Puzzle complete</string>
+    <string name="game_congratulations">Congratulations! You solved it.</string>
+    <string name="game_completion_time">Time: %1$s</string>
+    <string name="game_hint_title">Hint</string>
+    <string name="game_hint_content">Look for an empty cell with only one possible number. Auto candidates can reveal the available choices.</string>
+    <string name="game_hint_apply">Fill a single candidate</string>
+    <string name="game_hint_no_single">There is no single-candidate cell right now.</string>
+    <string name="game_cell_empty">Row %1$d, column %2$d, empty</string>
+    <string name="game_cell_value">Row %1$d, column %2$d, value %3$d</string>
+    <string name="game_cell_fixed">Given</string>
+    <string name="game_cell_editable">Editable</string>
 </resources>
