@@ -6,15 +6,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -42,7 +41,7 @@ fun NumberPad(
     val backgroundInteraction = remember { MutableInteractionSource() }
     val clearSelectionLabel = stringResource(R.string.game_clear_selection)
 
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .clickable(
@@ -53,16 +52,20 @@ fun NumberPad(
             ),
         contentAlignment = Alignment.Center,
     ) {
+        // The game content gives the number pad all space left after the board and bottom bar.
+        // Fit one square into that area so the 3 x 3 grid can never extend behind the bar.
+        val padSize = minOf(maxWidth, maxHeight).coerceAtMost(360.dp)
+
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .widthIn(max = 304.dp),
+            modifier = Modifier.size(padSize),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             (1..9).chunked(3).forEach { rowNumbers ->
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     rowNumbers.forEach { number ->
@@ -72,13 +75,7 @@ fun NumberPad(
                             onClick = { onNumberClick(number) },
                             modifier = Modifier
                                 .weight(1f)
-                                .aspectRatio(1f)
-                                .sizeIn(
-                                    minWidth = 56.dp,
-                                    minHeight = 56.dp,
-                                    maxWidth = 96.dp,
-                                    maxHeight = 96.dp,
-                                ),
+                                .fillMaxHeight(),
                         )
                     }
                 }

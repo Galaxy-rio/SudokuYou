@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.domain.game.SudokuValidator
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
@@ -309,7 +310,14 @@ private fun CandidateGrid(
                         if (candidate in candidates) {
                             Text(
                                 text = candidate.toString(),
-                                style = MaterialTheme.typography.labelSmall,
+                                // labelSmall has a 16sp line height. In these tiny grid slots that
+                                // makes the glyph's visual baseline sit too low. Keep the compact
+                                // 10sp metrics used by the original board.
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontSize = 10.sp,
+                                    lineHeight = 10.sp,
+                                    fontWeight = FontWeight.Normal,
+                                ),
                                 color = when {
                                     candidate in errorCandidates -> errorColor
                                     isHighlighted -> MaterialTheme.colorScheme.onSecondaryContainer

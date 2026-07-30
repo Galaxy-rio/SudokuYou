@@ -3,6 +3,11 @@ package com.galaxyrio.sudokusolver.ui.screens.game
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -16,6 +21,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -28,7 +35,6 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +48,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,8 +59,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -388,7 +398,7 @@ private fun GameTopBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, end = 20.dp, bottom = 8.dp),
+                .padding(start = 20.dp, end = 20.dp, bottom = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -465,20 +475,13 @@ private fun ToolbarAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = modifier.fillMaxHeight(),
-        contentAlignment = Alignment.Center,
-    ) {
-        IconButton(
-            onClick = onClick,
-            enabled = enabled,
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = contentDescription,
-            )
-        }
-    }
+    ExpressiveToolbarButton(
+        icon = icon,
+        contentDescription = contentDescription,
+        enabled = enabled,
+        onClick = onClick,
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -490,18 +493,87 @@ private fun ToolbarToggleAction(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    ExpressiveToolbarButton(
+        icon = icon,
+        contentDescription = contentDescription,
+        enabled = enabled,
+        checked = checked,
+        onClick = { onCheckedChange(!checked) },
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun ExpressiveToolbarButton(
+    icon: ImageVector,
+    contentDescription: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    checked: Boolean? = null,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.8f else 1f,
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+        label = "toolbar_action_scale",
+    )
+    val actionRipple = ripple(
+        bounded = false,
+        radius = 400.dp,
+    )
+    val interactionModifier = if (checked == null) {
+        Modifier.clickable(
+            interactionSource = interactionSource,
+            indication = actionRipple,
+            enabled = enabled,
+            role = Role.Button,
+            onClick = onClick,
+        )
+    } else {
+        Modifier.toggleable(
+            value = checked,
+            interactionSource = interactionSource,
+            indication = actionRipple,
+            enabled = enabled,
+            role = Role.Switch,
+            onValueChange = { onClick() },
+        )
+    }
+    val isSelected = checked == true
+    val containerColor = if (isSelected && enabled) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        Color.Transparent
+    }
+    val contentColor = when {
+        !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+        isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
     Box(
-        modifier = modifier.fillMaxHeight(),
+        modifier = modifier
+            .fillMaxHeight()
+            .then(interactionModifier),
         contentAlignment = Alignment.Center,
     ) {
-        FilledIconToggleButton(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            enabled = enabled,
+        Box(
+            modifier = Modifier
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }
+                .size(48.dp)
+                .background(containerColor, CircleShape),
+            contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
+                tint = contentColor,
+                modifier = Modifier.size(24.dp),
             )
         }
     }
@@ -553,7 +625,12 @@ private fun AdaptiveGameContent(
                     onCellSelected = onCellSelected,
                     modifier = boardModifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(
+                            start = 16.dp,
+                            top = 4.dp,
+                            end = 16.dp,
+                            bottom = 4.dp,
+                        ),
                 )
                 GameControlArea(
                     uiState = uiState,
@@ -594,7 +671,7 @@ private fun GameControlArea(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = modifier.padding(horizontal = 16.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
         if (uiState.isComplete) {
@@ -606,7 +683,7 @@ private fun GameControlArea(
                 selectedNumber = uiState.selectedNumber,
                 onNumberClick = onNumberSelected,
                 onBackgroundClick = onClearSelection,
-                modifier = Modifier.widthIn(max = 360.dp),
+                modifier = Modifier.fillMaxSize(),
             )
         }
     }
