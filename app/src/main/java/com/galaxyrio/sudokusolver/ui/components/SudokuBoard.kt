@@ -21,6 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -34,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.domain.game.SudokuValidator
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
+import com.galaxyrio.sudokusolver.domain.solver.SolveStep
 
 data class BoardConfig(
     val useColoredBoard: Boolean = false,
@@ -50,6 +54,8 @@ fun SudokuBoard(
     selectedRow: Int? = null,
     selectedCol: Int? = null,
     highlightNumber: Int? = null,
+    overlayStep: SolveStep? = null,
+    onBoardBoundsChanged: ((Rect) -> Unit)? = null,
     config: BoardConfig = BoardConfig(),
 ) {
     val thickLine = 2.dp
@@ -89,13 +95,17 @@ fun SudokuBoard(
     Box(
         modifier = modifier
             .aspectRatio(1f)
+            .onGloballyPositioned { coordinates ->
+                onBoardBoundsChanged?.invoke(coordinates.boundsInWindow())
+            }
             .background(boardColor, RoundedCornerShape(cornerRadius))
             .border(thickLine, boardColor, RoundedCornerShape(cornerRadius))
-            .clip(RoundedCornerShape(cornerRadius))
-            .padding(thickLine),
+            .clip(RoundedCornerShape(cornerRadius)),
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(thickLine),
             verticalArrangement = Arrangement.spacedBy(thickLine),
         ) {
             repeat(3) { blockRow ->
@@ -177,6 +187,13 @@ fun SudokuBoard(
                     }
                 }
             }
+        }
+
+        if (overlayStep != null) {
+            StepOverlayCanvas(
+                step = overlayStep,
+                modifier = Modifier.fillMaxSize(),
+            )
         }
     }
 }

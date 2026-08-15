@@ -77,6 +77,20 @@ data class Sudoku(val cells: List<Cell> = List(CELL_COUNT) { Cell() }) {
         return Sudoku(newCells)
     }
 
+    fun removeCandidate(row: Int, col: Int, candidate: Int): Sudoku {
+        require(candidate in 1..GRID_SIZE) { "Candidate must be between 1 and 9." }
+
+        val index = indexOf(row, col)
+        val currentCell = cells[index]
+        if (currentCell.isSolved() || currentCell.isFixed || candidate !in currentCell.candidates) {
+            return this
+        }
+
+        val newCells = cells.toMutableList()
+        newCells[index] = currentCell.copy(candidates = currentCell.candidates - candidate)
+        return Sudoku(newCells)
+    }
+
     override fun toString(): String = buildString {
         repeat(GRID_SIZE) { row ->
             repeat(GRID_SIZE) { col ->

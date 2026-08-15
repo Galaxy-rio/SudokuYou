@@ -1,8 +1,13 @@
 package com.galaxyrio.sudokusolver.ui.screens.game
 
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,13 +19,17 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,9 +40,13 @@ import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,6 +57,7 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -52,16 +66,22 @@ import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
@@ -69,6 +89,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.galaxyrio.sudokusolver.R
+import com.galaxyrio.sudokusolver.domain.model.Cell
+import com.galaxyrio.sudokusolver.domain.model.Sudoku
+import com.galaxyrio.sudokusolver.domain.solver.CellRef
+import com.galaxyrio.sudokusolver.domain.solver.SolveStep
+import com.galaxyrio.sudokusolver.domain.solver.SolverState
 import com.galaxyrio.sudokusolver.ui.components.BoardConfig
 import com.galaxyrio.sudokusolver.ui.components.GameHintPanel
 import com.galaxyrio.sudokusolver.ui.components.NumberPad
@@ -79,6 +104,7 @@ import com.galaxyrio.sudokusolver.ui.screens.play.thumbnailKey
 import com.galaxyrio.sudokusolver.ui.util.formatElapsedTime
 import com.galaxyrio.sudokusolver.ui.util.label
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import nl.dionsegijn.konfetti.compose.KonfettiView
 import nl.dionsegijn.konfetti.core.Party
@@ -97,6 +123,10 @@ fun GameRoute(
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // ModalBottomSheet reserves space outside its content for the drag handle and its internal
+    // spacing. Keep this value shared by overlap detection and the content height cap so both
+    // calculations describe the complete visible sheet.
+    val sheetChromeHeight = 80.dp
     var showHint by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -105,6 +135,10 @@ fun GameRoute(
         initialValue = SheetValue.Hidden,
         enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
     )
+    var isHintLayoutElevated by remember { mutableStateOf(false) }
+    var elevatedBoardBottomPx by remember { mutableFloatStateOf(Float.NaN) }
+    var normalNumberPadTopPx by remember { mutableFloatStateOf(Float.NaN) }
+    var windowBottomPx by remember { mutableFloatStateOf(Float.NaN) }
 
     LifecycleResumeEffect(viewModel) {
         viewModel.onResume()
@@ -117,6 +151,27 @@ fun GameRoute(
         if (uiState.isComplete) showHint = false
     }
 
+    LaunchedEffect(showHint) {
+        if (!showHint) {
+            isHintLayoutElevated = false
+            elevatedBoardBottomPx = Float.NaN
+        }
+    }
+
+    LaunchedEffect(showHint, normalNumberPadTopPx) {
+        if (showHint && normalNumberPadTopPx.isFinite()) {
+            snapshotFlow {
+                runCatching { sheetState.requireOffset() }.getOrNull()
+            }
+                .filterNotNull()
+                .collect { sheetTopPx ->
+                    if (!isHintLayoutElevated && sheetTopPx < normalNumberPadTopPx) {
+                        isHintLayoutElevated = true
+                    }
+                }
+        }
+    }
+
     LaunchedEffect(uiState.hasPersistenceError) {
         if (uiState.hasPersistenceError) {
             viewModel.clearPersistenceError()
@@ -124,55 +179,105 @@ fun GameRoute(
         }
     }
 
-    GameScreen(
-        uiState = uiState,
-        boardConfig = boardConfig,
-        originGameId = originGameId,
-        sharedTransitionScope = sharedTransitionScope,
-        animatedVisibilityScope = animatedVisibilityScope,
-        onBack = onBack,
-        onRetry = viewModel::retry,
-        onCellSelected = viewModel::onCellSelected,
-        onNumberSelected = viewModel::onNumberSelected,
-        onClearSelection = viewModel::clearSelection,
-        onUndo = viewModel::undo,
-        onErase = viewModel::eraseSelectedCell,
-        onToggleNoteMode = viewModel::toggleNoteMode,
-        onFillCandidates = viewModel::fillCandidates,
-        onShowHint = {
-            viewModel.clearHintMessage()
-            showHint = true
-        },
-        snackbarHostState = snackbarHostState,
-        modifier = modifier,
-    )
-
-    if (showHint) {
-        fun dismissHint() {
-            coroutineScope.launch {
-                sheetState.hide()
-                showHint = false
-                viewModel.clearHintMessage()
-            }
-        }
-
-        ModalBottomSheet(
-            onDismissRequest = {
-                showHint = false
-                viewModel.clearHintMessage()
+    BoxWithConstraints(
+        modifier = modifier
+            .fillMaxSize()
+            .onGloballyPositioned { coordinates ->
+                windowBottomPx = coordinates.boundsInWindow().bottom
             },
-            sheetState = sheetState,
+    ) {
+        val density = LocalDensity.current
+        val maximumHalfSheetHeight = maxHeight * 0.56f
+        val availableHeightBelowBoard = if (
+            isHintLayoutElevated && elevatedBoardBottomPx.isFinite()
         ) {
-            GameHintPanel(
-                isHintUnavailable = uiState.isHintUnavailable,
-                onDismiss = ::dismissHint,
-                onApply = {
-                    if (viewModel.applySingleCandidateHint()) {
-                        dismissHint()
-                    }
+            with(density) {
+                ((windowBottomPx.takeIf(Float::isFinite) ?: maxHeight.toPx()) -
+                    elevatedBoardBottomPx - 8.dp.toPx())
+                    .coerceAtLeast(1f)
+                    .toDp()
+            }
+        } else {
+            maximumHalfSheetHeight
+        }
+        val sheetMaximumHeight = minOf(
+            maximumHalfSheetHeight,
+            availableHeightBelowBoard,
+        )
+
+        GameScreen(
+            uiState = uiState,
+            boardConfig = boardConfig,
+            originGameId = originGameId,
+            sharedTransitionScope = sharedTransitionScope,
+            animatedVisibilityScope = animatedVisibilityScope,
+            isHintVisible = showHint,
+            isHintLayoutElevated = isHintLayoutElevated,
+            onBoardBoundsChanged = { bounds ->
+                if (isHintLayoutElevated) elevatedBoardBottomPx = bounds.bottom
+            },
+            onNumberPadBoundsChanged = { bounds ->
+                if (!isHintLayoutElevated) normalNumberPadTopPx = bounds.top
+            },
+            onBack = onBack,
+            onRetry = viewModel::retry,
+            onCellSelected = viewModel::onCellSelected,
+            onNumberSelected = viewModel::onNumberSelected,
+            onClearSelection = viewModel::clearSelection,
+            onUndo = viewModel::undo,
+            onErase = viewModel::eraseSelectedCell,
+            onToggleNoteMode = viewModel::toggleNoteMode,
+            onFillCandidates = viewModel::fillCandidates,
+            onAdvancedModeChange = viewModel::setAdvancedMode,
+            onShowHint = {
+                isHintLayoutElevated = false
+                elevatedBoardBottomPx = Float.NaN
+                viewModel.prepareHintTrace()
+                showHint = true
+            },
+            snackbarHostState = snackbarHostState,
+            modifier = Modifier.fillMaxSize(),
+        )
+
+        if (showHint) {
+            fun dismissHint() {
+                coroutineScope.launch {
+                    sheetState.hide()
+                    showHint = false
+                    viewModel.clearHintTrace()
+                }
+            }
+
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showHint = false
+                    viewModel.clearHintTrace()
                 },
-                modifier = Modifier.fillMaxWidth(),
-            )
+                sheetState = sheetState,
+                scrimColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.12f),
+                dragHandle = {
+                    BottomSheetDefaults.DragHandle(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                    )
+                },
+            ) {
+                GameHintPanel(
+                    isLoading = uiState.isHintLoading,
+                    trace = uiState.hintTrace,
+                    selectedStepIndex = uiState.selectedHintStepIndex,
+                    onStepSelected = viewModel::selectHintStep,
+                    onApplyNext = {
+                        if (viewModel.applyNextHintStep()) {
+                            dismissHint()
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(
+                            max = (sheetMaximumHeight - sheetChromeHeight).coerceAtLeast(1.dp),
+                        ),
+                )
+            }
         }
     }
 }
@@ -185,6 +290,10 @@ fun GameScreen(
     originGameId: Long?,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    isHintVisible: Boolean,
+    isHintLayoutElevated: Boolean,
+    onBoardBoundsChanged: (Rect) -> Unit,
+    onNumberPadBoundsChanged: (Rect) -> Unit,
     onBack: () -> Unit,
     onRetry: () -> Unit,
     onCellSelected: (Int, Int) -> Unit,
@@ -194,6 +303,7 @@ fun GameScreen(
     onErase: () -> Unit,
     onToggleNoteMode: () -> Unit,
     onFillCandidates: () -> Unit,
+    onAdvancedModeChange: (Boolean) -> Unit,
     onShowHint: () -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
@@ -218,6 +328,10 @@ fun GameScreen(
                 originGameId = originGameId,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedVisibilityScope = animatedVisibilityScope,
+                isHintVisible = isHintVisible,
+                isHintLayoutElevated = isHintLayoutElevated,
+                onBoardBoundsChanged = onBoardBoundsChanged,
+                onNumberPadBoundsChanged = onNumberPadBoundsChanged,
                 onBack = onBack,
                 onCellSelected = onCellSelected,
                 onNumberSelected = onNumberSelected,
@@ -226,6 +340,7 @@ fun GameScreen(
                 onErase = onErase,
                 onToggleNoteMode = onToggleNoteMode,
                 onFillCandidates = onFillCandidates,
+                onAdvancedModeChange = onAdvancedModeChange,
                 onShowHint = onShowHint,
                 snackbarHostState = snackbarHostState,
                 modifier = modifier,
@@ -304,6 +419,10 @@ private fun GameScaffold(
     originGameId: Long?,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    isHintVisible: Boolean,
+    isHintLayoutElevated: Boolean,
+    onBoardBoundsChanged: (Rect) -> Unit,
+    onNumberPadBoundsChanged: (Rect) -> Unit,
     onBack: () -> Unit,
     onCellSelected: (Int, Int) -> Unit,
     onNumberSelected: (Int) -> Unit,
@@ -312,6 +431,7 @@ private fun GameScaffold(
     onErase: () -> Unit,
     onToggleNoteMode: () -> Unit,
     onFillCandidates: () -> Unit,
+    onAdvancedModeChange: (Boolean) -> Unit,
     onShowHint: () -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier,
@@ -320,11 +440,30 @@ private fun GameScaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            GameTopBar(
-                difficulty = uiState.difficulty.label(),
-                elapsedTime = formatElapsedTime(uiState.timeSpentSeconds),
-                onBack = onBack,
-            )
+            Box(modifier = Modifier.fillMaxWidth()) {
+                AnimatedVisibility(
+                    visible = !isHintLayoutElevated,
+                    enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+                    exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
+                    label = "game_top_bar_visibility",
+                ) {
+                    GameTopBar(
+                        difficulty = uiState.difficulty.label(),
+                        elapsedTime = formatElapsedTime(uiState.timeSpentSeconds),
+                        isAdvancedMode = uiState.isAdvancedMode,
+                        onBack = onBack,
+                        onAdvancedModeChange = onAdvancedModeChange,
+                    )
+                }
+
+                // Keep the top-bar slot non-zero throughout its exit animation. Otherwise
+                // Scaffold adds the status-bar inset only after AnimatedVisibility reaches zero,
+                // which makes the board first enter the status bar and then snap back down.
+                Column {
+                    Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+            }
         },
         bottomBar = {
             GameBottomBar(
@@ -364,6 +503,10 @@ private fun GameScaffold(
             AdaptiveGameContent(
                 uiState = uiState,
                 boardConfig = boardConfig,
+                isHintVisible = isHintVisible,
+                isHintLayoutElevated = isHintLayoutElevated,
+                onBoardBoundsChanged = onBoardBoundsChanged,
+                onNumberPadBoundsChanged = onNumberPadBoundsChanged,
                 onCellSelected = onCellSelected,
                 onNumberSelected = onNumberSelected,
                 onClearSelection = onClearSelection,
@@ -378,8 +521,12 @@ private fun GameScaffold(
 private fun GameTopBar(
     difficulty: String,
     elapsedTime: String,
+    isAdvancedMode: Boolean,
     onBack: () -> Unit,
+    onAdvancedModeChange: (Boolean) -> Unit,
 ) {
+    var menuExpanded by rememberSaveable { mutableStateOf(false) }
+
     Column {
         TopAppBar(
             title = { Text(stringResource(R.string.game_title)) },
@@ -389,6 +536,34 @@ private fun GameTopBar(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.common_back),
                     )
+                }
+            },
+            actions = {
+                Box {
+                    IconButton(onClick = { menuExpanded = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = stringResource(R.string.game_more_options),
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false },
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.game_advanced_mode)) },
+                            trailingIcon = {
+                                Switch(
+                                    checked = isAdvancedMode,
+                                    onCheckedChange = null,
+                                )
+                            },
+                            onClick = {
+                                onAdvancedModeChange(!isAdvancedMode)
+                                menuExpanded = false
+                            },
+                        )
+                    }
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -583,6 +758,10 @@ private fun ExpressiveToolbarButton(
 private fun AdaptiveGameContent(
     uiState: GameUiState,
     boardConfig: BoardConfig,
+    isHintVisible: Boolean,
+    isHintLayoutElevated: Boolean,
+    onBoardBoundsChanged: (Rect) -> Unit,
+    onNumberPadBoundsChanged: (Rect) -> Unit,
     onCellSelected: (Int, Int) -> Unit,
     onNumberSelected: (Int) -> Unit,
     onClearSelection: () -> Unit,
@@ -598,11 +777,17 @@ private fun AdaptiveGameContent(
                     .fillMaxSize()
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(24.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = if (isHintLayoutElevated) {
+                    Alignment.Top
+                } else {
+                    Alignment.CenterVertically
+                },
             ) {
                 GameBoard(
                     uiState = uiState,
                     boardConfig = boardConfig,
+                    isHintVisible = isHintVisible,
+                    onBoardBoundsChanged = onBoardBoundsChanged,
                     onCellSelected = onCellSelected,
                     modifier = boardModifier
                         .weight(1f)
@@ -610,6 +795,8 @@ private fun AdaptiveGameContent(
                 )
                 GameControlArea(
                     uiState = uiState,
+                    isNumberPadVisible = !isHintLayoutElevated,
+                    onNumberPadBoundsChanged = onNumberPadBoundsChanged,
                     onNumberSelected = onNumberSelected,
                     onClearSelection = onClearSelection,
                     modifier = Modifier
@@ -622,6 +809,8 @@ private fun AdaptiveGameContent(
                 GameBoard(
                     uiState = uiState,
                     boardConfig = boardConfig,
+                    isHintVisible = isHintVisible,
+                    onBoardBoundsChanged = onBoardBoundsChanged,
                     onCellSelected = onCellSelected,
                     modifier = boardModifier
                         .fillMaxWidth()
@@ -634,6 +823,8 @@ private fun AdaptiveGameContent(
                 )
                 GameControlArea(
                     uiState = uiState,
+                    isNumberPadVisible = !isHintLayoutElevated,
+                    onNumberPadBoundsChanged = onNumberPadBoundsChanged,
                     onNumberSelected = onNumberSelected,
                     onClearSelection = onClearSelection,
                     modifier = Modifier
@@ -649,23 +840,59 @@ private fun AdaptiveGameContent(
 private fun GameBoard(
     uiState: GameUiState,
     boardConfig: BoardConfig,
+    isHintVisible: Boolean,
+    onBoardBoundsChanged: (Rect) -> Unit,
     onCellSelected: (Int, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val trace = uiState.hintTrace
+    val hintIndex = trace?.steps?.takeIf { it.isNotEmpty() }?.let { steps ->
+        uiState.selectedHintStepIndex.coerceIn(steps.indices)
+    }
+    val overlayStep: SolveStep? = if (isHintVisible && hintIndex != null) {
+        trace.steps[hintIndex]
+    } else {
+        null
+    }
+    val hintState: SolverState? = if (isHintVisible && hintIndex != null) {
+        trace.stateBeforeStep(hintIndex)
+    } else {
+        null
+    }
+    val displayedSudoku = remember(hintState, uiState.sudoku) {
+        hintState?.toDisplaySudoku(uiState.sudoku) ?: uiState.sudoku
+    }
+
     SudokuBoard(
-        sudoku = uiState.sudoku,
+        sudoku = displayedSudoku,
         onCellClick = onCellSelected,
-        selectedRow = uiState.selectedCell?.row,
-        selectedCol = uiState.selectedCell?.col,
-        highlightNumber = uiState.highlightedNumber,
+        selectedRow = uiState.selectedCell?.row.takeUnless { isHintVisible },
+        selectedCol = uiState.selectedCell?.col.takeUnless { isHintVisible },
+        highlightNumber = uiState.highlightedNumber.takeUnless { isHintVisible },
+        overlayStep = overlayStep,
+        onBoardBoundsChanged = onBoardBoundsChanged.takeIf { isHintVisible },
         config = boardConfig,
         modifier = modifier,
     )
 }
 
+private fun SolverState.toDisplaySudoku(reference: Sudoku): Sudoku = Sudoku(
+    cells = List(Sudoku.CELL_COUNT) { index ->
+        val cellRef = CellRef.fromIndex(index)
+        val value = valueAt(cellRef)
+        Cell(
+            value = value,
+            candidates = if (value == 0) candidatesAt(cellRef) else emptySet(),
+            isFixed = value != 0 && reference.cells[index].isFixed,
+        )
+    }
+)
+
 @Composable
 private fun GameControlArea(
     uiState: GameUiState,
+    isNumberPadVisible: Boolean,
+    onNumberPadBoundsChanged: (Rect) -> Unit,
     onNumberSelected: (Int) -> Unit,
     onClearSelection: () -> Unit,
     modifier: Modifier = Modifier,
@@ -679,12 +906,21 @@ private fun GameControlArea(
                 elapsedTime = formatElapsedTime(uiState.timeSpentSeconds),
             )
         } else {
-            NumberPad(
-                selectedNumber = uiState.selectedNumber,
-                onNumberClick = onNumberSelected,
-                onBackgroundClick = onClearSelection,
+            AnimatedVisibility(
+                visible = isNumberPadVisible,
+                enter = fadeIn(),
+                exit = fadeOut(),
                 modifier = Modifier.fillMaxSize(),
-            )
+                label = "game_number_pad_visibility",
+            ) {
+                NumberPad(
+                    selectedNumber = uiState.selectedNumber,
+                    onNumberClick = onNumberSelected,
+                    onBackgroundClick = onClearSelection,
+                    onPadBoundsChanged = onNumberPadBoundsChanged,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
     }
 }

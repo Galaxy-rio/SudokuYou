@@ -24,7 +24,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -37,6 +40,7 @@ fun NumberPad(
     onNumberClick: (Int) -> Unit,
     onBackgroundClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onPadBoundsChanged: ((Rect) -> Unit)? = null,
 ) {
     val backgroundInteraction = remember { MutableInteractionSource() }
     val clearSelectionLabel = stringResource(R.string.game_clear_selection)
@@ -57,7 +61,11 @@ fun NumberPad(
         val padSize = minOf(maxWidth, maxHeight).coerceAtMost(360.dp)
 
         Column(
-            modifier = Modifier.size(padSize),
+            modifier = Modifier
+                .size(padSize)
+                .onGloballyPositioned { coordinates ->
+                    onPadBoundsChanged?.invoke(coordinates.boundsInWindow())
+                },
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {

@@ -11,12 +11,19 @@ import com.galaxyrio.sudokusolver.domain.game.SudokuValidator
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
 import com.galaxyrio.sudokusolver.domain.model.SavedGame
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
+import com.galaxyrio.sudokusolver.domain.solver.CellRef
+import com.galaxyrio.sudokusolver.domain.solver.HumanSolver
+import com.galaxyrio.sudokusolver.domain.solver.SolveTrace
+import com.galaxyrio.sudokusolver.domain.solver.SolverState
 import java.util.ArrayDeque
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,7 +46,10 @@ data class GameUiState(
     val isNoteMode: Boolean = false,
     val canUndo: Boolean = false,
     val isComplete: Boolean = false,
-    val isHintUnavailable: Boolean = false,
+    val isAdvancedMode: Boolean = false,
+    val isHintLoading: Boolean = false,
+    val hintTrace: SolveTrace? = null,
+    val selectedHintStepIndex: Int = 0,
     val hasPersistenceError: Boolean = false,
 ) {
     val highlightedNumber: Int?
@@ -53,6 +63,8 @@ class GameViewModel(
     private val newGameDifficulty: Difficulty?,
     private val savedGameId: Long?,
     private val currentTimeMillis: () -> Long = System::currentTimeMillis,
+    private val humanSolver: HumanSolver = HumanSolver(),
+    private val solverDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
     private val mutableUiState = MutableStateFlow(
@@ -63,6 +75,9 @@ class GameViewModel(
     private val history = ArrayDeque<Sudoku>()
     private var timerJob: Job? = null
     private var persistenceJob: Job? = null
+    private var hintJob: Job? = null
+    private var logicalSolverState: SolverState? = null
+    private var logicalStateBoard: Sudoku? = null
     private var isResumed = false
 
     init {
@@ -85,13 +100,17 @@ class GameViewModel(
         persistCurrentGame()
     }
 
+    fun setAdvancedMode(enabled: Boolean) {
+        mutableUiState.update { it.copy(isAdvancedMode = enabled) }
+    }
+
     fun onCellSelected(row: Int, col: Int) {
         val state = mutableUiState.value
         if (state.isLoading || state.hasLoadError || state.isComplete) return
 
         val position = CellPosition(row, col)
         val newSelection = if (state.selectedCell == position) null else position
-        mutableUiState.update { it.copy(selectedCell = newSelection, isHintUnavailable = false) }
+        mutableUiState.update { it.copy(selectedCell = newSelection) }
 
         val selectedNumber = state.selectedNumber ?: return
         val cell = state.sudoku.getCell(row, col)
@@ -112,10 +131,7 @@ class GameViewModel(
         val selectedCell = state.selectedCell
         if (selectedCell == null) {
             mutableUiState.update {
-                it.copy(
-                    selectedNumber = if (it.selectedNumber == number) null else number,
-                    isHintUnavailable = false,
-                )
+                it.copy(selectedNumber = if (it.selectedNumber == number) null else number)
             }
             return
         }
@@ -133,16 +149,12 @@ class GameViewModel(
     }
 
     fun clearSelection() {
-        mutableUiState.update {
-            it.copy(selectedCell = null, isHintUnavailable = false)
-        }
+        mutableUiState.update { it.copy(selectedCell = null) }
     }
 
     fun toggleNoteMode() {
         if (!mutableUiState.value.isComplete) {
-            mutableUiState.update {
-                it.copy(isNoteMode = !it.isNoteMode, isHintUnavailable = false)
-            }
+            mutableUiState.update { it.copy(isNoteMode = !it.isNoteMode) }
         }
     }
 
@@ -160,12 +172,18 @@ class GameViewModel(
     fun undo() {
         if (history.isEmpty() || mutableUiState.value.isComplete) return
 
+        hintJob?.cancel()
+        hintJob = null
+        logicalSolverState = null
+        logicalStateBoard = null
         val previousBoard = history.removeLast()
         mutableUiState.update {
             it.copy(
                 sudoku = previousBoard,
                 canUndo = history.isNotEmpty(),
-                isHintUnavailable = false,
+                isHintLoading = false,
+                hintTrace = null,
+                selectedHintStepIndex = 0,
             )
         }
         persistCurrentGame()
@@ -178,36 +196,112 @@ class GameViewModel(
         }
     }
 
-    fun applySingleCandidateHint(): Boolean {
+    fun prepareHintTrace() {
+        val state = mutableUiState.value
+        if (state.isLoading || state.hasLoadError || state.isComplete) return
+
+        val sudokuSnapshot = state.sudoku
+        val solverStateSnapshot = logicalSolverState
+            ?.takeIf { logicalStateBoard == sudokuSnapshot }
+            ?: SolverState.fromSudoku(sudokuSnapshot)
+        hintJob?.cancel()
+        mutableUiState.update {
+            it.copy(
+                isHintLoading = true,
+                hintTrace = null,
+                selectedHintStepIndex = 0,
+            )
+        }
+
+        hintJob = viewModelScope.launch {
+            try {
+                val trace = withContext(solverDispatcher) {
+                    humanSolver.solveTrace(solverStateSnapshot)
+                }
+                if (mutableUiState.value.sudoku != sudokuSnapshot) return@launch
+
+                mutableUiState.update {
+                    it.copy(
+                        isHintLoading = false,
+                        hintTrace = trace,
+                        selectedHintStepIndex = 0,
+                    )
+                }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (_: Exception) {
+                if (mutableUiState.value.sudoku == sudokuSnapshot) {
+                    mutableUiState.update {
+                        it.copy(
+                            isHintLoading = false,
+                            hintTrace = null,
+                            selectedHintStepIndex = 0,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun selectHintStep(index: Int) {
+        mutableUiState.update { state ->
+            val lastIndex = state.hintTrace?.steps?.lastIndex ?: return@update state
+            state.copy(selectedHintStepIndex = index.coerceIn(0, lastIndex))
+        }
+    }
+
+    fun applyNextHintStep(): Boolean {
         val state = mutableUiState.value
         if (state.isLoading || state.hasLoadError || state.isComplete) return false
 
-        val boardWithCandidates = CandidateCalculator.calculateAllCandidates(state.sudoku)
-        val targetIndex = boardWithCandidates.cells.indexOfFirst { cell ->
-            !cell.isSolved() && cell.candidates.size == 1
-        }
+        val step = state.hintTrace?.steps?.firstOrNull() ?: return false
+        val nextSolverState = state.hintTrace.initialState.apply(step)
+        var updatedBoard = state.sudoku
 
-        if (targetIndex == -1) {
-            mutableUiState.update { it.copy(isHintUnavailable = true) }
-            return false
-        }
-
-        val row = targetIndex / Sudoku.GRID_SIZE
-        val col = targetIndex % Sudoku.GRID_SIZE
-        val number = boardWithCandidates.cells[targetIndex].candidates.single()
-        mutableUiState.update {
-            it.copy(
-                sudoku = boardWithCandidates,
-                selectedCell = CellPosition(row, col),
-                isHintUnavailable = false,
+        step.placements.forEach { placement ->
+            updatedBoard = updatedBoard.setCell(
+                row = placement.cell.row,
+                col = placement.cell.col,
+                value = placement.digit,
             )
         }
-        updateSudoku(boardWithCandidates.setCell(row, col, number))
+        val shouldShowLogicalCandidates = step.eliminations.isNotEmpty() ||
+            state.sudoku.cells.any { it.candidates.isNotEmpty() }
+        if (shouldShowLogicalCandidates) {
+            updatedBoard = Sudoku(
+                updatedBoard.cells.mapIndexed { index, cell ->
+                    if (cell.isSolved()) {
+                        cell
+                    } else {
+                        cell.copy(
+                            candidates = nextSolverState.candidatesAt(CellRef.fromIndex(index))
+                        )
+                    }
+                }
+            )
+        }
+
+        val focusCell = step.placements.firstOrNull()?.cell
+            ?: step.eliminations.firstOrNull()?.candidate?.cell
+        if (focusCell != null) {
+            mutableUiState.update {
+                it.copy(selectedCell = CellPosition(focusCell.row, focusCell.col))
+            }
+        }
+        updateSudoku(updatedBoard, nextSolverState)
         return true
     }
 
-    fun clearHintMessage() {
-        mutableUiState.update { it.copy(isHintUnavailable = false) }
+    fun clearHintTrace() {
+        hintJob?.cancel()
+        hintJob = null
+        mutableUiState.update {
+            it.copy(
+                isHintLoading = false,
+                hintTrace = null,
+                selectedHintStepIndex = 0,
+            )
+        }
     }
 
     fun clearPersistenceError() {
@@ -217,6 +311,10 @@ class GameViewModel(
     private fun loadGame() {
         timerJob?.cancel()
         timerJob = null
+        hintJob?.cancel()
+        hintJob = null
+        logicalSolverState = null
+        logicalStateBoard = null
         history.clear()
         mutableUiState.value = GameUiState(
             isLoading = true,
@@ -277,10 +375,20 @@ class GameViewModel(
         updateSudoku(newBoard)
     }
 
-    private fun updateSudoku(newSudoku: Sudoku) {
+    private fun updateSudoku(
+        newSudoku: Sudoku,
+        nextSolverState: SolverState? = null,
+    ) {
         val previousState = mutableUiState.value
-        if (newSudoku == previousState.sudoku) return
+        if (newSudoku == previousState.sudoku) {
+            logicalSolverState = nextSolverState
+            logicalStateBoard = newSudoku.takeIf { nextSolverState != null }
+            clearHintTrace()
+            return
+        }
 
+        hintJob?.cancel()
+        hintJob = null
         history.addLast(previousState.sudoku)
         val isComplete = SudokuValidator.isSolved(newSudoku)
         val completedGameId = previousState.gameId.takeIf { isComplete }
@@ -291,9 +399,13 @@ class GameViewModel(
                 gameId = if (isComplete) null else it.gameId,
                 canUndo = history.isNotEmpty() && !isComplete,
                 isComplete = isComplete,
-                isHintUnavailable = false,
+                isHintLoading = false,
+                hintTrace = null,
+                selectedHintStepIndex = 0,
             )
         }
+        logicalSolverState = nextSolverState
+        logicalStateBoard = newSudoku.takeIf { nextSolverState != null }
 
         if (completedGameId != null) {
             timerJob?.cancel()

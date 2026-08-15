@@ -5,6 +5,15 @@ import com.galaxyrio.sudokusolver.domain.model.Cell
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
 import com.galaxyrio.sudokusolver.domain.model.SavedGame
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
+import com.galaxyrio.sudokusolver.domain.solver.CandidateElimination
+import com.galaxyrio.sudokusolver.domain.solver.CandidateRef
+import com.galaxyrio.sudokusolver.domain.solver.CellRef
+import com.galaxyrio.sudokusolver.domain.solver.HumanSolver
+import com.galaxyrio.sudokusolver.domain.solver.Placement
+import com.galaxyrio.sudokusolver.domain.solver.SolveStep
+import com.galaxyrio.sudokusolver.domain.solver.SolverState
+import com.galaxyrio.sudokusolver.domain.solver.TechniqueDetector
+import com.galaxyrio.sudokusolver.domain.solver.TechniqueId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -179,6 +188,180 @@ class GameViewModelTest {
         assertEquals(3, repository.savedGamesHistory.last().timeSpentSeconds)
     }
 
+    @Test
+    fun advancedModeCanBeChangedWithoutChangingTheBoard() = runViewModelTest {
+        val savedGame = SavedGame(
+            id = 21,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku.fromGridString(PUZZLE),
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+        )
+        advanceUntilIdle()
+
+        val originalBoard = viewModel.uiState.value.sudoku
+        viewModel.setAdvancedMode(true)
+
+        assertTrue(viewModel.uiState.value.isAdvancedMode)
+        assertEquals(originalBoard, viewModel.uiState.value.sudoku)
+    }
+
+    @Test
+    fun hintTraceSupportsArbitraryNavigationAndAppliesOnlyTheNextStep() = runViewModelTest {
+        val savedGame = SavedGame(
+            id = 22,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku.fromGridString(PUZZLE),
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+            solverDispatcher = StandardTestDispatcher(testScheduler),
+        )
+        advanceUntilIdle()
+
+        viewModel.prepareHintTrace()
+        assertTrue(viewModel.uiState.value.isHintLoading)
+        advanceUntilIdle()
+
+        val trace = requireNotNull(viewModel.uiState.value.hintTrace)
+        assertTrue(trace.steps.size > 1)
+        viewModel.selectHintStep(Int.MAX_VALUE)
+        assertEquals(trace.steps.lastIndex, viewModel.uiState.value.selectedHintStepIndex)
+
+        val expectedNextState = trace.stateAfterStep(0)
+        val firstStep = trace.steps.first()
+        assertTrue(viewModel.applyNextHintStep())
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.hintTrace)
+        firstStep.placements.forEach { placement ->
+            assertEquals(
+                expectedNextState.valueAt(placement.cell),
+                viewModel.uiState.value.sudoku
+                    .getCell(placement.cell.row, placement.cell.col)
+                    .value,
+            )
+        }
+        firstStep.eliminations.forEach { elimination ->
+            val candidate = elimination.candidate
+            assertFalse(
+                candidate.digit in viewModel.uiState.value.sudoku
+                    .getCell(candidate.cell.row, candidate.cell.col)
+                    .candidates
+            )
+        }
+    }
+
+    @Test
+    fun appliedCandidateEliminationIsRetainedForTheNextHint() = runViewModelTest {
+        val target = CellRef(0, 0)
+        val stagedDetector = object : TechniqueDetector {
+            override val technique = TechniqueId.NAKED_PAIR
+
+            override fun find(state: SolverState): SolveStep? = when {
+                state.valueAt(target) != 0 -> null
+                state.hasCandidate(target, 1) -> SolveStep(
+                    technique = TechniqueId.NAKED_PAIR,
+                    eliminations = listOf(
+                        CandidateElimination(CandidateRef(target, 1))
+                    ),
+                )
+                else -> SolveStep(
+                    technique = TechniqueId.NAKED_SINGLE,
+                    placements = listOf(Placement(target, 2)),
+                )
+            }
+        }
+        val savedGame = SavedGame(
+            id = 23,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku(),
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+            humanSolver = HumanSolver(listOf(stagedDetector)),
+            solverDispatcher = StandardTestDispatcher(testScheduler),
+        )
+        advanceUntilIdle()
+
+        viewModel.prepareHintTrace()
+        advanceUntilIdle()
+        assertEquals(
+            TechniqueId.NAKED_PAIR,
+            viewModel.uiState.value.hintTrace?.steps?.first()?.technique,
+        )
+        assertTrue(viewModel.applyNextHintStep())
+
+        viewModel.prepareHintTrace()
+        advanceUntilIdle()
+
+        val nextStep = viewModel.uiState.value.hintTrace?.steps?.first()
+        assertEquals(TechniqueId.NAKED_SINGLE, nextStep?.technique)
+        assertEquals(Placement(target, 2), nextStep?.placements?.single())
+    }
+
+    @Test
+    fun consecutiveHintEliminationsDoNotRestoreEarlierCandidates() = runViewModelTest {
+        val target = CellRef(0, 0)
+        val stagedDetector = object : TechniqueDetector {
+            override val technique = TechniqueId.NAKED_PAIR
+
+            override fun find(state: SolverState): SolveStep? = when {
+                state.hasCandidate(target, 1) -> eliminationStep(target, 1)
+                state.hasCandidate(target, 3) -> eliminationStep(target, 3)
+                else -> null
+            }
+
+            private fun eliminationStep(cell: CellRef, digit: Int) = SolveStep(
+                technique = TechniqueId.NAKED_PAIR,
+                eliminations = listOf(CandidateElimination(CandidateRef(cell, digit))),
+            )
+        }
+        val savedGame = SavedGame(
+            id = 24,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku(),
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+            humanSolver = HumanSolver(listOf(stagedDetector)),
+            solverDispatcher = StandardTestDispatcher(testScheduler),
+        )
+        advanceUntilIdle()
+
+        viewModel.prepareHintTrace()
+        advanceUntilIdle()
+        assertTrue(viewModel.applyNextHintStep())
+
+        viewModel.prepareHintTrace()
+        advanceUntilIdle()
+        assertEquals(
+            CandidateRef(target, 3),
+            viewModel.uiState.value.hintTrace
+                ?.steps
+                ?.first()
+                ?.eliminations
+                ?.single()
+                ?.candidate,
+        )
+        assertTrue(viewModel.applyNextHintStep())
+
+        val displayedCandidates = viewModel.uiState.value.sudoku
+            .getCell(target.row, target.col)
+            .candidates
+        assertFalse(1 in displayedCandidates)
+        assertFalse(3 in displayedCandidates)
+    }
+
     private fun runViewModelTest(
         block: suspend TestScope.() -> Unit,
     ) = runTest {
@@ -247,5 +430,16 @@ class GameViewModelTest {
                 "961537284" +
                 "287419635" +
                 "345286179"
+
+        const val PUZZLE =
+            "53..7...." +
+                "6..195..." +
+                ".98....6." +
+                "8...6...3" +
+                "4..8.3..1" +
+                "7...2...6" +
+                ".6....28." +
+                "...419..5" +
+                "....8..79"
     }
 }
