@@ -48,4 +48,14 @@ class ConvertersTest {
     fun unknownDifficultyFallsBackToMedium() {
         assertEquals(Difficulty.MEDIUM, converters.toDifficulty("UNKNOWN"))
     }
+
+    @Test
+    fun everyDifficultyIncludingBrutalRoundTrips() {
+        Difficulty.entries.forEach { difficulty ->
+            assertEquals(
+                difficulty,
+                converters.toDifficulty(converters.fromDifficulty(difficulty)),
+            )
+        }
+    }
 }

@@ -25,7 +25,7 @@ class OfflineGameRepository(
 
     override suspend fun createGame(difficulty: Difficulty): SavedGame {
         val sudoku = withContext(computationDispatcher) {
-            generator.generate(clues = difficulty.clueCount)
+            generator.generate(difficulty)
         }
         val game = SavedGame(
             difficulty = difficulty,
