@@ -15,6 +15,7 @@
     <string name="difficulty_easy">Easy</string>
     <string name="difficulty_medium">Medium</string>
     <string name="difficulty_hard">Hard</string>
+    <string name="difficulty_brutal">Brutal</string>
 
     <string name="play_title">Sudoku</string>
     <string name="play_recent_games">Recent games</string>
@@ -148,6 +149,9 @@
     <string name="game_hint_explanation_multi_digit_chain">%1$s uses the linked cells %2$s and candidates %3$s. Either end of the inference forces the same elimination.</string>
     <string name="game_hint_explanation_wxyz_wing">Cells %2$s form a four-cell wing using only %3$s; the two wing groups share only %1$d. If a target were %1$d, the pivot values would leave too few distinct digits for the wings, so that candidate can be removed.</string>
     <string name="game_hint_explanation_aic">%1$s alternates strong and weak links through candidates %3$s in %2$s. At least one endpoint must be true, so candidates that conflict with both endpoints can be removed.</string>
+    <string name="game_hint_explanation_nishio_forcing">Assuming %1$s is true leads to the contradiction shown by the %2$s graph. The assumption is false.</string>
+    <string name="game_hint_explanation_verity_forcing">%1$s follows every possible branch from %2$s. Every branch reaches the same conclusion shown on the board.</string>
+    <string name="game_hint_forcing_region_premise">candidate %1$d in %2$s</string>
     <string name="game_hint_explanation_remote_pair">The pair %2$s alternates through %1$s. A cell that sees both opposite ends cannot contain either digit.</string>
     <string name="game_hint_explanation_chute_remote_pair">The chute remote-pair structure in %1$s locks the pair %2$s across its bands or stacks, producing the shown elimination.</string>
     <string name="game_hint_explanation_coloring_type_1">The conjugate chain for candidate %1$s colors %2$s in two alternating colors. The target sees both colors, so that candidate can be removed.</string>
@@ -209,6 +213,14 @@
     <string name="technique_whale">Whale</string>
     <string name="technique_leviathan">Leviathan</string>
     <string name="technique_aic">AIC (Alternating Inference Chain)</string>
+    <string name="technique_nishio_forcing_chain">Nishio Forcing Chain</string>
+    <string name="technique_nishio_forcing_net">Nishio Forcing Net</string>
+    <string name="technique_digit_forcing_chain">Digit Forcing Chain</string>
+    <string name="technique_digit_forcing_net">Digit Forcing Net</string>
+    <string name="technique_cell_forcing_chain">Cell Forcing Chain</string>
+    <string name="technique_cell_forcing_net">Cell Forcing Net</string>
+    <string name="technique_region_forcing_chain">Region Forcing Chain</string>
+    <string name="technique_region_forcing_net">Region Forcing Net</string>
     <string name="game_cell_empty">Row %1$d, column %2$d, empty</string>
     <string name="game_cell_value">Row %1$d, column %2$d, value %3$d</string>
     <string name="game_cell_fixed">Given</string>

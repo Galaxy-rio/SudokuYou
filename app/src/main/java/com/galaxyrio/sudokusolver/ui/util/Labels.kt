@@ -17,6 +17,7 @@ val Difficulty.labelResource: Int
         Difficulty.EASY -> R.string.difficulty_easy
         Difficulty.MEDIUM -> R.string.difficulty_medium
         Difficulty.HARD -> R.string.difficulty_hard
+        Difficulty.BRUTAL -> R.string.difficulty_brutal
     }
 
 @Composable

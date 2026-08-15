@@ -36,25 +36,28 @@ class SudokuRulesTest {
 
     @Test
     fun generatedPuzzlesMatchEveryDifficultyAndCanBeSolved() {
+        val evaluator = PuzzleDifficultyEvaluator()
         Difficulty.entries.forEachIndexed { index, difficulty ->
-            val puzzle = SudokuGenerator(Random(2026 + index))
-                .generate(clues = difficulty.clueCount)
-            val grid = Array(Sudoku.GRID_SIZE) { row ->
-                IntArray(Sudoku.GRID_SIZE) { col ->
-                    puzzle.getCell(row, col).value
+            repeat(2) { sample ->
+                val puzzle = SudokuGenerator(Random(2026 + index * 10 + sample))
+                    .generate(difficulty)
+                val grid = Array(Sudoku.GRID_SIZE) { row ->
+                    IntArray(Sudoku.GRID_SIZE) { col ->
+                        puzzle.getCell(row, col).value
+                    }
                 }
+
+                assertEquals(difficulty, evaluator.evaluate(puzzle)?.difficulty)
+                assertTrue(SudokuValidator.isBoardValid(puzzle))
+                assertTrue(ValidSudokuGenerator(Random(index)).solve(grid))
+
+                val solved = Sudoku(
+                    grid.flatMap { row ->
+                        row.map { value -> Cell(value = value, isFixed = true) }
+                    }
+                )
+                assertTrue(SudokuValidator.isSolved(solved))
             }
-
-            assertEquals(difficulty.clueCount, puzzle.cells.count { it.isFixed })
-            assertTrue(SudokuValidator.isBoardValid(puzzle))
-            assertTrue(ValidSudokuGenerator(Random(index)).solve(grid))
-
-            val solved = Sudoku(
-                grid.flatMap { row ->
-                    row.map { value -> Cell(value = value, isFixed = true) }
-                }
-            )
-            assertTrue(SudokuValidator.isSolved(solved))
         }
     }
 

@@ -15,6 +15,7 @@
     <string name="difficulty_easy">简单</string>
     <string name="difficulty_medium">中等</string>
     <string name="difficulty_hard">困难</string>
+    <string name="difficulty_brutal">Brutal</string>
 
     <string name="play_title">数独</string>
     <string name="play_recent_games">最近对局</string>
@@ -146,6 +147,9 @@
     <string name="game_hint_explanation_multi_digit_chain">%1$s 使用相连的格子%2$s和候选数 %3$s；无论推理链哪一端成立，都会得到同一项删除结论。</string>
     <string name="game_hint_explanation_wxyz_wing">格子%2$s只使用四个候选数 %3$s，两个翼组仅共享候选数 %1$d。若目标格填入 %1$d，枢轴组占用的其余数字会同时从两翼排除，使翼格数量多于剩余可用数字，因此可删除该候选数。</string>
     <string name="game_hint_explanation_aic">%1$s 在格子%2$s中的候选数 %3$s 之间交替使用强链和弱链。链的两个端点至少一个为真，因此可删除同时与两端冲突的候选数。</string>
+    <string name="game_hint_explanation_nishio_forcing">假设%1$s为真，会沿%2$s图得到棋盘上标出的矛盾，因此该假设为假。</string>
+    <string name="game_hint_explanation_verity_forcing">%1$s从%2$s的每一种可能情况分别推理，所有分支都得到棋盘上标出的同一结论。</string>
+    <string name="game_hint_forcing_region_premise">%2$s中的候选数 %1$d</string>
     <string name="game_hint_explanation_remote_pair">数对 %2$s 在%1$s之间交替出现，同时看见链两端的格子不能包含这两个数字。</string>
     <string name="game_hint_explanation_chute_remote_pair">%1$s中的带状远程数对将 %2$s 锁定在宫带或宫列中，从而得到所示删除结论。</string>
     <string name="game_hint_explanation_coloring_type_1">候选数 %1$s 的共轭链把%2$s交替染成两种颜色。目标格同时看见两种颜色，因此可删除该候选数。</string>
@@ -207,6 +211,14 @@
     <string name="technique_whale">Whale（鲸鱼）</string>
     <string name="technique_leviathan">Leviathan（利维坦）</string>
     <string name="technique_aic">AIC（交替推理链）</string>
+    <string name="technique_nishio_forcing_chain">Nishio 强制链</string>
+    <string name="technique_nishio_forcing_net">Nishio 强制网</string>
+    <string name="technique_digit_forcing_chain">候选数强制链</string>
+    <string name="technique_digit_forcing_net">候选数强制网</string>
+    <string name="technique_cell_forcing_chain">格强制链</string>
+    <string name="technique_cell_forcing_net">格强制网</string>
+    <string name="technique_region_forcing_chain">区域强制链</string>
+    <string name="technique_region_forcing_net">区域强制网</string>
     <string name="game_cell_empty">第 %1$d 行，第 %2$d 列，空白</string>
     <string name="game_cell_value">第 %1$d 行，第 %2$d 列，数字 %3$d</string>
     <string name="game_cell_fixed">题目数字</string>
