@@ -3,7 +3,13 @@ package com.galaxyrio.sudokusolver.domain.model
 data class Cell(
     val value: Int = 0,
     val candidates: Set<Int> = emptySet(),
-    val isFixed: Boolean = false
+    val isFixed: Boolean = false,
+    /**
+     * Distinguishes an unrestricted empty cell from a Sukaku cell whose explicit candidate set
+     * happens to be empty. Non-empty pencil marks opt into explicit candidate semantics by
+     * default; candidate tools keep the flag set even after the last candidate is removed.
+     */
+    val isCandidateSetExplicit: Boolean = candidates.isNotEmpty(),
 ) {
     init {
         require(value in EMPTY_VALUE..MAX_VALUE) { "Cell value must be between 0 and 9." }
@@ -15,6 +21,9 @@ data class Cell(
         }
         require(!isFixed || value != EMPTY_VALUE) {
             "A fixed cell must contain a value."
+        }
+        require(value == EMPTY_VALUE || !isCandidateSetExplicit) {
+            "A solved cell cannot have an explicit candidate set."
         }
     }
 
@@ -73,7 +82,10 @@ data class Sudoku(val cells: List<Cell> = List(CELL_COUNT) { Cell() }) {
         }
 
         val newCells = cells.toMutableList()
-        newCells[index] = currentCell.copy(candidates = newCandidates)
+        newCells[index] = currentCell.copy(
+            candidates = newCandidates,
+            isCandidateSetExplicit = true,
+        )
         return Sudoku(newCells)
     }
 
@@ -87,7 +99,10 @@ data class Sudoku(val cells: List<Cell> = List(CELL_COUNT) { Cell() }) {
         }
 
         val newCells = cells.toMutableList()
-        newCells[index] = currentCell.copy(candidates = currentCell.candidates - candidate)
+        newCells[index] = currentCell.copy(
+            candidates = currentCell.candidates - candidate,
+            isCandidateSetExplicit = true,
+        )
         return Sudoku(newCells)
     }
 

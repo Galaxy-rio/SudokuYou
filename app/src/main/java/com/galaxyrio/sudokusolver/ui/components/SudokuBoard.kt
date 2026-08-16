@@ -36,7 +36,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.domain.game.SudokuValidator
+import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteColor
+import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteEndpoint
+import com.galaxyrio.sudokusolver.domain.model.AdvancedNotes
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
+import com.galaxyrio.sudokusolver.domain.solver.CandidateRef
+import com.galaxyrio.sudokusolver.domain.solver.CellRef
 import com.galaxyrio.sudokusolver.domain.solver.SolveStep
 
 data class BoardConfig(
@@ -53,8 +58,13 @@ fun SudokuBoard(
     modifier: Modifier = Modifier,
     selectedRow: Int? = null,
     selectedCol: Int? = null,
-    highlightNumber: Int? = null,
+    highlightNumbers: Set<Int> = emptySet(),
+    advancedNotes: AdvancedNotes? = null,
+    showAdvancedHighlights: Boolean = false,
+    pendingLineStart: AdvancedNoteEndpoint? = null,
     overlayStep: SolveStep? = null,
+    correctionCells: Set<CellRef> = emptySet(),
+    correctionCandidates: Set<CandidateRef> = emptySet(),
     onBoardBoundsChanged: ((Rect) -> Unit)? = null,
     config: BoardConfig = BoardConfig(),
 ) {
@@ -139,8 +149,10 @@ fun SudokuBoard(
                                             selectedRow != null && selectedCol != null &&
                                             row / 3 == selectedRow / 3 &&
                                             col / 3 == selectedCol / 3
-                                        val isValueHighlighted =
-                                            highlightNumber != null && cell.value == highlightNumber
+                                        val isValueHighlighted = cell.value in highlightNumbers
+                                        val highlightAllCandidates = showAdvancedHighlights &&
+                                            advancedNotes?.highlightBivalueCandidates == true &&
+                                            !cell.isSolved() && cell.candidates.size == 2
                                         val cellDescription = if (cell.isSolved()) {
                                             stringResource(
                                                 R.string.game_cell_value,
@@ -169,7 +181,12 @@ fun SudokuBoard(
                                             isFixed = cell.isFixed,
                                             isSelected = isSelected,
                                             isError = !cell.isFixed && index in conflictingCells,
-                                            highlightNumber = highlightNumber,
+                                            highlightNumbers = highlightNumbers,
+                                            highlightAllCandidates = highlightAllCandidates,
+                                            annotationColor = advancedNotes?.cellColors?.get(index),
+                                            candidateAnnotationColors = cell.candidates.associateWith { digit ->
+                                                advancedNotes?.candidateColor(index, digit)
+                                            }.filterValues { it != null }.mapValues { it.value!! },
                                             isValueHighlighted = isValueHighlighted,
                                             isSelectedCross = isSelectedCross,
                                             isSelectedBlock = isSelectedBlock,
@@ -189,9 +206,26 @@ fun SudokuBoard(
             }
         }
 
+        if (advancedNotes != null) {
+            AdvancedNotesOverlayCanvas(
+                sudoku = sudoku,
+                notes = advancedNotes,
+                showDynamicHighlights = showAdvancedHighlights,
+                pendingLineStart = pendingLineStart,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+
         if (overlayStep != null) {
             StepOverlayCanvas(
                 step = overlayStep,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+        if (correctionCells.isNotEmpty() || correctionCandidates.isNotEmpty()) {
+            CorrectionOverlayCanvas(
+                cells = correctionCells,
+                candidates = correctionCandidates,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -206,7 +240,10 @@ private fun SudokuCell(
     isFixed: Boolean,
     isSelected: Boolean,
     isError: Boolean,
-    highlightNumber: Int?,
+    highlightNumbers: Set<Int>,
+    highlightAllCandidates: Boolean,
+    annotationColor: AdvancedNoteColor?,
+    candidateAnnotationColors: Map<Int, AdvancedNoteColor>,
     isValueHighlighted: Boolean,
     isSelectedCross: Boolean,
     isSelectedBlock: Boolean,
@@ -246,6 +283,13 @@ private fun SudokuCell(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
+        if (annotationColor != null) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(annotationColor.toComposeColor().copy(alpha = 0.30f)),
+            )
+        }
         if (value != null) {
             val textColor = when {
                 isError && isSelected -> onErrorColor
@@ -269,7 +313,9 @@ private fun SudokuCell(
             CandidateGrid(
                 candidates = candidates,
                 errorCandidates = errorCandidates,
-                highlightNumber = highlightNumber,
+                highlightNumbers = highlightNumbers,
+                highlightAllCandidates = highlightAllCandidates,
+                annotationColors = candidateAnnotationColors,
                 isSelected = isSelected,
                 errorColor = errorColor,
                 errorContainerColor = errorContainerColor,
@@ -282,7 +328,9 @@ private fun SudokuCell(
 private fun CandidateGrid(
     candidates: Set<Int>,
     errorCandidates: Set<Int>,
-    highlightNumber: Int?,
+    highlightNumbers: Set<Int>,
+    highlightAllCandidates: Boolean,
+    annotationColors: Map<Int, AdvancedNoteColor>,
     isSelected: Boolean,
     errorColor: androidx.compose.ui.graphics.Color,
     errorContainerColor: androidx.compose.ui.graphics.Color,
@@ -303,7 +351,9 @@ private fun CandidateGrid(
             ) {
                 repeat(3) { col ->
                     val candidate = row * 3 + col + 1
-                    val isHighlighted = candidate == highlightNumber && candidate in candidates
+                    val isHighlighted = candidate in candidates &&
+                        (candidate in highlightNumbers || highlightAllCandidates)
+                    val annotationColor = annotationColors[candidate]
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
@@ -317,6 +367,16 @@ private fun CandidateGrid(
                                         } else {
                                             MaterialTheme.colorScheme.secondaryContainer
                                         },
+                                        shape = CircleShape,
+                                    )
+                                } else {
+                                    Modifier
+                                }
+                            )
+                            .then(
+                                if (annotationColor != null) {
+                                    Modifier.background(
+                                        color = annotationColor.toComposeColor().copy(alpha = 0.48f),
                                         shape = CircleShape,
                                     )
                                 } else {

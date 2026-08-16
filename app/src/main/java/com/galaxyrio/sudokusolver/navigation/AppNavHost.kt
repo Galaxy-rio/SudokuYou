@@ -159,6 +159,11 @@ fun AppNavHost(
                         )
 
                         SettingsCategory.GAME -> GameSettingsScreen(
+                            uiState = settingsUiState,
+                            onShowHintDetailsChange = settingsViewModel::setShowHintDetails,
+                            onShowErrorDetailsChange = settingsViewModel::setShowErrorDetails,
+                            onShowErrorsImmediatelyChange =
+                                settingsViewModel::setShowErrorsImmediately,
                             onBack = onBack,
                             modifier = Modifier.fillMaxSize(),
                         )
@@ -207,6 +212,7 @@ private fun GameDestinationContent(
             repository = appContainer.gameRepository,
             newGameDifficulty = newGameDifficulty,
             savedGameId = savedGameId,
+            settings = appContainer.settingsRepository.settings,
         )
     )
     GameRoute(

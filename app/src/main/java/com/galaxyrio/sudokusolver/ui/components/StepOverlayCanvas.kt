@@ -153,6 +153,50 @@ internal fun StepOverlayCanvas(
     }
 }
 
+/** Highlights invalid player entries or candidates that must be restored to make Sukaku valid. */
+@Composable
+internal fun CorrectionOverlayCanvas(
+    cells: Set<com.galaxyrio.sudokusolver.domain.solver.CellRef>,
+    candidates: Set<CandidateRef>,
+    modifier: Modifier = Modifier,
+) {
+    val colorScheme = MaterialTheme.colorScheme
+    val density = LocalDensity.current
+    val outerInset = with(density) { 2.dp.toPx() }
+    val blockGap = with(density) { 2.dp.toPx() }
+    val cellGap = with(density) { 1.dp.toPx() }
+    val candidateInset = with(density) { 1.dp.toPx() }
+    val strokeWidth = with(density) { 2.dp.toPx() }
+
+    Canvas(modifier = modifier) {
+        val geometry = BoardGeometry(
+            boardSize = min(size.width, size.height),
+            outerInset = outerInset,
+            blockGap = blockGap,
+            cellGap = cellGap,
+            candidateInset = candidateInset,
+        )
+        cells.forEach { cell ->
+            val bounds = geometry.cellBounds(cell)
+            drawRoundRect(
+                color = colorScheme.errorContainer.copy(alpha = 0.52f),
+                topLeft = bounds.topLeft,
+                size = bounds.size,
+                cornerRadius = CornerRadius(geometry.cellSize * 0.08f),
+            )
+        }
+        candidates.forEach { candidate ->
+            drawCandidateMarker(
+                geometry = geometry,
+                candidate = candidate,
+                fill = colorScheme.errorContainer.copy(alpha = 0.72f),
+                outline = colorScheme.error,
+                strokeWidth = strokeWidth,
+            )
+        }
+    }
+}
+
 private data class StepOverlayColors(
     val genericHouse: Color,
     val baseHouse: Color,

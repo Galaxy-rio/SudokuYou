@@ -10,6 +10,8 @@ class SudokuGenerator(
     private val random: Random = Random.Default,
     private val difficultyEvaluator: PuzzleDifficultyEvaluator = PuzzleDifficultyEvaluator(),
 ) {
+    private val uniquenessChecker = UniqueSolutionChecker()
+
     /**
      * Generates a unique puzzle whose complete human-solver trace belongs to [difficulty].
      * Clue ranges only guide the digging search; they never decide the returned difficulty.
@@ -17,11 +19,19 @@ class SudokuGenerator(
     fun generate(difficulty: Difficulty): Sudoku {
         val profile = GenerationProfile.forDifficulty(difficulty)
         var best: RatedCandidate? = null
+        var solution = ValidSudokuGenerator(random).generateFullGrid()
+        var hittingSetConstraints = HittingSetConstraints()
 
-        repeat(profile.maxAttempts) {
-            val grid = ValidSudokuGenerator(random).generateFullGrid()
+        repeat(profile.maxAttempts) { attempt ->
+            if (attempt > 0 && attempt % DIG_PATHS_PER_SOLUTION == 0) {
+                solution = ValidSudokuGenerator(random).generateFullGrid()
+                hittingSetConstraints = HittingSetConstraints()
+            }
+
+            val grid = solution.deepCopy()
             val positions = (0 until Sudoku.CELL_COUNT).shuffled(random)
             var clueCount = Sudoku.CELL_COUNT
+            var clueMask = CellMask81.FULL
 
             for (index in positions) {
                 if (clueCount <= profile.minimumClues) break
@@ -30,10 +40,23 @@ class SudokuGenerator(
                 val removed = grid[row][column]
                 if (removed == 0) continue
 
+                val candidateClueMask = clueMask.without(index)
+                if (!hittingSetConstraints.accepts(candidateClueMask)) continue
+
                 grid[row][column] = 0
-                if (countSolutions(grid) != 1) {
-                    grid[row][column] = removed
-                    continue
+                when (val uniqueness = uniquenessChecker.check(grid, solution)) {
+                    UniquenessResult.Unique -> {
+                        clueMask = candidateClueMask
+                    }
+                    is UniquenessResult.Multiple -> {
+                        hittingSetConstraints.add(uniqueness.differenceMask)
+                        grid[row][column] = removed
+                        continue
+                    }
+                    UniquenessResult.Invalid -> {
+                        grid[row][column] = removed
+                        continue
+                    }
                 }
                 clueCount--
 
@@ -55,6 +78,7 @@ class SudokuGenerator(
                     // This removal left the requested logical envelope. Keep searching other clues
                     // from the last board that still had a complete in-range solve path.
                     grid[row][column] = removed
+                    clueMask = clueMask.with(index)
                     clueCount++
                 }
             }
@@ -75,83 +99,38 @@ class SudokuGenerator(
         }
 
         val grid = ValidSudokuGenerator(random).generateFullGrid()
+        val solution = grid.deepCopy()
+        val hittingSetConstraints = HittingSetConstraints()
         val positions = (0 until Sudoku.CELL_COUNT).shuffled(random)
         var currentClues = Sudoku.CELL_COUNT
+        var clueMask = CellMask81.FULL
 
         for (index in positions) {
             if (currentClues <= clues) break
             val row = index / Sudoku.GRID_SIZE
             val column = index % Sudoku.GRID_SIZE
             val removed = grid[row][column]
+            val candidateClueMask = clueMask.without(index)
+            if (!hittingSetConstraints.accepts(candidateClueMask)) continue
+
             grid[row][column] = 0
-            if (countSolutions(grid) == 1) {
-                currentClues--
-            } else {
-                grid[row][column] = removed
+            when (val uniqueness = uniquenessChecker.check(grid, solution)) {
+                UniquenessResult.Unique -> {
+                    clueMask = candidateClueMask
+                    currentClues--
+                }
+                is UniquenessResult.Multiple -> {
+                    hittingSetConstraints.add(uniqueness.differenceMask)
+                    grid[row][column] = removed
+                }
+                UniquenessResult.Invalid -> grid[row][column] = removed
             }
         }
         return grid.toSudoku()
     }
 
-    private fun countSolutions(grid: Array<IntArray>): Int {
-        var bestRow = -1
-        var bestColumn = -1
-        var bestMask = 0
-        var bestCount = Sudoku.GRID_SIZE + 1
-
-        for (row in 0 until Sudoku.GRID_SIZE) {
-            for (column in 0 until Sudoku.GRID_SIZE) {
-                if (grid[row][column] != 0) continue
-                val mask = availableMask(grid, row, column)
-                val count = mask.countOneBits()
-                if (count == 0) return 0
-                if (count < bestCount) {
-                    bestRow = row
-                    bestColumn = column
-                    bestMask = mask
-                    bestCount = count
-                    if (count == 1) break
-                }
-            }
-            if (bestCount == 1) break
-        }
-
-        if (bestRow == -1) return 1
-        var solutions = 0
-        var remaining = bestMask
-        while (remaining != 0 && solutions < 2) {
-            val bit = remaining and -remaining
-            val digit = bit.countTrailingZeroBits() + 1
-            grid[bestRow][bestColumn] = digit
-            solutions += countSolutions(grid)
-            grid[bestRow][bestColumn] = 0
-            remaining = remaining xor bit
-        }
-        return solutions.coerceAtMost(2)
-    }
-
-    private fun availableMask(
-        grid: Array<IntArray>,
-        row: Int,
-        column: Int,
-    ): Int {
-        var used = 0
-        repeat(Sudoku.GRID_SIZE) { index ->
-            val rowValue = grid[row][index]
-            val columnValue = grid[index][column]
-            if (rowValue != 0) used = used or (1 shl (rowValue - 1))
-            if (columnValue != 0) used = used or (1 shl (columnValue - 1))
-        }
-        val startRow = row - row % Sudoku.BOX_SIZE
-        val startColumn = column - column % Sudoku.BOX_SIZE
-        repeat(Sudoku.BOX_SIZE) { rowOffset ->
-            repeat(Sudoku.BOX_SIZE) { columnOffset ->
-                val value = grid[startRow + rowOffset][startColumn + columnOffset]
-                if (value != 0) used = used or (1 shl (value - 1))
-            }
-        }
-        return FULL_DIGIT_MASK and used.inv()
-    }
+    private fun Array<IntArray>.deepCopy(): Array<IntArray> =
+        Array(size) { row -> this[row].copyOf() }
 
     private fun Array<IntArray>.toSudoku(): Sudoku = Sudoku(
         flatMap { row ->
@@ -209,6 +188,6 @@ class SudokuGenerator(
     }
 
     private companion object {
-        const val FULL_DIGIT_MASK = (1 shl Sudoku.GRID_SIZE) - 1
+        const val DIG_PATHS_PER_SOLUTION = 4
     }
 }

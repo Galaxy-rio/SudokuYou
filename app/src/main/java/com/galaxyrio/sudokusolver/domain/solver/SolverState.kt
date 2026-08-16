@@ -2,10 +2,7 @@ package com.galaxyrio.sudokusolver.domain.solver
 
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
 
-/**
- * Immutable board state used only by the logical solver. These candidates are deliberately
- * separate from the player's pencil marks stored in [Sudoku].
- */
+/** Immutable board state used by the logical solver, including explicit Sukaku constraints. */
 class SolverState private constructor(
     private val values: IntArray,
     private val candidateMasks: IntArray,
@@ -98,12 +95,22 @@ class SolverState private constructor(
                 if (values[index] != 0) return@repeat
 
                 val cell = CellRef.fromIndex(index)
-                var mask = FULL_CANDIDATE_MASK
+                var legalMask = FULL_CANDIDATE_MASK
                 peerIndices(cell).forEach { peerIndex ->
                     val peerValue = values[peerIndex]
-                    if (peerValue != 0) mask = mask and digitMask(peerValue).inv()
+                    if (peerValue != 0) {
+                        legalMask = legalMask and digitMask(peerValue).inv()
+                    }
                 }
-                candidateMasks[index] = mask
+                val sourceCell = sudoku.cells[index]
+                candidateMasks[index] = if (sourceCell.isCandidateSetExplicit) {
+                    val explicitMask = sourceCell.candidates.fold(0) { mask, digit ->
+                        mask or digitMask(digit)
+                    }
+                    legalMask and explicitMask
+                } else {
+                    legalMask
+                }
             }
 
             return SolverState(values, candidateMasks)

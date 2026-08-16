@@ -1,10 +1,18 @@
 package com.galaxyrio.sudokusolver.ui.screens.game
 
 import com.galaxyrio.sudokusolver.data.GameRepository
+import com.galaxyrio.sudokusolver.data.settings.AppSettings
+import com.galaxyrio.sudokusolver.domain.game.CandidateCalculator
+import com.galaxyrio.sudokusolver.domain.game.HintIssue
+import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteColor
+import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteEndpoint
+import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteLineStyle
+import com.galaxyrio.sudokusolver.domain.model.AdvancedNotes
 import com.galaxyrio.sudokusolver.domain.model.Cell
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
 import com.galaxyrio.sudokusolver.domain.model.SavedGame
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
+import com.galaxyrio.sudokusolver.domain.model.SudokuSolution
 import com.galaxyrio.sudokusolver.domain.solver.CandidateElimination
 import com.galaxyrio.sudokusolver.domain.solver.CandidateRef
 import com.galaxyrio.sudokusolver.domain.solver.CellRef
@@ -90,6 +98,7 @@ class GameViewModelTest {
             id = 11,
             difficulty = Difficulty.EASY,
             sudoku = Sudoku(),
+            solution = SOLUTION.toSolution(),
         )
         val repository = FakeGameRepository(savedGame)
         val viewModel = GameViewModel(
@@ -105,6 +114,7 @@ class GameViewModelTest {
 
         assertEquals(5, viewModel.uiState.value.sudoku.getCell(0, 0).value)
         assertEquals(5, repository.savedGamesHistory.last().sudoku.getCell(0, 0).value)
+        assertEquals(savedGame.solution, repository.savedGamesHistory.last().solution)
     }
 
     @Test
@@ -210,6 +220,190 @@ class GameViewModelTest {
     }
 
     @Test
+    fun advancedNotesSelectMultipleDigitsWithoutEnteringValues() = runViewModelTest {
+        val savedGame = SavedGame(
+            id = 210,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku(),
+        )
+        val repository = FakeGameRepository(savedGame)
+        val viewModel = GameViewModel(
+            gameRepository = repository,
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+        )
+        advanceUntilIdle()
+
+        viewModel.setAdvancedMode(true)
+        viewModel.toggleAdvancedNoteMode()
+        viewModel.onCellSelected(row = 0, col = 0)
+        viewModel.onAdvancedNumberSelected(2)
+        viewModel.onAdvancedNumberSelected(7)
+        advanceUntilIdle()
+
+        assertEquals(setOf(2, 7), viewModel.uiState.value.advancedNotes.highlightedDigits)
+        assertEquals(0, viewModel.uiState.value.sudoku.getCell(0, 0).value)
+        assertEquals(
+            setOf(2, 7),
+            repository.savedGamesHistory.last().advancedNotes.highlightedDigits,
+        )
+    }
+
+    @Test
+    fun advancedNoteModeStillAllowsExplicitCandidateNotes() = runViewModelTest {
+        val savedGame = SavedGame(
+            id = 211,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku(),
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+        )
+        advanceUntilIdle()
+
+        viewModel.setAdvancedMode(true)
+        viewModel.toggleAdvancedNoteMode()
+        viewModel.toggleNoteMode()
+        viewModel.onCellSelected(row = 0, col = 0)
+        viewModel.onAdvancedNumberSelected(4)
+
+        val cell = viewModel.uiState.value.sudoku.getCell(0, 0)
+        assertEquals(0, cell.value)
+        assertEquals(setOf(4), cell.candidates)
+        assertTrue(cell.isCandidateSetExplicit)
+        assertTrue(viewModel.uiState.value.advancedNotes.highlightedDigits.isEmpty())
+    }
+
+    @Test
+    fun advancedToolsEnableAdvancedNotesAndPersistFeatureFlags() = runViewModelTest {
+        val savedGame = SavedGame(
+            id = 212,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku(),
+        )
+        val repository = FakeGameRepository(savedGame)
+        val viewModel = GameViewModel(
+            gameRepository = repository,
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+        )
+        advanceUntilIdle()
+
+        viewModel.setAdvancedMode(true)
+        viewModel.toggleBivalueHighlights()
+        viewModel.toggleFrameHighlights()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.isAdvancedNoteMode)
+        assertTrue(state.advancedNotes.highlightBivalueCandidates)
+        assertTrue(state.advancedNotes.frameHighlightedCells)
+        assertEquals(state.advancedNotes, repository.savedGamesHistory.last().advancedNotes)
+    }
+
+    @Test
+    fun paintColorsSelectedCandidatesAndWhiteClearsTheWholeCell() = runViewModelTest {
+        val cells = MutableList(Sudoku.CELL_COUNT) { Cell() }
+        cells[0] = Cell(candidates = setOf(2, 7))
+        val savedGame = SavedGame(
+            id = 213,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku(cells),
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+        )
+        advanceUntilIdle()
+
+        viewModel.setAdvancedMode(true)
+        viewModel.toggleAdvancedNoteMode()
+        viewModel.onAdvancedNumberSelected(2)
+        viewModel.onAdvancedNumberSelected(7)
+        viewModel.togglePaintTool()
+        viewModel.onCellSelected(row = 0, col = 0)
+
+        assertEquals(
+            AdvancedNoteColor.RED,
+            viewModel.uiState.value.advancedNotes.candidateColor(0, 2),
+        )
+        assertEquals(
+            AdvancedNoteColor.RED,
+            viewModel.uiState.value.advancedNotes.candidateColor(0, 7),
+        )
+        assertTrue(viewModel.uiState.value.advancedNotes.cellColors.isEmpty())
+
+        viewModel.selectAdvancedColor(AdvancedNoteColor.entries.size)
+        viewModel.onCellSelected(row = 0, col = 0)
+
+        assertTrue(viewModel.uiState.value.advancedNotes.candidateColors.isEmpty())
+        assertTrue(viewModel.uiState.value.advancedNotes.cellColors.isEmpty())
+    }
+
+    @Test
+    fun lineToolStoresCandidateSpecificEndpoints() = runViewModelTest {
+        val cells = MutableList(Sudoku.CELL_COUNT) { Cell() }
+        cells[0] = Cell(candidates = setOf(4, 6))
+        cells[1] = Cell(candidates = setOf(4, 8))
+        val savedGame = SavedGame(
+            id = 214,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku(cells),
+        )
+        val repository = FakeGameRepository(savedGame)
+        val viewModel = GameViewModel(
+            gameRepository = repository,
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+        )
+        advanceUntilIdle()
+
+        viewModel.setAdvancedMode(true)
+        viewModel.toggleAdvancedNoteMode()
+        viewModel.onAdvancedNumberSelected(4)
+        viewModel.toggleLineTool(AdvancedNoteLineStyle.SOLID)
+        viewModel.onCellSelected(row = 0, col = 0)
+        assertEquals(
+            AdvancedNoteEndpoint(cellIndex = 0, candidateDigit = 4),
+            viewModel.uiState.value.pendingLineStart,
+        )
+        viewModel.onCellSelected(row = 0, col = 1)
+        advanceUntilIdle()
+
+        val line = viewModel.uiState.value.advancedNotes.lines.single()
+        assertEquals(AdvancedNoteEndpoint(0, 4), line.start)
+        assertEquals(AdvancedNoteEndpoint(1, 4), line.end)
+        assertEquals(AdvancedNoteLineStyle.SOLID, line.style)
+        assertEquals(AdvancedNoteColor.RED, line.color)
+        assertEquals(line, repository.savedGamesHistory.last().advancedNotes.lines.single())
+    }
+
+    @Test
+    fun savedAdvancedNotesAreRestoredWithTheGame() = runViewModelTest {
+        val notes = AdvancedNotes(
+            highlightedDigits = setOf(3, 9),
+            cellColors = mapOf(8 to AdvancedNoteColor.CYAN),
+        )
+        val savedGame = SavedGame(
+            id = 215,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku(),
+            advancedNotes = notes,
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+        )
+        advanceUntilIdle()
+
+        assertEquals(notes, viewModel.uiState.value.advancedNotes)
+    }
+
+    @Test
     fun hintTraceSupportsArbitraryNavigationAndAppliesOnlyTheNextStep() = runViewModelTest {
         val savedGame = SavedGame(
             id = 22,
@@ -255,6 +449,203 @@ class GameViewModelTest {
                     .candidates
             )
         }
+    }
+
+    @Test
+    fun hintUsesCurrentSukakuCandidatesWithoutRestoringValidEliminations() = runViewModelTest {
+        val constrainedBoard = CandidateCalculator.calculateAllCandidates(
+            Sudoku.fromGridString(PUZZLE)
+        ).removeCandidate(row = 0, col = 2, candidate = 1)
+        val savedGame = SavedGame(
+            id = 25,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = constrainedBoard,
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+            solverDispatcher = StandardTestDispatcher(testScheduler),
+        )
+        advanceUntilIdle()
+
+        viewModel.prepareHintTrace()
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.hintIssue)
+        assertFalse(
+            requireNotNull(viewModel.uiState.value.hintTrace)
+                .initialState
+                .hasCandidate(CellRef(0, 2), 1)
+        )
+    }
+
+    @Test
+    fun hintRepairsWrongValuesBeforeMissingCandidates() = runViewModelTest {
+        val constrainedBoard = CandidateCalculator.calculateAllCandidates(
+            Sudoku.fromGridString(PUZZLE)
+        )
+            .removeCandidate(row = 0, col = 3, candidate = 6)
+            .setCell(row = 0, col = 2, value = 1)
+        val savedGame = SavedGame(
+            id = 26,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = constrainedBoard,
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+            solverDispatcher = StandardTestDispatcher(testScheduler),
+        )
+        advanceUntilIdle()
+
+        viewModel.prepareHintTrace()
+        advanceUntilIdle()
+
+        val valueIssue = viewModel.uiState.value.hintIssue as HintIssue.IncorrectValues
+        assertEquals(listOf(CellRef(0, 2)), valueIssue.entries.map { it.cell })
+        assertNull(viewModel.uiState.value.hintTrace)
+        assertTrue(viewModel.applyHintAction())
+        assertEquals(0, viewModel.uiState.value.sudoku.getCell(0, 2).value)
+        advanceUntilIdle()
+
+        viewModel.prepareHintTrace()
+        advanceUntilIdle()
+
+        val candidateIssue = viewModel.uiState.value.hintIssue as HintIssue.MissingCandidates
+        assertTrue(CandidateRef(CellRef(0, 3), 6) in candidateIssue.candidates)
+        assertTrue(viewModel.applyHintAction())
+        assertTrue(6 in viewModel.uiState.value.sudoku.getCell(0, 3).candidates)
+    }
+
+    @Test
+    fun hiddenHintDetailsRequireAnExplicitReveal() = runViewModelTest {
+        val savedGame = SavedGame(
+            id = 27,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku.fromGridString(PUZZLE),
+            solution = SOLUTION.toSolution(),
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+            solverDispatcher = StandardTestDispatcher(testScheduler),
+            settings = MutableStateFlow(AppSettings(showHintDetails = false)),
+        )
+        advanceUntilIdle()
+
+        viewModel.prepareHintTrace()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.hintTrace?.steps?.isNotEmpty() == true)
+        assertFalse(viewModel.uiState.value.areHintDetailsVisible)
+        viewModel.revealHintDetails()
+        assertTrue(viewModel.uiState.value.areHintDetailsVisible)
+    }
+
+    @Test
+    fun privateCandidateErrorDismissesWithoutRestoringCandidate() = runViewModelTest {
+        val board = CandidateCalculator.calculateAllCandidates(
+            Sudoku.fromGridString(PUZZLE)
+        ).removeCandidate(row = 0, col = 2, candidate = 4)
+        val savedGame = SavedGame(
+            id = 28,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = board,
+            solution = SOLUTION.toSolution(),
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+            solverDispatcher = StandardTestDispatcher(testScheduler),
+            settings = MutableStateFlow(AppSettings(showErrorDetails = false)),
+        )
+        advanceUntilIdle()
+
+        viewModel.prepareHintTrace()
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.hintIssue is HintIssue.MissingCandidates)
+
+        assertTrue(viewModel.applyHintAction())
+        assertNull(viewModel.uiState.value.hintIssue)
+        assertFalse(4 in viewModel.uiState.value.sudoku.getCell(0, 2).candidates)
+    }
+
+    @Test
+    fun immediateErrorOpensForNonConflictingWrongEntry() = runViewModelTest {
+        val savedGame = SavedGame(
+            id = 29,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku.fromGridString(PUZZLE),
+            solution = SOLUTION.toSolution(),
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+            settings = MutableStateFlow(AppSettings(showErrorsImmediately = true)),
+        )
+        advanceUntilIdle()
+
+        viewModel.onCellSelected(row = 0, col = 2)
+        viewModel.onNumberSelected(1)
+
+        val issue = viewModel.uiState.value.hintIssue as HintIssue.IncorrectValues
+        assertEquals(listOf(CellRef(0, 2)), issue.entries.map { it.cell })
+        assertEquals(1L, viewModel.uiState.value.immediateHintRequestId)
+    }
+
+    @Test
+    fun immediateErrorLeavesExistingConflictToBoardHighlighting() = runViewModelTest {
+        val savedGame = SavedGame(
+            id = 30,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku.fromGridString(PUZZLE),
+            solution = SOLUTION.toSolution(),
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+            settings = MutableStateFlow(AppSettings(showErrorsImmediately = true)),
+        )
+        advanceUntilIdle()
+
+        viewModel.onCellSelected(row = 0, col = 2)
+        viewModel.onNumberSelected(5)
+
+        assertNull(viewModel.uiState.value.hintIssue)
+        assertEquals(0L, viewModel.uiState.value.immediateHintRequestId)
+    }
+
+    @Test
+    fun immediateErrorOpensWhenSolutionCandidateIsRemoved() = runViewModelTest {
+        val savedGame = SavedGame(
+            id = 31,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = CandidateCalculator.calculateAllCandidates(
+                Sudoku.fromGridString(PUZZLE)
+            ),
+            solution = SOLUTION.toSolution(),
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+            settings = MutableStateFlow(AppSettings(showErrorsImmediately = true)),
+        )
+        advanceUntilIdle()
+
+        viewModel.toggleNoteMode()
+        viewModel.onCellSelected(row = 0, col = 2)
+        viewModel.onNumberSelected(4)
+
+        val issue = viewModel.uiState.value.hintIssue as HintIssue.MissingCandidates
+        assertEquals(listOf(CandidateRef(CellRef(0, 2), 4)), issue.candidates)
+        assertEquals(1L, viewModel.uiState.value.immediateHintRequestId)
     }
 
     @Test
@@ -372,6 +763,8 @@ class GameViewModelTest {
             Dispatchers.resetMain()
         }
     }
+
+    private fun String.toSolution(): SudokuSolution = SudokuSolution(map(Char::digitToInt))
 
     private class FakeGameRepository(
         initialGame: SavedGame? = null,

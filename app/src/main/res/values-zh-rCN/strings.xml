@@ -15,7 +15,7 @@
     <string name="difficulty_easy">简单</string>
     <string name="difficulty_medium">中等</string>
     <string name="difficulty_hard">困难</string>
-    <string name="difficulty_brutal">Brutal</string>
+    <string name="difficulty_brutal">极难</string>
 
     <string name="play_title">数独</string>
     <string name="play_recent_games">最近对局</string>
@@ -93,7 +93,13 @@
     <string name="language_chinese_simplified_summary">简体中文</string>
 
     <string name="game_settings_title">游戏</string>
-    <string name="game_settings_placeholder">游戏选项将在后续版本中开放。</string>
+    <string name="game_settings_input_rules_section">输入与规则</string>
+    <string name="game_settings_show_hint_details">显示提示详情</string>
+    <string name="game_settings_show_hint_details_summary">立即显示解释、受影响的候选数和棋盘标记。关闭后，每条提示仅在主动揭示时显示详情。</string>
+    <string name="game_settings_show_error_details">显示错误详情</string>
+    <string name="game_settings_show_error_details_summary">指出具体填错的数字和误删的候选数，并允许恢复缺失候选数。</string>
+    <string name="game_settings_show_errors_immediately">立即显示错误</string>
+    <string name="game_settings_show_errors_immediately_summary">填入不冲突但错误的数字，或删除解题所需的候选数后，立即打开提示窗口。</string>
     <string name="assistance_settings_title">辅助</string>
     <string name="assistance_settings_placeholder">学习与辅助选项将在后续版本中开放。</string>
     <string name="files_settings_title">文件</string>
@@ -117,11 +123,31 @@
     <string name="game_hint">提示</string>
     <string name="game_more_options">更多选项</string>
     <string name="game_advanced_mode">高级模式</string>
+    <string name="game_advanced_note_mode">高级笔记</string>
+    <string name="game_advanced_bivalue">高亮双候选格</string>
+    <string name="game_advanced_paint">上色</string>
+    <string name="game_advanced_frame">框选高亮格</string>
+    <string name="game_advanced_solid_line">绘制实线</string>
+    <string name="game_advanced_dashed_line">绘制虚线</string>
+    <string name="game_advanced_color_option">注释颜色 %1$d</string>
+    <string name="game_advanced_erase_colors">清除颜色</string>
     <string name="game_completed">完成题目</string>
     <string name="game_congratulations">恭喜，你解开了这道题！</string>
     <string name="game_completion_time">用时：%1$s</string>
     <string name="game_hint_loading">正在生成逻辑解题步骤…</string>
     <string name="game_hint_apply_next">应用当前棋盘的下一步</string>
+    <string name="game_hint_apply_recovery">恢复棋盘上标出的问题</string>
+    <string name="game_hint_dismiss_error">关闭提示且不修改候选数</string>
+    <string name="game_hint_reveal_details">揭示</string>
+    <string name="game_hint_incorrect_values_title">填入数字错误</string>
+    <string name="game_hint_incorrect_values_explanation">这些填入数字与原题答案冲突。</string>
+    <string name="game_hint_incorrect_values_private_explanation">以下格子填入了错误数字。</string>
+    <string name="game_hint_incorrect_value_item">第 %1$d 行第 %2$d 列当前填入了 %3$d。</string>
+    <string name="game_hint_missing_candidates_title">缺失候选数</string>
+    <string name="game_hint_missing_candidates_explanation">当前 Sukaku 无解，因为下列属于原题答案的候选数已被删除。</string>
+    <string name="game_hint_missing_candidates_private_explanation">以下格子的候选数状态使当前 Sukaku 无解。</string>
+    <string name="game_hint_missing_candidate_item">在第 %2$d 行第 %3$d 列恢复候选数 %1$d。</string>
+    <string name="game_hint_error_cell_item">第 %1$d 行第 %2$d 列</string>
     <string name="game_hint_step_count">第 %1$d / %2$d 步</string>
     <string name="game_hint_no_supported_step">从当前局面没有找到已支持的逻辑步骤。</string>
     <string name="game_hint_already_solved">这道题已经完成。</string>

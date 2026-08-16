@@ -54,7 +54,9 @@ class SudokuTest {
 
         assertTrue(7 in withCandidate.getCell(3, 4).candidates)
         assertTrue(withoutCandidate.getCell(3, 4).candidates.isEmpty())
+        assertTrue(withoutCandidate.getCell(3, 4).isCandidateSetExplicit)
         assertTrue(original.getCell(3, 4).candidates.isEmpty())
+        assertFalse(original.getCell(3, 4).isCandidateSetExplicit)
     }
 
     @Test

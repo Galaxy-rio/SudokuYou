@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -67,6 +68,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -84,20 +86,29 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.galaxyrio.sudokusolver.R
+import com.galaxyrio.sudokusolver.domain.game.HintIssue
+import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteColor
+import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteLineStyle
 import com.galaxyrio.sudokusolver.domain.model.Cell
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
 import com.galaxyrio.sudokusolver.domain.solver.CellRef
+import com.galaxyrio.sudokusolver.domain.solver.CandidateRef
 import com.galaxyrio.sudokusolver.domain.solver.SolveStep
 import com.galaxyrio.sudokusolver.domain.solver.SolverState
 import com.galaxyrio.sudokusolver.ui.components.BoardConfig
+import com.galaxyrio.sudokusolver.ui.components.AdvancedNumberPad
 import com.galaxyrio.sudokusolver.ui.components.GameHintPanel
 import com.galaxyrio.sudokusolver.ui.components.NumberPad
 import com.galaxyrio.sudokusolver.ui.components.SudokuBoard
+import com.galaxyrio.sudokusolver.ui.components.toComposeColor
 import com.galaxyrio.sudokusolver.ui.screens.play.NEW_GAME_CONTAINER_KEY
 import com.galaxyrio.sudokusolver.ui.screens.play.gameContainerKey
 import com.galaxyrio.sudokusolver.ui.screens.play.thumbnailKey
@@ -128,6 +139,7 @@ fun GameRoute(
     // calculations describe the complete visible sheet.
     val sheetChromeHeight = 80.dp
     var showHint by rememberSaveable { mutableStateOf(false) }
+    var handledImmediateHintRequestId by rememberSaveable { mutableLongStateOf(0L) }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val persistenceErrorMessage = stringResource(R.string.game_save_error)
@@ -149,6 +161,15 @@ fun GameRoute(
 
     LaunchedEffect(uiState.isComplete) {
         if (uiState.isComplete) showHint = false
+    }
+
+    LaunchedEffect(uiState.immediateHintRequestId) {
+        if (uiState.immediateHintRequestId > handledImmediateHintRequestId) {
+            handledImmediateHintRequestId = uiState.immediateHintRequestId
+            isHintLayoutElevated = false
+            elevatedBoardBottomPx = Float.NaN
+            showHint = true
+        }
     }
 
     LaunchedEffect(showHint) {
@@ -223,12 +244,24 @@ fun GameRoute(
             onRetry = viewModel::retry,
             onCellSelected = viewModel::onCellSelected,
             onNumberSelected = viewModel::onNumberSelected,
+            onAdvancedNumberSelected = viewModel::onAdvancedNumberSelected,
             onClearSelection = viewModel::clearSelection,
             onUndo = viewModel::undo,
             onErase = viewModel::eraseSelectedCell,
             onToggleNoteMode = viewModel::toggleNoteMode,
             onFillCandidates = viewModel::fillCandidates,
             onAdvancedModeChange = viewModel::setAdvancedMode,
+            onToggleAdvancedNoteMode = viewModel::toggleAdvancedNoteMode,
+            onToggleBivalueHighlights = viewModel::toggleBivalueHighlights,
+            onTogglePaintTool = viewModel::togglePaintTool,
+            onToggleFrameHighlights = viewModel::toggleFrameHighlights,
+            onToggleSolidLineTool = {
+                viewModel.toggleLineTool(AdvancedNoteLineStyle.SOLID)
+            },
+            onToggleDashedLineTool = {
+                viewModel.toggleLineTool(AdvancedNoteLineStyle.DASHED)
+            },
+            onAdvancedColorSelected = viewModel::selectAdvancedColor,
             onShowHint = {
                 isHintLayoutElevated = false
                 elevatedBoardBottomPx = Float.NaN
@@ -264,10 +297,14 @@ fun GameRoute(
                 GameHintPanel(
                     isLoading = uiState.isHintLoading,
                     trace = uiState.hintTrace,
+                    issue = uiState.hintIssue,
                     selectedStepIndex = uiState.selectedHintStepIndex,
+                    areHintDetailsVisible = uiState.areHintDetailsVisible,
+                    showErrorDetails = uiState.showErrorDetails,
                     onStepSelected = viewModel::selectHintStep,
+                    onRevealDetails = viewModel::revealHintDetails,
                     onApplyNext = {
-                        if (viewModel.applyNextHintStep()) {
+                        if (viewModel.applyHintAction()) {
                             dismissHint()
                         }
                     },
@@ -298,12 +335,20 @@ fun GameScreen(
     onRetry: () -> Unit,
     onCellSelected: (Int, Int) -> Unit,
     onNumberSelected: (Int) -> Unit,
+    onAdvancedNumberSelected: (Int) -> Unit,
     onClearSelection: () -> Unit,
     onUndo: () -> Unit,
     onErase: () -> Unit,
     onToggleNoteMode: () -> Unit,
     onFillCandidates: () -> Unit,
     onAdvancedModeChange: (Boolean) -> Unit,
+    onToggleAdvancedNoteMode: () -> Unit,
+    onToggleBivalueHighlights: () -> Unit,
+    onTogglePaintTool: () -> Unit,
+    onToggleFrameHighlights: () -> Unit,
+    onToggleSolidLineTool: () -> Unit,
+    onToggleDashedLineTool: () -> Unit,
+    onAdvancedColorSelected: (Int) -> Unit,
     onShowHint: () -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
@@ -335,12 +380,20 @@ fun GameScreen(
                 onBack = onBack,
                 onCellSelected = onCellSelected,
                 onNumberSelected = onNumberSelected,
+                onAdvancedNumberSelected = onAdvancedNumberSelected,
                 onClearSelection = onClearSelection,
                 onUndo = onUndo,
                 onErase = onErase,
                 onToggleNoteMode = onToggleNoteMode,
                 onFillCandidates = onFillCandidates,
                 onAdvancedModeChange = onAdvancedModeChange,
+                onToggleAdvancedNoteMode = onToggleAdvancedNoteMode,
+                onToggleBivalueHighlights = onToggleBivalueHighlights,
+                onTogglePaintTool = onTogglePaintTool,
+                onToggleFrameHighlights = onToggleFrameHighlights,
+                onToggleSolidLineTool = onToggleSolidLineTool,
+                onToggleDashedLineTool = onToggleDashedLineTool,
+                onAdvancedColorSelected = onAdvancedColorSelected,
                 onShowHint = onShowHint,
                 snackbarHostState = snackbarHostState,
                 modifier = modifier,
@@ -426,12 +479,20 @@ private fun GameScaffold(
     onBack: () -> Unit,
     onCellSelected: (Int, Int) -> Unit,
     onNumberSelected: (Int) -> Unit,
+    onAdvancedNumberSelected: (Int) -> Unit,
     onClearSelection: () -> Unit,
     onUndo: () -> Unit,
     onErase: () -> Unit,
     onToggleNoteMode: () -> Unit,
     onFillCandidates: () -> Unit,
     onAdvancedModeChange: (Boolean) -> Unit,
+    onToggleAdvancedNoteMode: () -> Unit,
+    onToggleBivalueHighlights: () -> Unit,
+    onTogglePaintTool: () -> Unit,
+    onToggleFrameHighlights: () -> Unit,
+    onToggleSolidLineTool: () -> Unit,
+    onToggleDashedLineTool: () -> Unit,
+    onAdvancedColorSelected: (Int) -> Unit,
     onShowHint: () -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier,
@@ -468,6 +529,8 @@ private fun GameScaffold(
         bottomBar = {
             GameBottomBar(
                 isNoteMode = uiState.isNoteMode,
+                isAdvancedColorToolActive = uiState.isAdvancedColorToolActive,
+                selectedAdvancedColorIndex = uiState.selectedAdvancedColorIndex,
                 canUndo = uiState.canUndo && !uiState.isComplete,
                 enabled = !uiState.isComplete,
                 onUndo = onUndo,
@@ -475,6 +538,7 @@ private fun GameScaffold(
                 onToggleNoteMode = onToggleNoteMode,
                 onFillCandidates = onFillCandidates,
                 onShowHint = onShowHint,
+                onAdvancedColorSelected = onAdvancedColorSelected,
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -509,7 +573,14 @@ private fun GameScaffold(
                 onNumberPadBoundsChanged = onNumberPadBoundsChanged,
                 onCellSelected = onCellSelected,
                 onNumberSelected = onNumberSelected,
+                onAdvancedNumberSelected = onAdvancedNumberSelected,
                 onClearSelection = onClearSelection,
+                onToggleAdvancedNoteMode = onToggleAdvancedNoteMode,
+                onToggleBivalueHighlights = onToggleBivalueHighlights,
+                onTogglePaintTool = onTogglePaintTool,
+                onToggleFrameHighlights = onToggleFrameHighlights,
+                onToggleSolidLineTool = onToggleSolidLineTool,
+                onToggleDashedLineTool = onToggleDashedLineTool,
                 boardModifier = boardModifier,
                 modifier = containerModifier,
             )
@@ -594,6 +665,8 @@ private fun GameTopBar(
 @Composable
 private fun GameBottomBar(
     isNoteMode: Boolean,
+    isAdvancedColorToolActive: Boolean,
+    selectedAdvancedColorIndex: Int,
     canUndo: Boolean,
     enabled: Boolean,
     onUndo: () -> Unit,
@@ -601,7 +674,16 @@ private fun GameBottomBar(
     onToggleNoteMode: () -> Unit,
     onFillCandidates: () -> Unit,
     onShowHint: () -> Unit,
+    onAdvancedColorSelected: (Int) -> Unit,
 ) {
+    if (isAdvancedColorToolActive) {
+        AdvancedColorBottomBar(
+            selectedColorIndex = selectedAdvancedColorIndex,
+            onColorSelected = onAdvancedColorSelected,
+        )
+        return
+    }
+
     BottomAppBar {
         ToolbarAction(
             icon = Icons.AutoMirrored.Filled.Undo,
@@ -638,6 +720,74 @@ private fun GameBottomBar(
             enabled = enabled,
             onClick = onShowHint,
             modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun AdvancedColorBottomBar(
+    selectedColorIndex: Int,
+    onColorSelected: (Int) -> Unit,
+) {
+    BottomAppBar {
+        AdvancedNoteColor.entries.forEachIndexed { index, noteColor ->
+            AdvancedColorSwatch(
+                color = noteColor.toComposeColor(),
+                selected = selectedColorIndex == index,
+                contentDescription = stringResource(
+                    R.string.game_advanced_color_option,
+                    index + 1,
+                ),
+                onClick = { onColorSelected(index) },
+                modifier = Modifier.weight(1f),
+            )
+        }
+        AdvancedColorSwatch(
+            color = Color.White,
+            selected = selectedColorIndex == AdvancedNoteColor.entries.size,
+            contentDescription = stringResource(R.string.game_advanced_erase_colors),
+            onClick = { onColorSelected(AdvancedNoteColor.entries.size) },
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun AdvancedColorSwatch(
+    color: Color,
+    selected: Boolean,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val outlineColor = if (selected) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.outlineVariant
+    }
+    Box(
+        modifier = modifier
+            .fillMaxHeight()
+            .semantics {
+                this.contentDescription = contentDescription
+                this.selected = selected
+            }
+            .clickable(
+                role = Role.Button,
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(if (selected) 36.dp else 30.dp)
+                .border(
+                    width = if (selected) 3.dp else 1.dp,
+                    color = outlineColor,
+                    shape = CircleShape,
+                )
+                .padding(if (selected) 4.dp else 3.dp)
+                .background(color, CircleShape),
         )
     }
 }
@@ -764,7 +914,14 @@ private fun AdaptiveGameContent(
     onNumberPadBoundsChanged: (Rect) -> Unit,
     onCellSelected: (Int, Int) -> Unit,
     onNumberSelected: (Int) -> Unit,
+    onAdvancedNumberSelected: (Int) -> Unit,
     onClearSelection: () -> Unit,
+    onToggleAdvancedNoteMode: () -> Unit,
+    onToggleBivalueHighlights: () -> Unit,
+    onTogglePaintTool: () -> Unit,
+    onToggleFrameHighlights: () -> Unit,
+    onToggleSolidLineTool: () -> Unit,
+    onToggleDashedLineTool: () -> Unit,
     modifier: Modifier = Modifier,
     boardModifier: Modifier = Modifier,
 ) {
@@ -798,7 +955,14 @@ private fun AdaptiveGameContent(
                     isNumberPadVisible = !isHintLayoutElevated,
                     onNumberPadBoundsChanged = onNumberPadBoundsChanged,
                     onNumberSelected = onNumberSelected,
+                    onAdvancedNumberSelected = onAdvancedNumberSelected,
                     onClearSelection = onClearSelection,
+                    onToggleAdvancedNoteMode = onToggleAdvancedNoteMode,
+                    onToggleBivalueHighlights = onToggleBivalueHighlights,
+                    onTogglePaintTool = onTogglePaintTool,
+                    onToggleFrameHighlights = onToggleFrameHighlights,
+                    onToggleSolidLineTool = onToggleSolidLineTool,
+                    onToggleDashedLineTool = onToggleDashedLineTool,
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
@@ -826,7 +990,14 @@ private fun AdaptiveGameContent(
                     isNumberPadVisible = !isHintLayoutElevated,
                     onNumberPadBoundsChanged = onNumberPadBoundsChanged,
                     onNumberSelected = onNumberSelected,
+                    onAdvancedNumberSelected = onAdvancedNumberSelected,
                     onClearSelection = onClearSelection,
+                    onToggleAdvancedNoteMode = onToggleAdvancedNoteMode,
+                    onToggleBivalueHighlights = onToggleBivalueHighlights,
+                    onTogglePaintTool = onTogglePaintTool,
+                    onToggleFrameHighlights = onToggleFrameHighlights,
+                    onToggleSolidLineTool = onToggleSolidLineTool,
+                    onToggleDashedLineTool = onToggleDashedLineTool,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
@@ -846,15 +1017,21 @@ private fun GameBoard(
     modifier: Modifier = Modifier,
 ) {
     val trace = uiState.hintTrace
+    val issue = uiState.hintIssue.takeIf { isHintVisible }
+    val areHintDetailsVisible = uiState.areHintDetailsVisible
     val hintIndex = trace?.steps?.takeIf { it.isNotEmpty() }?.let { steps ->
         uiState.selectedHintStepIndex.coerceIn(steps.indices)
     }
-    val overlayStep: SolveStep? = if (isHintVisible && hintIndex != null) {
+    val overlayStep: SolveStep? = if (
+        isHintVisible && issue == null && hintIndex != null && areHintDetailsVisible
+    ) {
         trace.steps[hintIndex]
     } else {
         null
     }
-    val hintState: SolverState? = if (isHintVisible && hintIndex != null) {
+    val hintState: SolverState? = if (
+        isHintVisible && issue == null && hintIndex != null && areHintDetailsVisible
+    ) {
         trace.stateBeforeStep(hintIndex)
     } else {
         null
@@ -862,14 +1039,43 @@ private fun GameBoard(
     val displayedSudoku = remember(hintState, uiState.sudoku) {
         hintState?.toDisplaySudoku(uiState.sudoku) ?: uiState.sudoku
     }
+    val correctionCells: Set<CellRef> = when (issue) {
+        is HintIssue.IncorrectValues -> issue.entries.mapTo(mutableSetOf()) { it.cell }
+        is HintIssue.MissingCandidates -> if (uiState.showErrorDetails) {
+            emptySet()
+        } else {
+            issue.candidates.mapTo(mutableSetOf()) { it.cell }
+        }
+        else -> emptySet()
+    }
+    val correctionCandidates: Set<CandidateRef> = when (issue) {
+        is HintIssue.MissingCandidates -> if (uiState.showErrorDetails) {
+            issue.candidates.toSet()
+        } else {
+            emptySet()
+        }
+        else -> emptySet()
+    }
+    val showAdvancedAnnotations = uiState.isAdvancedMode && !isHintVisible
+    val showAdvancedHighlights = showAdvancedAnnotations && uiState.isAdvancedNoteMode
+    val highlightedNumbers = when {
+        isHintVisible -> emptySet()
+        showAdvancedHighlights -> uiState.advancedNotes.highlightedDigits
+        else -> setOfNotNull(uiState.highlightedNumber)
+    }
 
     SudokuBoard(
         sudoku = displayedSudoku,
         onCellClick = onCellSelected,
         selectedRow = uiState.selectedCell?.row.takeUnless { isHintVisible },
         selectedCol = uiState.selectedCell?.col.takeUnless { isHintVisible },
-        highlightNumber = uiState.highlightedNumber.takeUnless { isHintVisible },
+        highlightNumbers = highlightedNumbers,
+        advancedNotes = uiState.advancedNotes.takeIf { showAdvancedAnnotations },
+        showAdvancedHighlights = showAdvancedHighlights,
+        pendingLineStart = uiState.pendingLineStart.takeIf { showAdvancedHighlights },
         overlayStep = overlayStep,
+        correctionCells = correctionCells,
+        correctionCandidates = correctionCandidates,
         onBoardBoundsChanged = onBoardBoundsChanged.takeIf { isHintVisible },
         config = boardConfig,
         modifier = modifier,
@@ -894,7 +1100,14 @@ private fun GameControlArea(
     isNumberPadVisible: Boolean,
     onNumberPadBoundsChanged: (Rect) -> Unit,
     onNumberSelected: (Int) -> Unit,
+    onAdvancedNumberSelected: (Int) -> Unit,
     onClearSelection: () -> Unit,
+    onToggleAdvancedNoteMode: () -> Unit,
+    onToggleBivalueHighlights: () -> Unit,
+    onTogglePaintTool: () -> Unit,
+    onToggleFrameHighlights: () -> Unit,
+    onToggleSolidLineTool: () -> Unit,
+    onToggleDashedLineTool: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -913,13 +1126,40 @@ private fun GameControlArea(
                 modifier = Modifier.fillMaxSize(),
                 label = "game_number_pad_visibility",
             ) {
-                NumberPad(
-                    selectedNumber = uiState.selectedNumber,
-                    onNumberClick = onNumberSelected,
-                    onBackgroundClick = onClearSelection,
-                    onPadBoundsChanged = onNumberPadBoundsChanged,
-                    modifier = Modifier.fillMaxSize(),
-                )
+                if (uiState.isAdvancedMode) {
+                    AdvancedNumberPad(
+                        isAdvancedNoteMode = uiState.isAdvancedNoteMode,
+                        selectedNumber = uiState.selectedNumber,
+                        highlightedNumbers = uiState.advancedNotes.highlightedDigits,
+                        showBivalueHighlights =
+                            uiState.advancedNotes.highlightBivalueCandidates,
+                        frameHighlights = uiState.advancedNotes.frameHighlightedCells,
+                        isPaintSelected =
+                            uiState.advancedInputTool == AdvancedInputTool.PAINT,
+                        isSolidLineSelected =
+                            uiState.advancedInputTool == AdvancedInputTool.SOLID_LINE,
+                        isDashedLineSelected =
+                            uiState.advancedInputTool == AdvancedInputTool.DASHED_LINE,
+                        onNumberClick = onAdvancedNumberSelected,
+                        onAdvancedNoteModeClick = onToggleAdvancedNoteMode,
+                        onBivalueClick = onToggleBivalueHighlights,
+                        onPaintClick = onTogglePaintTool,
+                        onFrameClick = onToggleFrameHighlights,
+                        onSolidLineClick = onToggleSolidLineTool,
+                        onDashedLineClick = onToggleDashedLineTool,
+                        onBackgroundClick = onClearSelection,
+                        onPadBoundsChanged = onNumberPadBoundsChanged,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    NumberPad(
+                        selectedNumber = uiState.selectedNumber,
+                        onNumberClick = onNumberSelected,
+                        onBackgroundClick = onClearSelection,
+                        onPadBoundsChanged = onNumberPadBoundsChanged,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
         }
     }

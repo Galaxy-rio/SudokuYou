@@ -10,13 +10,26 @@ import org.junit.Test
 class HumanSolverTest {
 
     @Test
-    fun solverCandidatesDoNotTrustPlayerPencilMarks() {
+    fun solverUsesExplicitSukakuCandidates() {
         val cells = MutableList(Sudoku.CELL_COUNT) { Cell() }
         cells[0] = Cell(candidates = setOf(9))
 
         val state = SolverState.fromSudoku(Sudoku(cells))
 
-        assertEquals((1..9).toSet(), state.candidatesAt(CellRef(0, 0)))
+        assertEquals(setOf(9), state.candidatesAt(CellRef(0, 0)))
+    }
+
+    @Test
+    fun unrestrictedEmptyCellStillCalculatesCandidatesButExplicitEmptyCellIsInvalid() {
+        val unrestricted = SolverState.fromSudoku(Sudoku())
+        assertEquals((1..9).toSet(), unrestricted.candidatesAt(CellRef(0, 0)))
+
+        val cells = MutableList(Sudoku.CELL_COUNT) { Cell() }
+        cells[0] = Cell(isCandidateSetExplicit = true)
+        val constrained = SolverState.fromSudoku(Sudoku(cells))
+
+        assertTrue(constrained.candidatesAt(CellRef(0, 0)).isEmpty())
+        assertFalse(constrained.isValid())
     }
 
     @Test

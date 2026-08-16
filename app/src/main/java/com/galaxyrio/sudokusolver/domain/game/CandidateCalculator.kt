@@ -27,7 +27,10 @@ object CandidateCalculator {
                             }
                         }
                     }
-                    newCells[index] = cell.copy(candidates = validCandidates)
+                    newCells[index] = cell.copy(
+                        candidates = validCandidates,
+                        isCandidateSetExplicit = true,
+                    )
                 }
             }
         }

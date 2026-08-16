@@ -32,6 +32,9 @@ data class AppSettings(
     val positionLines: Boolean = true,
     val positionBlock: Boolean = true,
     val alternativeErrorColor: Boolean = false,
+    val showHintDetails: Boolean = true,
+    val showErrorDetails: Boolean = true,
+    val showErrorsImmediately: Boolean = false,
 ) {
     companion object {
         const val DEFAULT_THEME_COLOR: Int = 0xFF6750A4.toInt()
@@ -50,6 +53,9 @@ interface SettingsRepository {
     fun setPositionLines(enabled: Boolean)
     fun setPositionBlock(enabled: Boolean)
     fun setAlternativeErrorColor(enabled: Boolean)
+    fun setShowHintDetails(enabled: Boolean)
+    fun setShowErrorDetails(enabled: Boolean)
+    fun setShowErrorsImmediately(enabled: Boolean)
 }
 
 class PreferencesSettingsRepository(context: Context) : SettingsRepository {
@@ -104,6 +110,21 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         update { copy(alternativeErrorColor = enabled) }
     }
 
+    override fun setShowHintDetails(enabled: Boolean) {
+        preferences.edit { putBoolean(KEY_SHOW_HINT_DETAILS, enabled) }
+        update { copy(showHintDetails = enabled) }
+    }
+
+    override fun setShowErrorDetails(enabled: Boolean) {
+        preferences.edit { putBoolean(KEY_SHOW_ERROR_DETAILS, enabled) }
+        update { copy(showErrorDetails = enabled) }
+    }
+
+    override fun setShowErrorsImmediately(enabled: Boolean) {
+        preferences.edit { putBoolean(KEY_SHOW_ERRORS_IMMEDIATELY, enabled) }
+        update { copy(showErrorsImmediately = enabled) }
+    }
+
     private fun readSettings(): AppSettings = AppSettings(
         themeMode = enumValueAtOrDefault(
             values = ThemeMode.entries,
@@ -125,6 +146,9 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         positionLines = preferences.getBoolean(KEY_POSITION_LINES, true),
         positionBlock = preferences.getBoolean(KEY_POSITION_BLOCK, true),
         alternativeErrorColor = preferences.getBoolean(KEY_ALTERNATIVE_ERROR_COLOR, false),
+        showHintDetails = preferences.getBoolean(KEY_SHOW_HINT_DETAILS, true),
+        showErrorDetails = preferences.getBoolean(KEY_SHOW_ERROR_DETAILS, true),
+        showErrorsImmediately = preferences.getBoolean(KEY_SHOW_ERRORS_IMMEDIATELY, false),
     )
 
     private inline fun update(transform: AppSettings.() -> AppSettings) {
@@ -142,6 +166,9 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         const val KEY_POSITION_LINES = "position_lines"
         const val KEY_POSITION_BLOCK = "position_block"
         const val KEY_ALTERNATIVE_ERROR_COLOR = "alternative_error_color"
+        const val KEY_SHOW_HINT_DETAILS = "show_hint_details"
+        const val KEY_SHOW_ERROR_DETAILS = "show_error_details"
+        const val KEY_SHOW_ERRORS_IMMEDIATELY = "show_errors_immediately"
     }
 }
 

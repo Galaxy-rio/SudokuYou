@@ -27,6 +27,9 @@ data class SettingsUiState(
     val positionLines: Boolean = true,
     val positionBlock: Boolean = true,
     val alternativeErrorColor: Boolean = false,
+    val showHintDetails: Boolean = true,
+    val showErrorDetails: Boolean = true,
+    val showErrorsImmediately: Boolean = false,
 )
 
 class SettingsViewModel(
@@ -61,6 +64,13 @@ class SettingsViewModel(
     fun setAlternativeErrorColor(enabled: Boolean) =
         repository.setAlternativeErrorColor(enabled)
 
+    fun setShowHintDetails(enabled: Boolean) = repository.setShowHintDetails(enabled)
+
+    fun setShowErrorDetails(enabled: Boolean) = repository.setShowErrorDetails(enabled)
+
+    fun setShowErrorsImmediately(enabled: Boolean) =
+        repository.setShowErrorsImmediately(enabled)
+
     companion object {
         fun factory(repository: SettingsRepository): ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -80,6 +90,9 @@ private fun AppSettings.asUiState(): SettingsUiState = SettingsUiState(
     positionLines = positionLines,
     positionBlock = positionBlock,
     alternativeErrorColor = alternativeErrorColor,
+    showHintDetails = showHintDetails,
+    showErrorDetails = showErrorDetails,
+    showErrorsImmediately = showErrorsImmediately,
 )
 
 private fun PaletteStyleOption.asUiStyle(): PaletteStyle = when (this) {
