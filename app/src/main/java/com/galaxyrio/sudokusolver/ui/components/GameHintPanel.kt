@@ -1,6 +1,15 @@
 package com.galaxyrio.sudokusolver.ui.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope.PlaceholderSize.Companion.AnimatedSize
+import androidx.compose.animation.SharedTransitionScope.ResizeMode.Companion.RemeasureToBounds
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +47,9 @@ import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.domain.game.HintIssue
 import com.galaxyrio.sudokusolver.domain.solver.SolveTrace
 import com.galaxyrio.sudokusolver.domain.solver.SolveTraceStatus
+import com.galaxyrio.sudokusolver.ui.motion.materialQuickCrossfade
+import com.galaxyrio.sudokusolver.ui.motion.materialQuickFadeIn
+import com.galaxyrio.sudokusolver.ui.motion.materialQuickFadeOut
 import com.galaxyrio.sudokusolver.ui.util.localizedAction
 import com.galaxyrio.sudokusolver.ui.util.localizedExplanation
 import com.galaxyrio.sudokusolver.ui.util.localizedName
@@ -237,58 +249,19 @@ private fun TraceBrowser(
 ) {
     val lastIndex = trace.steps.lastIndex
     val index = selectedStepIndex.coerceIn(0, lastIndex)
+    val step = trace.steps[index]
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = trace.steps[index].technique.localizedName(),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
-        if (areHintDetailsVisible) {
-            Text(
-                text = stringResource(
-                    R.string.game_hint_step_count,
-                    index + 1,
-                    trace.steps.size,
-                ),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    HintStepHeader(
+        techniqueName = step.technique.localizedName(),
+        stepNumber = if (areHintDetailsVisible) index + 1 else null,
+        totalSteps = trace.steps.size,
+    )
 
     if (areHintDetailsVisible) {
-        AnimatedContent(
-            targetState = index,
-            label = "hint_step_content",
-        ) { targetIndex ->
-            val step = trace.steps[targetIndex]
-            Surface(
-                shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Column(
-                    modifier = Modifier.padding(14.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    Text(
-                        text = step.localizedExplanation(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        text = step.localizedAction(),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
-            }
-        }
+        HintStepDetails(
+            trace = trace,
+            selectedStepIndex = index,
+        )
     } else {
         Surface(
             shape = MaterialTheme.shapes.extraLarge,
@@ -379,10 +352,120 @@ private fun TraceBrowser(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun HintStepDetails(
+    trace: SolveTrace,
+    selectedStepIndex: Int,
+) {
+    SharedTransitionLayout {
+        AnimatedContent(
+            targetState = selectedStepIndex,
+            transitionSpec = {
+                EnterTransition.None.togetherWith(ExitTransition.None)
+            },
+            contentAlignment = Alignment.TopStart,
+            label = "hint_step_details",
+        ) { targetIndex ->
+            val animatedVisibilityScope = this
+            val step = trace.steps[targetIndex]
+
+            with(this@SharedTransitionLayout) {
+                Surface(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .sharedBounds(
+                            sharedContentState = rememberSharedContentState(
+                                key = HintStepDetailsSharedKey,
+                            ),
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            enter = materialQuickFadeIn(),
+                            exit = materialQuickFadeOut(),
+                            boundsTransform = { _, _ ->
+                                tween(
+                                    durationMillis = HintStepBoundsDurationMillis,
+                                    easing = FastOutSlowInEasing,
+                                )
+                            },
+                            resizeMode = RemeasureToBounds,
+                            placeholderSize = AnimatedSize,
+                        ),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(
+                            text = step.localizedExplanation(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = step.localizedAction(),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HintStepHeader(
+    techniqueName: String,
+    stepNumber: Int?,
+    totalSteps: Int,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AnimatedContent(
+            targetState = techniqueName,
+            transitionSpec = { materialQuickCrossfade() },
+            contentAlignment = Alignment.CenterStart,
+            modifier = Modifier.weight(1f),
+            label = "hint_technique_title",
+        ) { targetTechniqueName ->
+            Text(
+                text = targetTechniqueName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+        if (stepNumber != null) {
+            AnimatedContent(
+                targetState = stepNumber,
+                transitionSpec = { materialQuickCrossfade() },
+                contentAlignment = Alignment.CenterEnd,
+                label = "hint_step_number",
+            ) { targetStepNumber ->
+                Text(
+                    text = stringResource(
+                        R.string.game_hint_step_count,
+                        targetStepNumber,
+                        totalSteps,
+                    ),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
 private fun HintIssue.cells() = when (this) {
     is HintIssue.IncorrectValues -> entries.map { it.cell }
     is HintIssue.MissingCandidates -> candidates.map { it.cell }
 }.distinct()
+
+private const val HintStepDetailsSharedKey = "hint_step_details_container"
+private const val HintStepBoundsDurationMillis = 220
 
 @Composable
 private fun HintNavigationButton(

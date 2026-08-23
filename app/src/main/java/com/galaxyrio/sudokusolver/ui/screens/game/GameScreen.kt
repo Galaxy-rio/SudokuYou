@@ -6,6 +6,7 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.SharedTransitionScope.ResizeMode.Companion.RemeasureToBounds
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -112,7 +113,6 @@ import com.galaxyrio.sudokusolver.ui.components.GameHintPanel
 import com.galaxyrio.sudokusolver.ui.components.NumberPad
 import com.galaxyrio.sudokusolver.ui.components.SudokuBoard
 import com.galaxyrio.sudokusolver.ui.components.toComposeColor
-import com.galaxyrio.sudokusolver.ui.screens.play.NEW_GAME_CONTAINER_KEY
 import com.galaxyrio.sudokusolver.ui.screens.play.gameContainerKey
 import com.galaxyrio.sudokusolver.ui.screens.play.thumbnailKey
 import com.galaxyrio.sudokusolver.ui.util.formatElapsedTime
@@ -589,21 +589,27 @@ private fun GameScaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         with(sharedTransitionScope) {
-            val containerKey = originGameId?.let(::gameContainerKey) ?: NEW_GAME_CONTAINER_KEY
-            val containerModifier = Modifier
+            val baseContainerModifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .sharedBounds(
-                    sharedContentState = rememberSharedContentState(key = containerKey),
+            val containerModifier = if (originGameId != null) {
+                baseContainerModifier.sharedBounds(
+                    sharedContentState = rememberSharedContentState(
+                        key = gameContainerKey(originGameId)
+                    ),
                     animatedVisibilityScope = animatedVisibilityScope,
                 )
+            } else {
+                baseContainerModifier
+            }
 
             val boardModifier = if (originGameId != null) {
-                Modifier.sharedElement(
+                Modifier.sharedBounds(
                     sharedContentState = rememberSharedContentState(
                         key = thumbnailKey(originGameId)
                     ),
                     animatedVisibilityScope = animatedVisibilityScope,
+                    resizeMode = RemeasureToBounds,
                 )
             } else {
                 Modifier

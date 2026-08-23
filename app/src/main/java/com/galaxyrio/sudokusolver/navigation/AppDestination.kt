@@ -15,6 +15,7 @@ data class NewGameDestination(
 @Serializable
 data class SavedGameDestination(
     val gameId: Long,
+    val useContainerTransform: Boolean = true,
 )
 
 @Serializable

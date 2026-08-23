@@ -3,10 +3,13 @@ package com.galaxyrio.sudokusolver.data
 import com.galaxyrio.sudokusolver.data.local.GameDao
 import com.galaxyrio.sudokusolver.data.local.GameEntity
 import com.galaxyrio.sudokusolver.domain.game.PuzzleSolutionResolver
+import com.galaxyrio.sudokusolver.domain.game.ImportedPuzzleSolutionResolver
+import com.galaxyrio.sudokusolver.domain.game.PuzzleDifficultyEvaluator
 import com.galaxyrio.sudokusolver.domain.game.SudokuGenerator
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNotes
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
 import com.galaxyrio.sudokusolver.domain.model.SavedGame
+import com.galaxyrio.sudokusolver.domain.model.Sudoku
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +23,8 @@ class OfflineGameRepository(
     private val puzzleInventory: PuzzleInventory = EmptyPuzzleInventory,
 ) : GameRepository {
     private val solutionResolver = PuzzleSolutionResolver()
+    private val importedSolutionResolver = ImportedPuzzleSolutionResolver()
+    private val difficultyEvaluator = PuzzleDifficultyEvaluator()
 
     override val savedGames: Flow<List<SavedGame>> =
         gameDao.observeAllGames().map { games -> games.map(GameEntity::asExternalModel) }
@@ -53,6 +58,21 @@ class OfflineGameRepository(
         return game.copy(id = saveGame(game)).also {
             puzzleInventory.requestRefill(priority = difficulty)
         }
+    }
+
+    override suspend fun createImportedGame(sudoku: Sudoku): SavedGame? {
+        val solution = withContext(computationDispatcher) {
+            importedSolutionResolver.resolve(sudoku)
+        } ?: return null
+        val difficulty = withContext(computationDispatcher) {
+            difficultyEvaluator.evaluate(sudoku)?.difficulty ?: Difficulty.BRUTAL
+        }
+        val game = SavedGame(
+            difficulty = difficulty,
+            sudoku = sudoku,
+            solution = solution,
+        )
+        return game.copy(id = saveGame(game))
     }
 
     override suspend fun saveGame(game: SavedGame): Long =

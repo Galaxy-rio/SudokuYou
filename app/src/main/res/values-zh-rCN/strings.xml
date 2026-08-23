@@ -4,11 +4,14 @@
 
     <string name="nav_info">说明</string>
     <string name="nav_play">游玩</string>
+    <string name="nav_tutorial">教程</string>
+    <string name="nav_statistics">统计</string>
     <string name="nav_settings">设置</string>
+    <string name="nav_open_menu">打开导航菜单</string>
+    <string name="nav_close_menu">关闭导航菜单</string>
 
     <string name="common_back">返回</string>
     <string name="common_cancel">取消</string>
-    <string name="common_delete">删除</string>
     <string name="common_retry">重试</string>
     <string name="common_selected">已选择</string>
 
@@ -19,16 +22,25 @@
 
     <string name="play_title">数独</string>
     <string name="play_recent_games">最近对局</string>
-    <string name="play_new_game">新对局</string>
-    <string name="play_no_saved_games">没有已保存的%1$s难度对局</string>
+    <string name="play_completed_games">已完成对局</string>
+    <string name="play_empty_instruction">点击 + 开始对局</string>
+    <string name="play_custom_game">自定义</string>
+    <string name="play_fab_menu_expanded">关闭新对局菜单</string>
+    <string name="play_fab_menu_collapsed">打开新对局菜单</string>
+    <string name="play_import_title">导入题目</string>
+    <string name="play_import_format">格式</string>
+    <string name="play_import_puzzle">题目文本</string>
+    <string name="play_import_puzzle_placeholder">粘贴或输入所选格式的题目</string>
+    <string name="play_import_action">导入</string>
+    <string name="play_import_invalid_format">输入内容与所选格式不匹配。</string>
+    <string name="play_import_no_unique_solution">题目无效，或不具有唯一解。</string>
+    <string name="play_import_save_failed">无法导入这道题目。</string>
     <string name="play_load_error">无法载入已保存的对局。</string>
     <string name="play_action_error">无法删除选中的对局。</string>
-    <string name="play_completion">已完成 %1$d%%</string>
     <string name="play_close_selection">退出选择</string>
     <string name="play_delete_selected">删除选中的对局</string>
-    <string name="play_start_new_game">开始新对局</string>
-    <string name="play_resume_game">继续对局</string>
     <string name="play_select_game">选择对局</string>
+    <string name="play_select_all_games">全选对局</string>
     <plurals name="play_selected_count">
         <item quantity="other">已选择 %1$d 项</item>
     </plurals>

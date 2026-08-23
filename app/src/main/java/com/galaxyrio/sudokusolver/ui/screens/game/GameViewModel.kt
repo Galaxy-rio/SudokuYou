@@ -858,16 +858,13 @@ class GameViewModel(
 
                 mutableUiState.value = GameUiState(
                     isLoading = false,
-                    gameId = game.id.takeUnless { isComplete },
+                    gameId = game.id,
                     difficulty = game.difficulty,
                     sudoku = game.sudoku,
                     advancedNotes = game.advancedNotes,
                     timeSpentSeconds = game.timeSpentSeconds,
                     isComplete = isComplete,
                 ).withGameSettings(latestSettings)
-                if (isComplete) {
-                    enqueuePersistence { gameRepository.deleteGame(game.id) }
-                }
                 startTimerIfNeeded()
             } catch (cancellation: CancellationException) {
                 throw cancellation
@@ -938,12 +935,10 @@ class GameViewModel(
         history.addLast(previousState.sudoku)
         redoHistory.clear()
         val isComplete = SudokuValidator.isSolved(newSudoku)
-        val completedGameId = previousState.gameId.takeIf { isComplete }
 
         mutableUiState.update {
             it.copy(
                 sudoku = newSudoku,
-                gameId = if (isComplete) null else it.gameId,
                 canUndo = history.isNotEmpty() && !isComplete,
                 canRedo = false,
                 isComplete = isComplete,
@@ -957,15 +952,11 @@ class GameViewModel(
         logicalSolverState = nextSolverState
         logicalStateBoard = newSudoku.takeIf { nextSolverState != null }
 
-        if (completedGameId != null) {
+        if (isComplete) {
             timerJob?.cancel()
             timerJob = null
-            enqueuePersistence {
-                gameRepository.deleteGame(completedGameId)
-            }
-        } else {
-            persistCurrentGame()
         }
+        persistCurrentGame()
     }
 
     private fun startTimerIfNeeded() {
@@ -986,7 +977,7 @@ class GameViewModel(
     private fun persistCurrentGame() {
         val state = mutableUiState.value
         val gameId = state.gameId ?: return
-        if (state.isLoading || state.hasLoadError || state.isComplete) return
+        if (state.isLoading || state.hasLoadError) return
 
         val game = SavedGame(
             id = gameId,

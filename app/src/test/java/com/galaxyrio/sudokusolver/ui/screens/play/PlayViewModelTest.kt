@@ -7,6 +7,7 @@ import com.galaxyrio.sudokusolver.data.GameRepository
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
 import com.galaxyrio.sudokusolver.domain.model.SavedGame
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
+import com.galaxyrio.sudokusolver.domain.model.SudokuExportFormat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -23,6 +24,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -56,6 +58,45 @@ class PlayViewModelTest {
             assertEquals(Difficulty.HARD, summary.difficulty)
             assertEquals(80, summary.emptyCells)
             assertEquals(42, summary.timeSpentSeconds)
+            assertFalse(summary.isComplete)
+        } finally {
+            collectionJob?.cancelAndJoin()
+            owner.viewModelStore.clear()
+            runCurrent()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun completedGamesAreMarkedAndImportedGamesEmitNavigationId() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        var collectionJob: Job? = null
+        val owner = TestViewModelStoreOwner()
+        try {
+            val repository = FakeGameRepository(
+                SavedGame(
+                    id = 8,
+                    difficulty = Difficulty.EASY,
+                    sudoku = Sudoku.fromGridString(SOLUTION),
+                )
+            )
+            val viewModel = ViewModelProvider(
+                owner,
+                PlayViewModel.factory(repository),
+            )[PlayViewModel::class.java]
+            collectionJob = backgroundScope.launch { viewModel.uiState.collect() }
+            advanceUntilIdle()
+
+            assertTrue(viewModel.uiState.value.savedGames.single().isComplete)
+
+            viewModel.importGame(SudokuExportFormat.SUSSER, PUZZLE)
+            advanceUntilIdle()
+
+            assertEquals(2L, viewModel.uiState.value.importedGameId)
+            assertNull(viewModel.uiState.value.importError)
+            viewModel.consumeImportedGame()
+            advanceUntilIdle()
+            assertNull(viewModel.uiState.value.importedGameId)
         } finally {
             collectionJob?.cancelAndJoin()
             owner.viewModelStore.clear()
@@ -112,6 +153,11 @@ class PlayViewModelTest {
         override suspend fun createGame(difficulty: Difficulty): SavedGame =
             SavedGame(id = 1, difficulty = difficulty, sudoku = Sudoku())
 
+        override suspend fun createImportedGame(sudoku: Sudoku): SavedGame =
+            SavedGame(id = 2, difficulty = Difficulty.MEDIUM, sudoku = sudoku).also { game ->
+                games.value = games.value + game
+            }
+
         override suspend fun saveGame(game: SavedGame): Long {
             games.value = games.value.filterNot { it.id == game.id } + game
             return game.id
@@ -129,5 +175,29 @@ class PlayViewModelTest {
 
     private class TestViewModelStoreOwner : ViewModelStoreOwner {
         override val viewModelStore = ViewModelStore()
+    }
+
+    private companion object {
+        const val PUZZLE =
+            "53..7...." +
+                "6..195..." +
+                ".98....6." +
+                "8...6...3" +
+                "4..8.3..1" +
+                "7...2...6" +
+                ".6....28." +
+                "...419..5" +
+                "....8..79"
+
+        const val SOLUTION =
+            "534678912" +
+                "672195348" +
+                "198342567" +
+                "859761423" +
+                "426853791" +
+                "713924856" +
+                "961537284" +
+                "287419635" +
+                "345286179"
     }
 }

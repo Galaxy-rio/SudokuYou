@@ -3,18 +3,19 @@ package com.galaxyrio.sudokusolver.navigation
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -36,6 +37,12 @@ import com.galaxyrio.sudokusolver.ui.screens.settings.details.AssistanceSettings
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.FilesSettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.GameSettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.LanguageSettingsScreen
+import com.galaxyrio.sudokusolver.ui.motion.materialBackwardEnter
+import com.galaxyrio.sudokusolver.ui.motion.materialBackwardExit
+import com.galaxyrio.sudokusolver.ui.motion.materialContainerEnter
+import com.galaxyrio.sudokusolver.ui.motion.materialContainerExit
+import com.galaxyrio.sudokusolver.ui.motion.materialForwardEnter
+import com.galaxyrio.sudokusolver.ui.motion.materialForwardExit
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -46,7 +53,7 @@ fun AppNavHost(
     settingsViewModel: SettingsViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val motionScheme = MaterialTheme.motionScheme
+    val hierarchyTravelPx = with(LocalDensity.current) { HierarchyTravel.roundToPx() }
 
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -58,40 +65,29 @@ fun AppNavHost(
             NavHost(
                 navController = navController,
                 startDestination = HomeDestination,
-                enterTransition = {
-                    slideInHorizontally(
-                        animationSpec = motionScheme.defaultSpatialSpec(),
-                        initialOffsetX = { it },
-                    ) + fadeIn(animationSpec = motionScheme.defaultEffectsSpec())
-                },
-                exitTransition = {
-                    slideOutHorizontally(
-                        animationSpec = motionScheme.defaultSpatialSpec(),
-                        targetOffsetX = { -it / 3 },
-                    ) + fadeOut(animationSpec = motionScheme.defaultEffectsSpec())
-                },
-                popEnterTransition = {
-                    slideInHorizontally(
-                        animationSpec = motionScheme.defaultSpatialSpec(),
-                        initialOffsetX = { -it / 3 },
-                    ) + fadeIn(animationSpec = motionScheme.defaultEffectsSpec())
-                },
-                popExitTransition = {
-                    slideOutHorizontally(
-                        animationSpec = motionScheme.defaultSpatialSpec(),
-                        targetOffsetX = { it },
-                    ) + fadeOut(animationSpec = motionScheme.defaultEffectsSpec())
-                },
-                sizeTransform = {
-                    SizeTransform(
-                        clip = false,
-                        sizeAnimationSpec = { _, _ ->
-                            motionScheme.defaultSpatialSpec()
-                        },
-                    )
-                },
+                enterTransition = { EnterTransition.None },
+                exitTransition = { ExitTransition.None },
+                popEnterTransition = { EnterTransition.None },
+                popExitTransition = { ExitTransition.None },
             ) {
-                composable<HomeDestination> {
+                composable<HomeDestination>(
+                    enterTransition = { EnterTransition.None },
+                    exitTransition = {
+                        if (targetState.usesSavedGameContainerTransform()) {
+                            materialContainerExit()
+                        } else {
+                            materialForwardExit(hierarchyTravelPx)
+                        }
+                    },
+                    popEnterTransition = {
+                        if (initialState.usesSavedGameContainerTransform()) {
+                            materialContainerEnter()
+                        } else {
+                            materialBackwardEnter(hierarchyTravelPx)
+                        }
+                    },
+                    popExitTransition = { ExitTransition.None },
+                ) {
                     val playViewModel: PlayViewModel = viewModel(
                         factory = PlayViewModel.factory(appContainer.gameRepository)
                     )
@@ -103,7 +99,20 @@ fun AppNavHost(
                             navController.navigate(NewGameDestination(difficulty))
                         },
                         onContinueGame = { gameId ->
-                            navController.navigate(SavedGameDestination(gameId))
+                            navController.navigate(
+                                SavedGameDestination(
+                                    gameId = gameId,
+                                    useContainerTransform = true,
+                                )
+                            )
+                        },
+                        onOpenImportedGame = { gameId ->
+                            navController.navigate(
+                                SavedGameDestination(
+                                    gameId = gameId,
+                                    useContainerTransform = false,
+                                )
+                            )
                         },
                         onNavigateToSettings = { category ->
                             navController.navigate(SettingsDestination(category))
@@ -111,12 +120,18 @@ fun AppNavHost(
                     )
                 }
 
-                composable<NewGameDestination> { backStackEntry ->
+                composable<NewGameDestination>(
+                    enterTransition = { materialForwardEnter(hierarchyTravelPx) },
+                    exitTransition = { materialForwardExit(hierarchyTravelPx) },
+                    popEnterTransition = { materialBackwardEnter(hierarchyTravelPx) },
+                    popExitTransition = { materialBackwardExit(hierarchyTravelPx) },
+                ) { backStackEntry ->
                     val destination = backStackEntry.toRoute<NewGameDestination>()
                     GameDestinationContent(
                         appContainer = appContainer,
                         newGameDifficulty = destination.difficulty,
                         savedGameId = null,
+                        useContainerTransform = false,
                         settingsUiState = settingsUiState,
                         sharedTransitionScope = sharedTransitionScope,
                         animatedVisibilityScope = this,
@@ -124,12 +139,42 @@ fun AppNavHost(
                     )
                 }
 
-                composable<SavedGameDestination> { backStackEntry ->
+                composable<SavedGameDestination>(
+                    enterTransition = {
+                        if (targetState.usesSavedGameContainerTransform()) {
+                            materialContainerEnter()
+                        } else {
+                            materialForwardEnter(hierarchyTravelPx)
+                        }
+                    },
+                    exitTransition = {
+                        if (initialState.usesSavedGameContainerTransform()) {
+                            materialContainerExit()
+                        } else {
+                            materialForwardExit(hierarchyTravelPx)
+                        }
+                    },
+                    popEnterTransition = {
+                        if (targetState.usesSavedGameContainerTransform()) {
+                            materialContainerEnter()
+                        } else {
+                            materialBackwardEnter(hierarchyTravelPx)
+                        }
+                    },
+                    popExitTransition = {
+                        if (initialState.usesSavedGameContainerTransform()) {
+                            materialContainerExit()
+                        } else {
+                            materialBackwardExit(hierarchyTravelPx)
+                        }
+                    },
+                ) { backStackEntry ->
                     val destination = backStackEntry.toRoute<SavedGameDestination>()
                     GameDestinationContent(
                         appContainer = appContainer,
                         newGameDifficulty = null,
                         savedGameId = destination.gameId,
+                        useContainerTransform = destination.useContainerTransform,
                         settingsUiState = settingsUiState,
                         sharedTransitionScope = sharedTransitionScope,
                         animatedVisibilityScope = this,
@@ -137,7 +182,12 @@ fun AppNavHost(
                     )
                 }
 
-                composable<SettingsDestination> { backStackEntry ->
+                composable<SettingsDestination>(
+                    enterTransition = { materialForwardEnter(hierarchyTravelPx) },
+                    exitTransition = { materialForwardExit(hierarchyTravelPx) },
+                    popEnterTransition = { materialBackwardEnter(hierarchyTravelPx) },
+                    popExitTransition = { materialBackwardExit(hierarchyTravelPx) },
+                ) { backStackEntry ->
                     val destination = backStackEntry.toRoute<SettingsDestination>()
                     val onBack: () -> Unit = { navController.popBackStack() }
 
@@ -206,6 +256,7 @@ private fun GameDestinationContent(
     appContainer: AppContainer,
     newGameDifficulty: Difficulty?,
     savedGameId: Long?,
+    useContainerTransform: Boolean,
     settingsUiState: SettingsUiState,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
@@ -227,10 +278,16 @@ private fun GameDestinationContent(
             highlightBlock = settingsUiState.positionBlock,
             useAltErrorColor = settingsUiState.alternativeErrorColor,
         ),
-        originGameId = savedGameId,
+        originGameId = savedGameId.takeIf { useContainerTransform },
         sharedTransitionScope = sharedTransitionScope,
         animatedVisibilityScope = animatedVisibilityScope,
         onBack = onBack,
         modifier = Modifier.fillMaxSize(),
     )
 }
+
+private fun NavBackStackEntry.usesSavedGameContainerTransform(): Boolean =
+    destination.hasRoute<SavedGameDestination>() &&
+        toRoute<SavedGameDestination>().useContainerTransform
+
+private val HierarchyTravel = 30.dp

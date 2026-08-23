@@ -144,7 +144,7 @@ class GameViewModelTest {
     }
 
     @Test
-    fun completingPuzzleDeletesPersistedGame() = runViewModelTest {
+    fun completingPuzzleKeepsAndPersistsGame() = runViewModelTest {
         val cells = SOLUTION.mapIndexed { index, character ->
             if (index == 0) {
                 Cell()
@@ -170,8 +170,9 @@ class GameViewModelTest {
         advanceUntilIdle()
 
         assertTrue(viewModel.uiState.value.isComplete)
-        assertNull(viewModel.uiState.value.gameId)
-        assertEquals(listOf(savedGame.id), repository.deletedIds)
+        assertEquals(savedGame.id, viewModel.uiState.value.gameId)
+        assertTrue(repository.deletedIds.isEmpty())
+        assertTrue(repository.savedGamesHistory.last().sudoku.cells.all { it.isSolved() })
     }
 
     @Test
@@ -934,6 +935,8 @@ class GameViewModelTest {
                 gamesFlow.value = listOf(it)
             }
         }
+
+        override suspend fun createImportedGame(sudoku: Sudoku): SavedGame? = null
 
         override suspend fun saveGame(game: SavedGame): Long {
             if (failSaves) error("Simulated persistence failure")

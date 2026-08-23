@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.domain.model.SudokuExportFormat
 import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsUiState
+import com.galaxyrio.sudokusolver.ui.util.titleResource
 
 @Composable
 fun FilesSettingsScreen(
@@ -113,17 +114,6 @@ private fun FilesSectionHeading(@StringRes titleResource: Int) {
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(start = 4.dp, top = 24.dp, bottom = 8.dp),
     )
-}
-
-@StringRes
-private fun SudokuExportFormat.titleResource(): Int = when (this) {
-    SudokuExportFormat.SUSSER -> R.string.export_format_susser
-    SudokuExportFormat.MULTILINE -> R.string.export_format_multiline
-    SudokuExportFormat.PENCILMARK -> R.string.export_format_pencilmark
-    SudokuExportFormat.SUKAKU -> R.string.export_format_sukaku
-    SudokuExportFormat.EXCEL -> R.string.export_format_excel
-    SudokuExportFormat.OPEN_SUDOKU -> R.string.export_format_open_sudoku
-    SudokuExportFormat.HODOKU -> R.string.export_format_hodoku
 }
 
 @StringRes
