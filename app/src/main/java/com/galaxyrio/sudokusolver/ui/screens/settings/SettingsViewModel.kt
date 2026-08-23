@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.galaxyrio.sudokusolver.data.settings.AppSettings
 import com.galaxyrio.sudokusolver.data.settings.PaletteStyleOption
 import com.galaxyrio.sudokusolver.data.settings.SettingsRepository
+import com.galaxyrio.sudokusolver.domain.model.SudokuExportFormat
 import com.galaxyrio.sudokusolver.data.settings.ThemeMode
 import com.materialkolor.PaletteStyle
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,6 +31,8 @@ data class SettingsUiState(
     val showHintDetails: Boolean = true,
     val showErrorDetails: Boolean = true,
     val showErrorsImmediately: Boolean = false,
+    val exportFormat: SudokuExportFormat = SudokuExportFormat.SUSSER,
+    val includeCandidatesInCurrentExport: Boolean = true,
 )
 
 class SettingsViewModel(
@@ -71,6 +74,11 @@ class SettingsViewModel(
     fun setShowErrorsImmediately(enabled: Boolean) =
         repository.setShowErrorsImmediately(enabled)
 
+    fun setExportFormat(format: SudokuExportFormat) = repository.setExportFormat(format)
+
+    fun setIncludeCandidatesInCurrentExport(enabled: Boolean) =
+        repository.setIncludeCandidatesInCurrentExport(enabled)
+
     companion object {
         fun factory(repository: SettingsRepository): ViewModelProvider.Factory = viewModelFactory {
             initializer {
@@ -93,6 +101,8 @@ private fun AppSettings.asUiState(): SettingsUiState = SettingsUiState(
     showHintDetails = showHintDetails,
     showErrorDetails = showErrorDetails,
     showErrorsImmediately = showErrorsImmediately,
+    exportFormat = exportFormat,
+    includeCandidatesInCurrentExport = includeCandidatesInCurrentExport,
 )
 
 private fun PaletteStyleOption.asUiStyle(): PaletteStyle = when (this) {

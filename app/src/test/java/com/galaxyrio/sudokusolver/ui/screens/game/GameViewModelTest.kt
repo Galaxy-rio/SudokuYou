@@ -12,6 +12,7 @@ import com.galaxyrio.sudokusolver.domain.model.Cell
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
 import com.galaxyrio.sudokusolver.domain.model.SavedGame
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
+import com.galaxyrio.sudokusolver.domain.model.SudokuExportFormat
 import com.galaxyrio.sudokusolver.domain.model.SudokuSolution
 import com.galaxyrio.sudokusolver.domain.solver.CandidateElimination
 import com.galaxyrio.sudokusolver.domain.solver.CandidateRef
@@ -401,6 +402,147 @@ class GameViewModelTest {
         advanceUntilIdle()
 
         assertEquals(notes, viewModel.uiState.value.advancedNotes)
+    }
+
+    @Test
+    fun undoAndRedoNavigateBoardHistoryAndNewInputClearsRedo() = runViewModelTest {
+        val savedGame = SavedGame(
+            id = 216,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku(),
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+        )
+        advanceUntilIdle()
+
+        viewModel.onCellSelected(0, 0)
+        viewModel.onNumberSelected(1)
+        viewModel.onCellSelected(0, 1)
+        viewModel.onNumberSelected(2)
+
+        viewModel.undo()
+        assertEquals(0, viewModel.uiState.value.sudoku.getCell(0, 1).value)
+        assertTrue(viewModel.uiState.value.canRedo)
+
+        viewModel.redo()
+        assertEquals(2, viewModel.uiState.value.sudoku.getCell(0, 1).value)
+        assertFalse(viewModel.uiState.value.canRedo)
+
+        viewModel.undo()
+        viewModel.onCellSelected(0, 2)
+        viewModel.onNumberSelected(3)
+        assertFalse(viewModel.uiState.value.canRedo)
+    }
+
+    @Test
+    fun deletingDraftClearsColorsButKeepsHighlightModes() = runViewModelTest {
+        val notes = AdvancedNotes(
+            highlightedDigits = setOf(2, 7),
+            highlightBivalueCandidates = true,
+            frameHighlightedCells = true,
+            cellColors = mapOf(10 to AdvancedNoteColor.ORANGE),
+        )
+        val savedGame = SavedGame(
+            id = 217,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku(),
+            advancedNotes = notes,
+        )
+        val repository = FakeGameRepository(savedGame)
+        val viewModel = GameViewModel(
+            gameRepository = repository,
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+        )
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.hasAdvancedDraft)
+        viewModel.deleteAdvancedDraft()
+        advanceUntilIdle()
+
+        val clearedNotes = viewModel.uiState.value.advancedNotes
+        assertEquals(notes.highlightedDigits, clearedNotes.highlightedDigits)
+        assertTrue(clearedNotes.highlightBivalueCandidates)
+        assertTrue(clearedNotes.frameHighlightedCells)
+        assertTrue(clearedNotes.cellColors.isEmpty())
+        assertTrue(clearedNotes.candidateColors.isEmpty())
+        assertTrue(clearedNotes.lines.isEmpty())
+        assertFalse(viewModel.uiState.value.hasAdvancedDraft)
+        assertEquals(clearedNotes, repository.savedGamesHistory.last().advancedNotes)
+    }
+
+    @Test
+    fun restartRestoresGivensAndClearsProgressDraftHistoryAndTimer() = runViewModelTest {
+        val cells = MutableList(Sudoku.CELL_COUNT) { Cell() }
+        cells[0] = Cell(value = 5, isFixed = true)
+        cells[1] = Cell(value = 3)
+        cells[2] = Cell(candidates = setOf(1, 2))
+        val savedGame = SavedGame(
+            id = 218,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku(cells),
+            advancedNotes = AdvancedNotes(
+                cellColors = mapOf(0 to AdvancedNoteColor.BLUE),
+            ),
+            timeSpentSeconds = 125,
+        )
+        val repository = FakeGameRepository(savedGame)
+        val viewModel = GameViewModel(
+            gameRepository = repository,
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+        )
+        advanceUntilIdle()
+
+        viewModel.restartGame()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(5, state.sudoku.getCell(0, 0).value)
+        assertTrue(state.sudoku.getCell(0, 0).isFixed)
+        assertEquals(0, state.sudoku.getCell(0, 1).value)
+        assertTrue(state.sudoku.getCell(0, 2).candidates.isEmpty())
+        assertEquals(0, state.timeSpentSeconds)
+        assertEquals(AdvancedNotes(), state.advancedNotes)
+        assertFalse(state.canUndo)
+        assertFalse(state.canRedo)
+        assertEquals(state.sudoku, repository.savedGamesHistory.last().sudoku)
+        assertEquals(0, repository.savedGamesHistory.last().timeSpentSeconds)
+    }
+
+    @Test
+    fun exportsUseFileSettingsAndKeepOriginalSeparateFromPlayerInput() = runViewModelTest {
+        val cells = MutableList(Sudoku.CELL_COUNT) { Cell() }
+        cells[0] = Cell(value = 5, isFixed = true)
+        cells[1] = Cell(value = 3)
+        val settingsFlow = MutableStateFlow(
+            AppSettings(
+                exportFormat = SudokuExportFormat.SUSSER,
+                includeCandidatesInCurrentExport = false,
+            )
+        )
+        val savedGame = SavedGame(
+            id = 219,
+            difficulty = Difficulty.MEDIUM,
+            sudoku = Sudoku(cells),
+        )
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(savedGame),
+            newGameDifficulty = null,
+            savedGameId = savedGame.id,
+            settings = settingsFlow,
+        )
+        advanceUntilIdle()
+
+        assertTrue(viewModel.exportOriginalText().startsWith("5.."))
+        assertTrue(viewModel.exportCurrentText().startsWith("5+3."))
+
+        settingsFlow.value = settingsFlow.value.copy(exportFormat = SudokuExportFormat.EXCEL)
+        advanceUntilIdle()
+        assertTrue('\t' in viewModel.exportCurrentText())
     }
 
     @Test

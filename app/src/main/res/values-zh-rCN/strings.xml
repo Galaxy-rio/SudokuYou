@@ -103,7 +103,6 @@
     <string name="assistance_settings_title">辅助</string>
     <string name="assistance_settings_placeholder">学习与辅助选项将在后续版本中开放。</string>
     <string name="files_settings_title">文件</string>
-    <string name="files_settings_placeholder">导入与导出选项将在后续版本中开放。</string>
     <string name="about_title">关于</string>
     <string name="about_app_description">一款使用 Jetpack Compose 与 Material 3 Expressive 构建的原生数独应用。</string>
     <string name="about_version">版本 %1$s</string>
@@ -116,9 +115,9 @@
     <string name="game_load_error">无法载入对局。</string>
     <string name="game_save_error">无法保存最近的更改。</string>
     <string name="game_undo">撤销</string>
-    <string name="game_erase">擦除</string>
-    <string name="game_note_mode">笔记</string>
-    <string name="game_auto_candidates">自动候选数</string>
+    <string name="game_erase">删除</string>
+    <string name="game_note_mode">候选数模式</string>
+    <string name="game_auto_candidates">填入所有候选数</string>
     <string name="game_clear_selection">清除选择</string>
     <string name="game_hint">提示</string>
     <string name="game_more_options">更多选项</string>
@@ -249,4 +248,34 @@
     <string name="game_cell_value">第 %1$d 行，第 %2$d 列，数字 %3$d</string>
     <string name="game_cell_fixed">题目数字</string>
     <string name="game_cell_editable">可编辑</string>
+    <string name="files_settings_export_format">导出格式</string>
+    <string name="files_settings_current_export">当前盘面导出</string>
+    <string name="files_settings_include_candidates">包含候选数</string>
+    <string name="files_settings_include_candidates_summary">若所选格式支持，则导出当前候选数及其删数状态。</string>
+    <string name="export_format_susser">Susser</string>
+    <string name="export_format_susser_summary">紧凑的单行格式，可记录填入数及候选数删数。</string>
+    <string name="export_format_multiline">多行文本</string>
+    <string name="export_format_multiline_summary">带宫分隔线、便于阅读的 9 × 9 棋盘。</string>
+    <string name="export_format_pencilmark">铅笔候选盘</string>
+    <string name="export_format_pencilmark_summary">可显示候选数，并区分提示数与填入数的多行棋盘。</string>
+    <string name="export_format_sukaku">候选数数独（Sukaku）</string>
+    <string name="export_format_sukaku_summary">由 729 个候选数位组成的文本格式。</string>
+    <string name="export_format_excel">Excel / TSV</string>
+    <string name="export_format_excel_summary">使用制表符分隔的九行表格文本。</string>
+    <string name="export_format_open_sudoku">OpenSudoku</string>
+    <string name="export_format_open_sudoku_summary">OpenSudoku 使用的 243 段管道符分隔格式。</string>
+    <string name="export_format_hodoku">HoDoKu</string>
+    <string name="export_format_hodoku_summary">以 Susser 盘面为核心的七段分析格式。</string>
+
+    <string name="game_redo">重做</string>
+    <string name="game_simple_mode">简易模式</string>
+    <string name="game_delete_draft">删除草稿</string>
+    <string name="game_export_original">导出原题</string>
+    <string name="game_export_current">导出当前</string>
+    <string name="game_restart">重新开始</string>
+    <string name="game_restart_confirm_title">重新开始这道题？</string>
+    <string name="game_restart_confirm_message">所有填入数字、候选数、高级草稿、撤销记录和计时都将被清除。</string>
+    <string name="game_export_clipboard_label">数独盘面</string>
+    <string name="game_original_copied">原题已复制到剪贴板。</string>
+    <string name="game_current_copied">当前盘面已复制到剪贴板。</string>
 </resources>

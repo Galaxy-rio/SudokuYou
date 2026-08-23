@@ -105,7 +105,6 @@
     <string name="assistance_settings_title">Assistance</string>
     <string name="assistance_settings_placeholder">Learning and assistance options will be available in a future version.</string>
     <string name="files_settings_title">Files</string>
-    <string name="files_settings_placeholder">Import and export options will be available in a future version.</string>
     <string name="about_title">About</string>
     <string name="about_app_description">A native Sudoku app built with Jetpack Compose and Material 3 Expressive.</string>
     <string name="about_version">Version %1$s</string>
@@ -118,9 +117,9 @@
     <string name="game_load_error">The game could not be loaded.</string>
     <string name="game_save_error">Your latest changes could not be saved.</string>
     <string name="game_undo">Undo</string>
-    <string name="game_erase">Erase</string>
-    <string name="game_note_mode">Notes</string>
-    <string name="game_auto_candidates">Auto candidates</string>
+    <string name="game_erase">Delete</string>
+    <string name="game_note_mode">Candidate mode</string>
+    <string name="game_auto_candidates">Fill all candidates</string>
     <string name="game_clear_selection">Clear selection</string>
     <string name="game_hint">Hint</string>
     <string name="game_more_options">More options</string>
@@ -251,4 +250,34 @@
     <string name="game_cell_value">Row %1$d, column %2$d, value %3$d</string>
     <string name="game_cell_fixed">Given</string>
     <string name="game_cell_editable">Editable</string>
+    <string name="files_settings_export_format">Export format</string>
+    <string name="files_settings_current_export">Current-board export</string>
+    <string name="files_settings_include_candidates">Include candidates</string>
+    <string name="files_settings_include_candidates_summary">Include current candidate state when the selected format supports it.</string>
+    <string name="export_format_susser">Susser</string>
+    <string name="export_format_susser_summary">Compact single-line format with optional entered values and candidate eliminations.</string>
+    <string name="export_format_multiline">Multiline grid</string>
+    <string name="export_format_multiline_summary">Readable 9 × 9 grid with box separators.</string>
+    <string name="export_format_pencilmark">Pencilmark grid</string>
+    <string name="export_format_pencilmark_summary">Multiline grid that can display candidates and distinguish givens from entries.</string>
+    <string name="export_format_sukaku">Sukaku</string>
+    <string name="export_format_sukaku_summary">729-character candidate-position format.</string>
+    <string name="export_format_excel">Excel / TSV</string>
+    <string name="export_format_excel_summary">Nine tab-separated rows for spreadsheets.</string>
+    <string name="export_format_open_sudoku">OpenSudoku</string>
+    <string name="export_format_open_sudoku_summary">243 pipe-separated cell fields used by OpenSudoku.</string>
+    <string name="export_format_hodoku">HoDoKu</string>
+    <string name="export_format_hodoku_summary">Seven-section analysis format with Susser board data.</string>
+
+    <string name="game_redo">Redo</string>
+    <string name="game_simple_mode">Simple mode</string>
+    <string name="game_delete_draft">Delete draft</string>
+    <string name="game_export_original">Export original puzzle</string>
+    <string name="game_export_current">Export current board</string>
+    <string name="game_restart">Restart puzzle</string>
+    <string name="game_restart_confirm_title">Restart this puzzle?</string>
+    <string name="game_restart_confirm_message">All entered values, candidates, advanced annotations, history, and elapsed time will be cleared.</string>
+    <string name="game_export_clipboard_label">Sudoku board</string>
+    <string name="game_original_copied">Original puzzle copied.</string>
+    <string name="game_current_copied">Current board copied.</string>
 </resources>

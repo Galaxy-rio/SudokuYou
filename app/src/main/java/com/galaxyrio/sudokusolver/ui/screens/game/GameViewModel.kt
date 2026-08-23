@@ -12,6 +12,7 @@ import com.galaxyrio.sudokusolver.domain.game.HintIssue
 import com.galaxyrio.sudokusolver.domain.game.HintIssueDetector
 import com.galaxyrio.sudokusolver.domain.game.PuzzleSolutionResolver
 import com.galaxyrio.sudokusolver.domain.game.SudokuValidator
+import com.galaxyrio.sudokusolver.domain.game.SudokuTextExporter
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteColor
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteEndpoint
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteLine
@@ -62,6 +63,7 @@ data class GameUiState(
     val selectedNumber: Int? = null,
     val isNoteMode: Boolean = false,
     val canUndo: Boolean = false,
+    val canRedo: Boolean = false,
     val isComplete: Boolean = false,
     val isAdvancedMode: Boolean = false,
     val isAdvancedNoteMode: Boolean = false,
@@ -91,6 +93,12 @@ data class GameUiState(
 
     val isAdvancedColorToolActive: Boolean
         get() = advancedInputTool != AdvancedInputTool.NONE
+
+    val hasAdvancedDraft: Boolean
+        get() = advancedNotes.cellColors.isNotEmpty() ||
+            advancedNotes.candidateColors.isNotEmpty() ||
+            advancedNotes.lines.isNotEmpty() ||
+            pendingLineStart != null
 }
 
 class GameViewModel(
@@ -112,6 +120,7 @@ class GameViewModel(
     val uiState: StateFlow<GameUiState> = mutableUiState.asStateFlow()
 
     private val history = ArrayDeque<Sudoku>()
+    private val redoHistory = ArrayDeque<Sudoku>()
     private var timerJob: Job? = null
     private var persistenceJob: Job? = null
     private var hintJob: Job? = null
@@ -365,15 +374,18 @@ class GameViewModel(
     fun undo() {
         if (history.isEmpty() || mutableUiState.value.isComplete) return
 
+        val currentBoard = mutableUiState.value.sudoku
         hintJob?.cancel()
         hintJob = null
         logicalSolverState = null
         logicalStateBoard = null
         val previousBoard = history.removeLast()
+        redoHistory.addLast(currentBoard)
         mutableUiState.update {
             it.copy(
                 sudoku = previousBoard,
                 canUndo = history.isNotEmpty(),
+                canRedo = redoHistory.isNotEmpty(),
                 isHintLoading = false,
                 hintTrace = null,
                 hintIssue = null,
@@ -382,6 +394,100 @@ class GameViewModel(
             )
         }
         persistCurrentGame()
+    }
+
+    fun redo() {
+        val state = mutableUiState.value
+        if (redoHistory.isEmpty() || state.isComplete) return
+
+        hintJob?.cancel()
+        hintJob = null
+        logicalSolverState = null
+        logicalStateBoard = null
+        history.addLast(state.sudoku)
+        val nextBoard = redoHistory.removeLast()
+        mutableUiState.update {
+            it.copy(
+                sudoku = nextBoard,
+                canUndo = history.isNotEmpty(),
+                canRedo = redoHistory.isNotEmpty(),
+                isHintLoading = false,
+                hintTrace = null,
+                hintIssue = null,
+                selectedHintStepIndex = 0,
+                isHintDetailsRevealed = false,
+            )
+        }
+        persistCurrentGame()
+    }
+
+    fun deleteAdvancedDraft() {
+        val state = mutableUiState.value
+        if (state.isLoading || state.hasLoadError || state.isComplete) return
+        if (!state.hasAdvancedDraft) return
+
+        mutableUiState.update {
+            it.copy(
+                advancedNotes = it.advancedNotes.copy(
+                    cellColors = emptyMap(),
+                    candidateColors = emptyMap(),
+                    lines = emptyList(),
+                ),
+                advancedInputTool = AdvancedInputTool.NONE,
+                pendingLineStart = null,
+                lastAdvancedDigit = null,
+            )
+        }
+        persistCurrentGame()
+    }
+
+    fun exportOriginalText(): String = SudokuTextExporter.exportOriginal(
+        currentBoard = mutableUiState.value.sudoku,
+        format = latestSettings.exportFormat,
+    )
+
+    fun exportCurrentText(): String = SudokuTextExporter.exportCurrent(
+        sudoku = mutableUiState.value.sudoku,
+        format = latestSettings.exportFormat,
+        includeCandidates = latestSettings.includeCandidatesInCurrentExport,
+    )
+
+    fun restartGame() {
+        val state = mutableUiState.value
+        if (state.isLoading || state.hasLoadError || state.isComplete || state.gameId == null) return
+
+        timerJob?.cancel()
+        timerJob = null
+        hintJob?.cancel()
+        hintJob = null
+        history.clear()
+        redoHistory.clear()
+        logicalSolverState = null
+        logicalStateBoard = null
+        mutableUiState.update {
+            it.copy(
+                sudoku = SudokuTextExporter.originalPuzzle(state.sudoku),
+                timeSpentSeconds = 0,
+                selectedCell = null,
+                selectedNumber = null,
+                isNoteMode = false,
+                canUndo = false,
+                canRedo = false,
+                isComplete = false,
+                isAdvancedNoteMode = false,
+                advancedNotes = AdvancedNotes(),
+                advancedInputTool = AdvancedInputTool.NONE,
+                pendingLineStart = null,
+                lastAdvancedDigit = null,
+                isHintLoading = false,
+                hintTrace = null,
+                hintIssue = null,
+                selectedHintStepIndex = 0,
+                isHintDetailsRevealed = false,
+            )
+        }
+        persistCurrentGame()
+        startTimerIfNeeded()
     }
 
     fun fillCandidates() {
@@ -728,6 +834,7 @@ class GameViewModel(
         logicalStateBoard = null
         originalSolution = null
         history.clear()
+        redoHistory.clear()
         mutableUiState.value = GameUiState(
             isLoading = true,
             difficulty = newGameDifficulty ?: Difficulty.MEDIUM,
@@ -829,6 +936,7 @@ class GameViewModel(
         hintJob?.cancel()
         hintJob = null
         history.addLast(previousState.sudoku)
+        redoHistory.clear()
         val isComplete = SudokuValidator.isSolved(newSudoku)
         val completedGameId = previousState.gameId.takeIf { isComplete }
 
@@ -837,6 +945,7 @@ class GameViewModel(
                 sudoku = newSudoku,
                 gameId = if (isComplete) null else it.gameId,
                 canUndo = history.isNotEmpty() && !isComplete,
+                canRedo = false,
                 isComplete = isComplete,
                 isHintLoading = false,
                 hintTrace = null,

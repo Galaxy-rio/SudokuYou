@@ -174,6 +174,10 @@ fun AppNavHost(
                         )
 
                         SettingsCategory.FILES -> FilesSettingsScreen(
+                            uiState = settingsUiState,
+                            onExportFormatChange = settingsViewModel::setExportFormat,
+                            onIncludeCandidatesChange =
+                                settingsViewModel::setIncludeCandidatesInCurrentExport,
                             onBack = onBack,
                             modifier = Modifier.fillMaxSize(),
                         )

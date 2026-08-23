@@ -1,17 +1,14 @@
 package com.galaxyrio.sudokusolver.ui.components
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +20,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroup
+import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.ButtonGroupScope
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,9 +36,9 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -82,24 +83,69 @@ fun NumberPad(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             (1..9).chunked(3).forEach { rowNumbers ->
-                Row(
+                NumberButtonGroup(
+                    numbers = rowNumbers,
+                    selectedNumber = selectedNumber,
+                    onNumberClick = onNumberClick,
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    rowNumbers.forEach { number ->
-                        NumberButton(
-                            number = number,
-                            isSelected = selectedNumber == number,
-                            onClick = { onNumberClick(number) },
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight(),
-                        )
-                    }
-                }
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun NumberButtonGroup(
+    numbers: List<Int>,
+    selectedNumber: Int?,
+    onNumberClick: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val interactionSources = remember(numbers) {
+        List(numbers.size) { MutableInteractionSource() }
+    }
+    val contentPadding = ButtonDefaults.ContentPadding
+    val layoutDirection = LocalLayoutDirection.current
+    val compressionLimit = contentPadding.calculateEndPadding(layoutDirection)
+
+    ButtonGroup(
+        overflowIndicator = { menuState ->
+            ButtonGroupDefaults.OverflowIndicator(menuState = menuState)
+        },
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        numbers.forEachIndexed { index, number ->
+            val interactionSource = interactionSources[index]
+            customItem(
+                buttonGroupContent = {
+                    NumberButton(
+                        number = number,
+                        isSelected = selectedNumber == number,
+                        onClick = { onNumberClick(number) },
+                        interactionSource = interactionSource,
+                        contentPadding = contentPadding,
+                        modifier = Modifier
+                            .weight(1f)
+                            .animateWidth(
+                                interactionSource = interactionSource,
+                                compressionLimit = compressionLimit,
+                            )
+                            .fillMaxHeight(),
+                    )
+                },
+                menuContent = { menuState ->
+                    DropdownMenuItem(
+                        text = { Text(number.toString()) },
+                        onClick = {
+                            onNumberClick(number)
+                            menuState.dismiss()
+                        },
+                    )
+                },
+            )
         }
     }
 }
@@ -132,6 +178,12 @@ fun AdvancedNumberPad(
     } else {
         setOfNotNull(selectedNumber)
     }
+    val advancedNoteModeDescription = stringResource(R.string.game_advanced_note_mode)
+    val bivalueDescription = stringResource(R.string.game_advanced_bivalue)
+    val paintDescription = stringResource(R.string.game_advanced_paint)
+    val frameDescription = stringResource(R.string.game_advanced_frame)
+    val solidLineDescription = stringResource(R.string.game_advanced_solid_line)
+    val dashedLineDescription = stringResource(R.string.game_advanced_dashed_line)
 
     BoxWithConstraints(
         modifier = modifier
@@ -147,7 +199,6 @@ fun AdvancedNumberPad(
         val padWidth = minOf(maxWidth, 480.dp)
         val padHeight = minOf(maxHeight, padWidth * 0.60f, 264.dp)
         val rowSpacing = 8.dp
-        val columnSpacing = 8.dp
 
         Column(
             modifier = Modifier
@@ -160,14 +211,12 @@ fun AdvancedNumberPad(
         ) {
             AdvancedPadRow(
                 modifier = Modifier.weight(1f),
-                spacing = columnSpacing,
             ) {
                 (1..5).forEach { number ->
-                    AdvancedPadButton(
+                    advancedPadItem(
                         isSelected = number in digitSelection,
                         contentDescription = number.toString(),
                         onClick = { onNumberClick(number) },
-                        modifier = Modifier.weight(1f),
                     ) {
                         Text(number.toString(), style = MaterialTheme.typography.titleLarge)
                     }
@@ -175,71 +224,62 @@ fun AdvancedNumberPad(
             }
             AdvancedPadRow(
                 modifier = Modifier.weight(1f),
-                spacing = columnSpacing,
             ) {
                 (6..9).forEach { number ->
-                    AdvancedPadButton(
+                    advancedPadItem(
                         isSelected = number in digitSelection,
                         contentDescription = number.toString(),
                         onClick = { onNumberClick(number) },
-                        modifier = Modifier.weight(1f),
                     ) {
                         Text(number.toString(), style = MaterialTheme.typography.titleLarge)
                     }
                 }
-                AdvancedPadButton(
+                advancedPadItem(
                     isSelected = isAdvancedNoteMode,
-                    contentDescription = stringResource(R.string.game_advanced_note_mode),
+                    contentDescription = advancedNoteModeDescription,
                     onClick = onAdvancedNoteModeClick,
-                    modifier = Modifier.weight(1f),
                 ) {
                     Text("AN", style = MaterialTheme.typography.titleMedium)
                 }
             }
             AdvancedPadRow(
                 modifier = Modifier.weight(1f),
-                spacing = columnSpacing,
             ) {
-                AdvancedPadButton(
+                advancedPadItem(
                     isSelected = showBivalueHighlights,
-                    contentDescription = stringResource(R.string.game_advanced_bivalue),
+                    contentDescription = bivalueDescription,
                     onClick = onBivalueClick,
-                    modifier = Modifier.weight(1f),
                 ) {
                     Text("XY", style = MaterialTheme.typography.titleMedium)
                 }
-                AdvancedPadButton(
+                advancedPadItem(
                     isSelected = isPaintSelected,
-                    contentDescription = stringResource(R.string.game_advanced_paint),
+                    contentDescription = paintDescription,
                     onClick = onPaintClick,
-                    modifier = Modifier.weight(1f),
                 ) {
                     Icon(
                         imageVector = Icons.Default.FormatColorFill,
                         contentDescription = null,
                     )
                 }
-                AdvancedPadButton(
+                advancedPadItem(
                     isSelected = frameHighlights,
-                    contentDescription = stringResource(R.string.game_advanced_frame),
+                    contentDescription = frameDescription,
                     onClick = onFrameClick,
-                    modifier = Modifier.weight(1f),
                 ) {
                     FrameToolGlyph()
                 }
-                AdvancedPadButton(
+                advancedPadItem(
                     isSelected = isSolidLineSelected,
-                    contentDescription = stringResource(R.string.game_advanced_solid_line),
+                    contentDescription = solidLineDescription,
                     onClick = onSolidLineClick,
-                    modifier = Modifier.weight(1f),
                 ) {
                     LineToolGlyph(style = AdvancedNoteLineStyle.SOLID)
                 }
-                AdvancedPadButton(
+                advancedPadItem(
                     isSelected = isDashedLineSelected,
-                    contentDescription = stringResource(R.string.game_advanced_dashed_line),
+                    contentDescription = dashedLineDescription,
                     onClick = onDashedLineClick,
-                    modifier = Modifier.weight(1f),
                 ) {
                     LineToolGlyph(style = AdvancedNoteLineStyle.DASHED)
                 }
@@ -251,13 +291,51 @@ fun AdvancedNumberPad(
 @Composable
 private fun AdvancedPadRow(
     modifier: Modifier = Modifier,
-    spacing: androidx.compose.ui.unit.Dp,
-    content: @Composable RowScope.() -> Unit,
+    content: ButtonGroupScope.() -> Unit,
 ) {
-    Row(
+    ButtonGroup(
+        overflowIndicator = { menuState ->
+            ButtonGroupDefaults.OverflowIndicator(menuState = menuState)
+        },
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(spacing),
+        verticalAlignment = Alignment.CenterVertically,
         content = content,
+    )
+}
+
+private fun ButtonGroupScope.advancedPadItem(
+    isSelected: Boolean,
+    contentDescription: String,
+    onClick: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    customItem(
+        buttonGroupContent = {
+            val interactionSource = remember { MutableInteractionSource() }
+            AdvancedPadButton(
+                isSelected = isSelected,
+                contentDescription = contentDescription,
+                onClick = onClick,
+                interactionSource = interactionSource,
+                modifier = Modifier
+                    .weight(1f)
+                    .animateWidth(
+                        interactionSource = interactionSource,
+                        compressionLimit = AdvancedPadButtonCompressionLimit,
+                    )
+                    .fillMaxHeight(),
+                content = content,
+            )
+        },
+        menuContent = { menuState ->
+            DropdownMenuItem(
+                text = { Text(contentDescription) },
+                onClick = {
+                    onClick()
+                    menuState.dismiss()
+                },
+            )
+        },
     )
 }
 
@@ -266,16 +344,10 @@ private fun AdvancedPadButton(
     isSelected: Boolean,
     contentDescription: String,
     onClick: () -> Unit,
+    interactionSource: MutableInteractionSource,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.86f else 1f,
-        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
-        label = "advanced_pad_scale",
-    )
     val cornerPercent by animateIntAsState(
         targetValue = if (isSelected) 24 else 50,
         animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
@@ -289,10 +361,6 @@ private fun AdvancedPadButton(
             .semantics {
                 selected = isSelected
                 this.contentDescription = contentDescription
-            }
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
             },
         shape = RoundedCornerShape(percent = cornerPercent),
         colors = ButtonDefaults.buttonColors(
@@ -308,11 +376,13 @@ private fun AdvancedPadButton(
             },
         ),
         interactionSource = interactionSource,
-        contentPadding = PaddingValues(0.dp),
+        contentPadding = PaddingValues(horizontal = AdvancedPadButtonCompressionLimit),
     ) {
         content()
     }
 }
+
+private val AdvancedPadButtonCompressionLimit = 12.dp
 
 @Composable
 private fun FrameToolGlyph(modifier: Modifier = Modifier) {
@@ -359,16 +429,11 @@ private fun NumberButton(
     number: Int,
     isSelected: Boolean,
     onClick: () -> Unit,
+    interactionSource: MutableInteractionSource,
+    contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
     val motionScheme = MaterialTheme.motionScheme
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.88f else 1f,
-        animationSpec = motionScheme.fastSpatialSpec(),
-        label = "number_pad_scale",
-    )
     val cornerPercent by animateIntAsState(
         targetValue = if (isSelected) 24 else 50,
         animationSpec = motionScheme.defaultSpatialSpec(),
@@ -378,11 +443,7 @@ private fun NumberButton(
     Button(
         onClick = onClick,
         modifier = modifier
-            .semantics { selected = isSelected }
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            },
+            .semantics { selected = isSelected },
         shape = RoundedCornerShape(percent = cornerPercent),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isSelected) {
@@ -397,7 +458,7 @@ private fun NumberButton(
             },
         ),
         interactionSource = interactionSource,
-        contentPadding = PaddingValues(0.dp),
+        contentPadding = contentPadding,
     ) {
         Text(
             text = number.toString(),

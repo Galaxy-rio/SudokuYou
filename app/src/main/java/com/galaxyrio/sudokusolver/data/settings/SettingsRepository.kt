@@ -2,6 +2,7 @@ package com.galaxyrio.sudokusolver.data.settings
 
 import android.content.Context
 import androidx.core.content.edit
+import com.galaxyrio.sudokusolver.domain.model.SudokuExportFormat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,6 +36,8 @@ data class AppSettings(
     val showHintDetails: Boolean = true,
     val showErrorDetails: Boolean = true,
     val showErrorsImmediately: Boolean = false,
+    val exportFormat: SudokuExportFormat = SudokuExportFormat.SUSSER,
+    val includeCandidatesInCurrentExport: Boolean = true,
 ) {
     companion object {
         const val DEFAULT_THEME_COLOR: Int = 0xFF6750A4.toInt()
@@ -56,6 +59,8 @@ interface SettingsRepository {
     fun setShowHintDetails(enabled: Boolean)
     fun setShowErrorDetails(enabled: Boolean)
     fun setShowErrorsImmediately(enabled: Boolean)
+    fun setExportFormat(format: SudokuExportFormat)
+    fun setIncludeCandidatesInCurrentExport(enabled: Boolean)
 }
 
 class PreferencesSettingsRepository(context: Context) : SettingsRepository {
@@ -125,6 +130,16 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         update { copy(showErrorsImmediately = enabled) }
     }
 
+    override fun setExportFormat(format: SudokuExportFormat) {
+        preferences.edit { putInt(KEY_EXPORT_FORMAT, format.ordinal) }
+        update { copy(exportFormat = format) }
+    }
+
+    override fun setIncludeCandidatesInCurrentExport(enabled: Boolean) {
+        preferences.edit { putBoolean(KEY_INCLUDE_CANDIDATES_IN_CURRENT_EXPORT, enabled) }
+        update { copy(includeCandidatesInCurrentExport = enabled) }
+    }
+
     private fun readSettings(): AppSettings = AppSettings(
         themeMode = enumValueAtOrDefault(
             values = ThemeMode.entries,
@@ -149,6 +164,18 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         showHintDetails = preferences.getBoolean(KEY_SHOW_HINT_DETAILS, true),
         showErrorDetails = preferences.getBoolean(KEY_SHOW_ERROR_DETAILS, true),
         showErrorsImmediately = preferences.getBoolean(KEY_SHOW_ERRORS_IMMEDIATELY, false),
+        exportFormat = enumValueAtOrDefault(
+            values = SudokuExportFormat.entries,
+            index = preferences.getInt(
+                KEY_EXPORT_FORMAT,
+                SudokuExportFormat.SUSSER.ordinal,
+            ),
+            default = SudokuExportFormat.SUSSER,
+        ),
+        includeCandidatesInCurrentExport = preferences.getBoolean(
+            KEY_INCLUDE_CANDIDATES_IN_CURRENT_EXPORT,
+            true,
+        ),
     )
 
     private inline fun update(transform: AppSettings.() -> AppSettings) {
@@ -169,6 +196,9 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         const val KEY_SHOW_HINT_DETAILS = "show_hint_details"
         const val KEY_SHOW_ERROR_DETAILS = "show_error_details"
         const val KEY_SHOW_ERRORS_IMMEDIATELY = "show_errors_immediately"
+        const val KEY_EXPORT_FORMAT = "export_format"
+        const val KEY_INCLUDE_CANDIDATES_IN_CURRENT_EXPORT =
+            "include_candidates_in_current_export"
     }
 }
 

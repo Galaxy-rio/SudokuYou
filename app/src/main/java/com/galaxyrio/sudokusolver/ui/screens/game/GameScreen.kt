@@ -1,5 +1,7 @@
 package com.galaxyrio.sudokusolver.ui.screens.game
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -37,12 +39,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Backspace
-import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -51,6 +52,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -58,7 +60,6 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -84,7 +85,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -142,7 +145,11 @@ fun GameRoute(
     var handledImmediateHintRequestId by rememberSaveable { mutableLongStateOf(0L) }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
     val persistenceErrorMessage = stringResource(R.string.game_save_error)
+    val clipboardLabel = stringResource(R.string.game_export_clipboard_label)
+    val originalCopiedMessage = stringResource(R.string.game_original_copied)
+    val currentCopiedMessage = stringResource(R.string.game_current_copied)
     val sheetState = rememberBottomSheetState(
         initialValue = SheetValue.Hidden,
         enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
@@ -151,6 +158,12 @@ fun GameRoute(
     var elevatedBoardBottomPx by remember { mutableFloatStateOf(Float.NaN) }
     var normalNumberPadTopPx by remember { mutableFloatStateOf(Float.NaN) }
     var windowBottomPx by remember { mutableFloatStateOf(Float.NaN) }
+
+    fun copyToClipboard(text: String, confirmation: String) {
+        val clipboard = context.getSystemService(ClipboardManager::class.java)
+        clipboard.setPrimaryClip(ClipData.newPlainText(clipboardLabel, text))
+        coroutineScope.launch { snackbarHostState.showSnackbar(confirmation) }
+    }
 
     LifecycleResumeEffect(viewModel) {
         viewModel.onResume()
@@ -247,9 +260,18 @@ fun GameRoute(
             onAdvancedNumberSelected = viewModel::onAdvancedNumberSelected,
             onClearSelection = viewModel::clearSelection,
             onUndo = viewModel::undo,
+            onRedo = viewModel::redo,
             onErase = viewModel::eraseSelectedCell,
             onToggleNoteMode = viewModel::toggleNoteMode,
             onFillCandidates = viewModel::fillCandidates,
+            onDeleteDraft = viewModel::deleteAdvancedDraft,
+            onExportOriginal = {
+                copyToClipboard(viewModel.exportOriginalText(), originalCopiedMessage)
+            },
+            onExportCurrent = {
+                copyToClipboard(viewModel.exportCurrentText(), currentCopiedMessage)
+            },
+            onRestart = viewModel::restartGame,
             onAdvancedModeChange = viewModel::setAdvancedMode,
             onToggleAdvancedNoteMode = viewModel::toggleAdvancedNoteMode,
             onToggleBivalueHighlights = viewModel::toggleBivalueHighlights,
@@ -338,9 +360,14 @@ fun GameScreen(
     onAdvancedNumberSelected: (Int) -> Unit,
     onClearSelection: () -> Unit,
     onUndo: () -> Unit,
+    onRedo: () -> Unit,
     onErase: () -> Unit,
     onToggleNoteMode: () -> Unit,
     onFillCandidates: () -> Unit,
+    onDeleteDraft: () -> Unit,
+    onExportOriginal: () -> Unit,
+    onExportCurrent: () -> Unit,
+    onRestart: () -> Unit,
     onAdvancedModeChange: (Boolean) -> Unit,
     onToggleAdvancedNoteMode: () -> Unit,
     onToggleBivalueHighlights: () -> Unit,
@@ -383,9 +410,14 @@ fun GameScreen(
                 onAdvancedNumberSelected = onAdvancedNumberSelected,
                 onClearSelection = onClearSelection,
                 onUndo = onUndo,
+                onRedo = onRedo,
                 onErase = onErase,
                 onToggleNoteMode = onToggleNoteMode,
                 onFillCandidates = onFillCandidates,
+                onDeleteDraft = onDeleteDraft,
+                onExportOriginal = onExportOriginal,
+                onExportCurrent = onExportCurrent,
+                onRestart = onRestart,
                 onAdvancedModeChange = onAdvancedModeChange,
                 onToggleAdvancedNoteMode = onToggleAdvancedNoteMode,
                 onToggleBivalueHighlights = onToggleBivalueHighlights,
@@ -482,9 +514,14 @@ private fun GameScaffold(
     onAdvancedNumberSelected: (Int) -> Unit,
     onClearSelection: () -> Unit,
     onUndo: () -> Unit,
+    onRedo: () -> Unit,
     onErase: () -> Unit,
     onToggleNoteMode: () -> Unit,
     onFillCandidates: () -> Unit,
+    onDeleteDraft: () -> Unit,
+    onExportOriginal: () -> Unit,
+    onExportCurrent: () -> Unit,
+    onRestart: () -> Unit,
     onAdvancedModeChange: (Boolean) -> Unit,
     onToggleAdvancedNoteMode: () -> Unit,
     onToggleBivalueHighlights: () -> Unit,
@@ -512,8 +549,15 @@ private fun GameScaffold(
                         difficulty = uiState.difficulty.label(),
                         elapsedTime = formatElapsedTime(uiState.timeSpentSeconds),
                         isAdvancedMode = uiState.isAdvancedMode,
+                        hasAdvancedDraft = uiState.hasAdvancedDraft,
+                        gameActionsEnabled = !uiState.isComplete,
                         onBack = onBack,
                         onAdvancedModeChange = onAdvancedModeChange,
+                        onFillCandidates = onFillCandidates,
+                        onDeleteDraft = onDeleteDraft,
+                        onExportOriginal = onExportOriginal,
+                        onExportCurrent = onExportCurrent,
+                        onRestart = onRestart,
                     )
                 }
 
@@ -532,11 +576,12 @@ private fun GameScaffold(
                 isAdvancedColorToolActive = uiState.isAdvancedColorToolActive,
                 selectedAdvancedColorIndex = uiState.selectedAdvancedColorIndex,
                 canUndo = uiState.canUndo && !uiState.isComplete,
+                canRedo = uiState.canRedo && !uiState.isComplete,
                 enabled = !uiState.isComplete,
                 onUndo = onUndo,
+                onRedo = onRedo,
                 onErase = onErase,
                 onToggleNoteMode = onToggleNoteMode,
-                onFillCandidates = onFillCandidates,
                 onShowHint = onShowHint,
                 onAdvancedColorSelected = onAdvancedColorSelected,
             )
@@ -593,10 +638,18 @@ private fun GameTopBar(
     difficulty: String,
     elapsedTime: String,
     isAdvancedMode: Boolean,
+    hasAdvancedDraft: Boolean,
+    gameActionsEnabled: Boolean,
     onBack: () -> Unit,
     onAdvancedModeChange: (Boolean) -> Unit,
+    onFillCandidates: () -> Unit,
+    onDeleteDraft: () -> Unit,
+    onExportOriginal: () -> Unit,
+    onExportCurrent: () -> Unit,
+    onRestart: () -> Unit,
 ) {
     var menuExpanded by rememberSaveable { mutableStateOf(false) }
+    var showRestartConfirmation by rememberSaveable { mutableStateOf(false) }
 
     Column {
         TopAppBar(
@@ -622,16 +675,60 @@ private fun GameTopBar(
                         onDismissRequest = { menuExpanded = false },
                     ) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.game_advanced_mode)) },
-                            trailingIcon = {
-                                Switch(
-                                    checked = isAdvancedMode,
-                                    onCheckedChange = null,
+                            text = {
+                                Text(
+                                    stringResource(
+                                        if (isAdvancedMode) {
+                                            R.string.game_simple_mode
+                                        } else {
+                                            R.string.game_advanced_mode
+                                        }
+                                    )
                                 )
                             },
                             onClick = {
                                 onAdvancedModeChange(!isAdvancedMode)
                                 menuExpanded = false
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.game_auto_candidates)) },
+                            enabled = gameActionsEnabled,
+                            onClick = {
+                                onFillCandidates()
+                                menuExpanded = false
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.game_delete_draft)) },
+                            enabled = gameActionsEnabled && hasAdvancedDraft,
+                            onClick = {
+                                onDeleteDraft()
+                                menuExpanded = false
+                            },
+                        )
+                        HorizontalDivider()
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.game_export_original)) },
+                            onClick = {
+                                onExportOriginal()
+                                menuExpanded = false
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.game_export_current)) },
+                            onClick = {
+                                onExportCurrent()
+                                menuExpanded = false
+                            },
+                        )
+                        HorizontalDivider()
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.game_restart)) },
+                            enabled = gameActionsEnabled,
+                            onClick = {
+                                menuExpanded = false
+                                showRestartConfirmation = true
                             },
                         )
                     }
@@ -660,6 +757,31 @@ private fun GameTopBar(
             )
         }
     }
+
+    if (showRestartConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showRestartConfirmation = false },
+            title = { Text(stringResource(R.string.game_restart_confirm_title)) },
+            text = { Text(stringResource(R.string.game_restart_confirm_message)) },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = {
+                        showRestartConfirmation = false
+                        onRestart()
+                    },
+                ) {
+                    Text(stringResource(R.string.game_restart))
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = { showRestartConfirmation = false },
+                ) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -668,11 +790,12 @@ private fun GameBottomBar(
     isAdvancedColorToolActive: Boolean,
     selectedAdvancedColorIndex: Int,
     canUndo: Boolean,
+    canRedo: Boolean,
     enabled: Boolean,
     onUndo: () -> Unit,
+    onRedo: () -> Unit,
     onErase: () -> Unit,
     onToggleNoteMode: () -> Unit,
-    onFillCandidates: () -> Unit,
     onShowHint: () -> Unit,
     onAdvancedColorSelected: (Int) -> Unit,
 ) {
@@ -686,10 +809,17 @@ private fun GameBottomBar(
 
     BottomAppBar {
         ToolbarAction(
-            icon = Icons.AutoMirrored.Filled.Undo,
+            icon = ImageVector.vectorResource(R.drawable.ic_material_symbol_undo),
             contentDescription = stringResource(R.string.game_undo),
             enabled = canUndo,
             onClick = onUndo,
+            modifier = Modifier.weight(1f),
+        )
+        ToolbarAction(
+            icon = ImageVector.vectorResource(R.drawable.ic_material_symbol_redo),
+            contentDescription = stringResource(R.string.game_redo),
+            enabled = canRedo,
+            onClick = onRedo,
             modifier = Modifier.weight(1f),
         )
         ToolbarAction(
@@ -705,13 +835,6 @@ private fun GameBottomBar(
             checked = isNoteMode,
             enabled = enabled,
             onCheckedChange = { onToggleNoteMode() },
-            modifier = Modifier.weight(1f),
-        )
-        ToolbarAction(
-            icon = Icons.Default.AutoAwesome,
-            contentDescription = stringResource(R.string.game_auto_candidates),
-            enabled = enabled,
-            onClick = onFillCandidates,
             modifier = Modifier.weight(1f),
         )
         ToolbarAction(
