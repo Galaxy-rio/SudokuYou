@@ -13,12 +13,26 @@
 
     <string name="common_back">Back</string>
     <string name="common_cancel">Cancel</string>
+    <string name="common_delete">Delete</string>
     <string name="common_retry">Retry</string>
     <string name="common_selected">Selected</string>
     <string name="difficulty_easy">Easy</string>
     <string name="difficulty_medium">Medium</string>
     <string name="difficulty_hard">Hard</string>
     <string name="difficulty_brutal">Brutal</string>
+
+    <string name="statistics_all_difficulties">All</string>
+    <string name="statistics_time_section">Time</string>
+    <string name="statistics_total_play_time">Total play time</string>
+    <string name="statistics_best_time">Best time</string>
+    <string name="statistics_average_time">Average time</string>
+    <string name="statistics_games_section">Games</string>
+    <string name="statistics_games_started">Total games played</string>
+    <string name="statistics_games_completed">Games completed</string>
+    <string name="statistics_clear_action">Delete statistics</string>
+    <string name="statistics_clear_title">Delete statistics?</string>
+    <string name="statistics_clear_message">This clears accumulated statistics for every difficulty. Saved games will not be deleted.</string>
+    <string name="statistics_clear_error">Statistics could not be deleted.</string>
 
     <string name="play_title">Sudoku</string>
     <string name="play_recent_games">Recent games</string>

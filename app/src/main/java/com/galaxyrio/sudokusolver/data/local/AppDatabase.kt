@@ -9,8 +9,13 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [GameEntity::class, PuzzleInventoryEntity::class],
-    version = 5,
+    entities = [
+        GameEntity::class,
+        PuzzleInventoryEntity::class,
+        GameStatisticsEntity::class,
+        StatisticsMetadataEntity::class,
+    ],
+    version = 6,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -29,7 +34,13 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "sudoku_database",
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(
+                        MIGRATION_1_2,
+                        MIGRATION_2_3,
+                        MIGRATION_3_4,
+                        MIGRATION_4_5,
+                        MIGRATION_5_6,
+                    )
                     .build()
                     .also { instance = it }
             }
@@ -96,6 +107,61 @@ abstract class AppDatabase : RoomDatabase() {
         private val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE games ADD COLUMN advancedNotes TEXT")
+            }
+        }
+
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE games ADD COLUMN statisticsGeneration " +
+                        "INTEGER NOT NULL DEFAULT 0"
+                )
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS game_statistics (
+                        difficulty TEXT NOT NULL PRIMARY KEY,
+                        totalPlayTimeSeconds INTEGER NOT NULL,
+                        gamesStarted INTEGER NOT NULL,
+                        gamesCompleted INTEGER NOT NULL,
+                        totalCompletionTimeSeconds INTEGER NOT NULL,
+                        bestCompletionTimeSeconds INTEGER
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS statistics_metadata (
+                        id INTEGER NOT NULL PRIMARY KEY,
+                        generation INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    "INSERT OR REPLACE INTO statistics_metadata (id, generation) VALUES (0, 0)"
+                )
+                db.execSQL(
+                    """
+                    INSERT OR REPLACE INTO game_statistics (
+                        difficulty,
+                        totalPlayTimeSeconds,
+                        gamesStarted,
+                        gamesCompleted,
+                        totalCompletionTimeSeconds,
+                        bestCompletionTimeSeconds
+                    )
+                    SELECT
+                        difficulty,
+                        COALESCE(SUM(timeSpent), 0),
+                        COUNT(*),
+                        SUM(CASE WHEN sudoku NOT LIKE '%0|%' THEN 1 ELSE 0 END),
+                        COALESCE(SUM(
+                            CASE WHEN sudoku NOT LIKE '%0|%' THEN timeSpent ELSE 0 END
+                        ), 0),
+                        MIN(CASE WHEN sudoku NOT LIKE '%0|%' THEN timeSpent ELSE NULL END)
+                    FROM games
+                    GROUP BY difficulty
+                    """.trimIndent()
+                )
             }
         }
     }

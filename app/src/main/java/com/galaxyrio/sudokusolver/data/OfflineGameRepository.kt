@@ -2,12 +2,14 @@ package com.galaxyrio.sudokusolver.data
 
 import com.galaxyrio.sudokusolver.data.local.GameDao
 import com.galaxyrio.sudokusolver.data.local.GameEntity
+import com.galaxyrio.sudokusolver.data.local.GameStatisticsEntity
 import com.galaxyrio.sudokusolver.domain.game.PuzzleSolutionResolver
 import com.galaxyrio.sudokusolver.domain.game.ImportedPuzzleSolutionResolver
 import com.galaxyrio.sudokusolver.domain.game.PuzzleDifficultyEvaluator
 import com.galaxyrio.sudokusolver.domain.game.SudokuGenerator
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNotes
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
+import com.galaxyrio.sudokusolver.domain.model.GameStatistics
 import com.galaxyrio.sudokusolver.domain.model.SavedGame
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
 import kotlinx.coroutines.CoroutineDispatcher
@@ -28,6 +30,11 @@ class OfflineGameRepository(
 
     override val savedGames: Flow<List<SavedGame>> =
         gameDao.observeAllGames().map { games -> games.map(GameEntity::asExternalModel) }
+
+    override val statistics: Flow<List<GameStatistics>> =
+        gameDao.observeStatistics().map { statistics ->
+            statistics.map(GameStatisticsEntity::asExternalModel)
+        }
 
     override suspend fun getGame(id: Long): SavedGame? {
         val storedGame = gameDao.getGame(id) ?: return null
@@ -76,7 +83,7 @@ class OfflineGameRepository(
     }
 
     override suspend fun saveGame(game: SavedGame): Long =
-        gameDao.upsertGame(game.asEntity())
+        gameDao.upsertGameWithStatistics(game.asEntity())
 
     override suspend fun deleteGame(id: Long) {
         gameDao.deleteGame(id)
@@ -85,7 +92,20 @@ class OfflineGameRepository(
     override suspend fun deleteGames(ids: Set<Long>) {
         if (ids.isNotEmpty()) gameDao.deleteGames(ids)
     }
+
+    override suspend fun clearStatistics() {
+        gameDao.clearStatistics()
+    }
 }
+
+private fun GameStatisticsEntity.asExternalModel(): GameStatistics = GameStatistics(
+    difficulty = difficulty,
+    totalPlayTimeSeconds = totalPlayTimeSeconds,
+    gamesStarted = gamesStarted,
+    gamesCompleted = gamesCompleted,
+    totalCompletionTimeSeconds = totalCompletionTimeSeconds,
+    bestCompletionTimeSeconds = bestCompletionTimeSeconds,
+)
 
 private fun GameEntity.asExternalModel(): SavedGame = SavedGame(
     id = id,

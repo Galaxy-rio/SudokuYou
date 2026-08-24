@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import com.galaxyrio.sudokusolver.data.GameRepository
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
+import com.galaxyrio.sudokusolver.domain.model.GameStatistics
 import com.galaxyrio.sudokusolver.domain.model.SavedGame
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
 import com.galaxyrio.sudokusolver.domain.model.SudokuExportFormat
@@ -145,6 +146,7 @@ class PlayViewModelTest {
     ) : GameRepository {
         private val games = MutableStateFlow(listOfNotNull(initialGame))
         override val savedGames: Flow<List<SavedGame>> = games
+        override val statistics: Flow<List<GameStatistics>> = MutableStateFlow(emptyList())
         var failDeletes = false
 
         override suspend fun getGame(id: Long): SavedGame? =
@@ -171,6 +173,8 @@ class PlayViewModelTest {
             if (failDeletes) error("Simulated delete failure")
             games.value = games.value.filterNot { it.id in ids }
         }
+
+        override suspend fun clearStatistics() = Unit
     }
 
     private class TestViewModelStoreOwner : ViewModelStoreOwner {

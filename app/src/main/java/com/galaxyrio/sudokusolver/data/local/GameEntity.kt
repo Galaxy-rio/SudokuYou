@@ -1,9 +1,10 @@
 package com.galaxyrio.sudokusolver.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.galaxyrio.sudokusolver.domain.model.Difficulty
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNotes
+import com.galaxyrio.sudokusolver.domain.model.Difficulty
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
 import com.galaxyrio.sudokusolver.domain.model.SudokuSolution
 
@@ -17,5 +18,7 @@ data class GameEntity(
     val advancedNotes: AdvancedNotes? = null,
     val timeSpent: Long = 0,
     val lastPlayed: Long = System.currentTimeMillis(),
+    @ColumnInfo(defaultValue = "0")
+    val statisticsGeneration: Long = 0,
 )
 

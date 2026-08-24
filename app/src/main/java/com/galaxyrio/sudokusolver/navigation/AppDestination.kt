@@ -8,6 +8,9 @@ import kotlinx.serialization.Serializable
 data object HomeDestination
 
 @Serializable
+data object SettingsRootDestination
+
+@Serializable
 data class NewGameDestination(
     val difficulty: Difficulty,
 )

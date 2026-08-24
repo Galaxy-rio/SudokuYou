@@ -2,10 +2,13 @@ package com.galaxyrio.sudokusolver.data
 
 import com.galaxyrio.sudokusolver.data.local.GameDao
 import com.galaxyrio.sudokusolver.data.local.GameEntity
+import com.galaxyrio.sudokusolver.data.local.GameStatisticsEntity
+import com.galaxyrio.sudokusolver.data.local.StatisticsMetadataEntity
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -50,6 +53,23 @@ class OfflineGameRepositoryTest {
         )
     }
 
+    @Test
+    fun clearingStatisticsDoesNotDeleteSavedGames() = runTest {
+        val gameDao = FakeGameDao()
+        val repository = OfflineGameRepository(
+            gameDao = gameDao,
+            puzzleInventory = FakePuzzleInventory(Sudoku.fromGridString(PUZZLE)),
+        )
+        val game = repository.createGame(Difficulty.EASY)
+
+        assertEquals(1L, repository.statistics.first().single().gamesStarted)
+
+        repository.clearStatistics()
+
+        assertEquals(0, repository.statistics.first().size)
+        assertEquals(game.id, repository.getGame(game.id)?.id)
+    }
+
     private class FakePuzzleInventory(
         private var cachedPuzzle: Sudoku?,
     ) : PuzzleInventory {
@@ -68,6 +88,8 @@ class OfflineGameRepositoryTest {
 
     private class FakeGameDao(initialGame: GameEntity? = null) : GameDao {
         private val games = MutableStateFlow(listOfNotNull(initialGame))
+        private val statistics = MutableStateFlow(emptyList<GameStatisticsEntity>())
+        private var statisticsGeneration = 0L
         private var nextId = (initialGame?.id ?: 0L) + 1L
 
         fun storedGame(id: Long): GameEntity? = games.value.firstOrNull { it.id == id }
@@ -89,6 +111,26 @@ class OfflineGameRepositoryTest {
 
         override suspend fun deleteGames(ids: Set<Long>) {
             games.value = games.value.filterNot { it.id in ids }
+        }
+
+        override fun observeStatistics(): Flow<List<GameStatisticsEntity>> = statistics
+
+        override suspend fun getStatistics(difficulty: Difficulty): GameStatisticsEntity? =
+            statistics.value.firstOrNull { it.difficulty == difficulty }
+
+        override suspend fun upsertStatistics(statistics: GameStatisticsEntity) {
+            this.statistics.value = this.statistics.value
+                .filterNot { it.difficulty == statistics.difficulty } + statistics
+        }
+
+        override suspend fun getStatisticsGeneration(): Long = statisticsGeneration
+
+        override suspend fun upsertStatisticsMetadata(metadata: StatisticsMetadataEntity) {
+            statisticsGeneration = metadata.generation
+        }
+
+        override suspend fun deleteAllStatistics() {
+            statistics.value = emptyList()
         }
     }
 

@@ -28,6 +28,7 @@ import com.galaxyrio.sudokusolver.ui.screens.game.GameViewModel
 import com.galaxyrio.sudokusolver.ui.screens.home.HomeScreen
 import com.galaxyrio.sudokusolver.ui.screens.play.PlayViewModel
 import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsCategory
+import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsUiState
 import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsViewModel
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.AboutSettingsScreen
@@ -41,6 +42,7 @@ import com.galaxyrio.sudokusolver.ui.screens.settings.details.FilesSettingsScree
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.GameSettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.LanguageSettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.LicensesScreen
+import com.galaxyrio.sudokusolver.ui.screens.statistics.StatisticsViewModel
 import com.galaxyrio.sudokusolver.ui.motion.materialBackwardEnter
 import com.galaxyrio.sudokusolver.ui.motion.materialBackwardExit
 import com.galaxyrio.sudokusolver.ui.motion.materialContainerEnter
@@ -95,8 +97,12 @@ fun AppNavHost(
                     val playViewModel: PlayViewModel = viewModel(
                         factory = PlayViewModel.factory(appContainer.gameRepository)
                     )
+                    val statisticsViewModel: StatisticsViewModel = viewModel(
+                        factory = StatisticsViewModel.factory(appContainer.gameRepository)
+                    )
                     HomeScreen(
                         playViewModel = playViewModel,
+                        statisticsViewModel = statisticsViewModel,
                         sharedTransitionScope = sharedTransitionScope,
                         animatedVisibilityScope = this,
                         onStartGame = { difficulty ->
@@ -118,9 +124,24 @@ fun AppNavHost(
                                 )
                             )
                         },
-                        onNavigateToSettings = { category ->
+                        onOpenSettings = {
+                            navController.navigate(SettingsRootDestination)
+                        },
+                    )
+                }
+
+                composable<SettingsRootDestination>(
+                    enterTransition = { materialForwardEnter(hierarchyTravelPx) },
+                    exitTransition = { materialForwardExit(hierarchyTravelPx) },
+                    popEnterTransition = { materialBackwardEnter(hierarchyTravelPx) },
+                    popExitTransition = { materialBackwardExit(hierarchyTravelPx) },
+                ) {
+                    SettingsScreen(
+                        onBack = { navController.popBackStack() },
+                        onNavigateTo = { category ->
                             navController.navigate(SettingsDestination(category))
                         },
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
 

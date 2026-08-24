@@ -10,6 +10,7 @@ import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteLineStyle
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNotes
 import com.galaxyrio.sudokusolver.domain.model.Cell
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
+import com.galaxyrio.sudokusolver.domain.model.GameStatistics
 import com.galaxyrio.sudokusolver.domain.model.SavedGame
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
 import com.galaxyrio.sudokusolver.domain.model.SudokuExportFormat
@@ -916,6 +917,7 @@ class GameViewModelTest {
         private val gamesFlow = MutableStateFlow(listOfNotNull(initialGame))
 
         override val savedGames: Flow<List<SavedGame>> = gamesFlow
+        override val statistics: Flow<List<GameStatistics>> = MutableStateFlow(emptyList())
         val savedGamesHistory = mutableListOf<SavedGame>()
         val deletedIds = mutableListOf<Long>()
         var createdDifficulty: Difficulty? = null
@@ -955,6 +957,8 @@ class GameViewModelTest {
         override suspend fun deleteGames(ids: Set<Long>) {
             ids.forEach { deleteGame(it) }
         }
+
+        override suspend fun clearStatistics() = Unit
     }
 
     private companion object {

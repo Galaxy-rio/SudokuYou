@@ -13,12 +13,26 @@
 
     <string name="common_back">返回</string>
     <string name="common_cancel">取消</string>
+    <string name="common_delete">删除</string>
     <string name="common_retry">重试</string>
     <string name="common_selected">已选择</string>
     <string name="difficulty_easy">简单</string>
     <string name="difficulty_medium">中等</string>
     <string name="difficulty_hard">困难</string>
     <string name="difficulty_brutal">极难</string>
+
+    <string name="statistics_all_difficulties">全部</string>
+    <string name="statistics_time_section">时间</string>
+    <string name="statistics_total_play_time">总游玩时间</string>
+    <string name="statistics_best_time">最佳时间</string>
+    <string name="statistics_average_time">平均时间</string>
+    <string name="statistics_games_section">游戏</string>
+    <string name="statistics_games_started">总游玩局数</string>
+    <string name="statistics_games_completed">完成局数</string>
+    <string name="statistics_clear_action">删除统计</string>
+    <string name="statistics_clear_title">删除统计数据？</string>
+    <string name="statistics_clear_message">此操作会清除所有难度的累计统计，但不会删除对局存档。</string>
+    <string name="statistics_clear_error">无法删除统计数据。</string>
 
     <string name="play_title">数独</string>
     <string name="play_recent_games">最近对局</string>

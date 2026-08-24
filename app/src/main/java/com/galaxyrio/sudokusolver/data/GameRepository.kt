@@ -1,12 +1,14 @@
 package com.galaxyrio.sudokusolver.data
 
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
+import com.galaxyrio.sudokusolver.domain.model.GameStatistics
 import com.galaxyrio.sudokusolver.domain.model.SavedGame
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
 import kotlinx.coroutines.flow.Flow
 
 interface GameRepository {
     val savedGames: Flow<List<SavedGame>>
+    val statistics: Flow<List<GameStatistics>>
 
     suspend fun getGame(id: Long): SavedGame?
 
@@ -20,4 +22,6 @@ interface GameRepository {
     suspend fun deleteGame(id: Long)
 
     suspend fun deleteGames(ids: Set<Long>)
+
+    suspend fun clearStatistics()
 }
