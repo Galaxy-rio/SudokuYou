@@ -1,13 +1,10 @@
 package com.galaxyrio.sudokusolver.ui.screens.settings.details
 
 import androidx.annotation.StringRes
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,7 +20,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -57,8 +53,9 @@ import com.galaxyrio.sudokusolver.data.settings.ThemeMode
 import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsUiState
 import com.galaxyrio.sudokusolver.ui.util.label
 import com.materialkolor.PaletteStyle
-import com.materialkolor.dynamicColorScheme
 import com.materialkolor.dynamiccolor.ColorSpec
+import com.materialkolor.ktx.toDynamicScheme
+import com.materialkolor.ktx.toneColor
 
 @Composable
 fun AppearanceSettingsScreen(
@@ -122,14 +119,13 @@ fun AppearanceSettingsScreen(
             }
 
             item(key = "accent_color") {
-                SeedColorPicker(
+                AccentColorItem(
                     isDynamic = uiState.useDynamicColors,
                     selectedColor = uiState.themeColor,
                     paletteStyle = uiState.paletteStyle,
                     onColorSelected = onThemeColorChange,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
+                    index = 0,
+                    count = 5,
                 )
             }
 
@@ -138,8 +134,8 @@ fun AppearanceSettingsScreen(
                     titleResource = R.string.appearance_dynamic_color,
                     summaryResource = R.string.appearance_dynamic_color_summary,
                     checked = uiState.useDynamicColors,
-                    index = 0,
-                    count = 4,
+                    index = 1,
+                    count = 5,
                     onCheckedChange = onDynamicColorsChange,
                 )
             }
@@ -148,8 +144,8 @@ fun AppearanceSettingsScreen(
                 SettingsActionItem(
                     titleResource = R.string.appearance_palette_style,
                     summary = uiState.paletteStyle.label(),
-                    index = 1,
-                    count = 4,
+                    index = 2,
+                    count = 5,
                     onClick = { dialog = AppearanceDialog.PALETTE_STYLE },
                 )
             }
@@ -158,8 +154,8 @@ fun AppearanceSettingsScreen(
                 SettingsActionItem(
                     titleResource = R.string.appearance_theme_mode,
                     summary = uiState.themeMode.label(),
-                    index = 2,
-                    count = 4,
+                    index = 3,
+                    count = 5,
                     onClick = { dialog = AppearanceDialog.THEME_MODE },
                 )
             }
@@ -169,8 +165,8 @@ fun AppearanceSettingsScreen(
                     titleResource = R.string.appearance_amoled_mode,
                     summaryResource = R.string.appearance_amoled_mode_summary,
                     checked = uiState.isAmoled,
-                    index = 3,
-                    count = 4,
+                    index = 4,
+                    count = 5,
                     onCheckedChange = onAmoledChange,
                 )
             }
@@ -334,95 +330,93 @@ private fun <T> SelectionDialog(
 }
 
 @Composable
-private fun SeedColorPicker(
+private fun AccentColorItem(
     isDynamic: Boolean,
     selectedColor: Color,
     paletteStyle: PaletteStyle,
     onColorSelected: (Color) -> Unit,
+    index: Int,
+    count: Int,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
-        Text(
-            text = stringResource(R.string.appearance_accent_color),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = 4.dp),
-        )
-        Text(
-            text = stringResource(R.string.appearance_dynamic_or_custom),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
-        )
+    SegmentedListItem(
+        shapes = ListItemDefaults.segmentedShapes(index = index, count = count),
+        modifier = modifier,
+        colors = settingsItemColors(),
+        verticalAlignment = Alignment.Top,
+        content = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(text = stringResource(R.string.appearance_accent_color))
+                Text(
+                    text = stringResource(R.string.appearance_dynamic_or_custom),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
 
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            val itemsPerPage = ((maxWidth + PaletteGap) / (PaletteSize + PaletteGap))
-                .toInt()
-                .coerceIn(1, accentColors.size)
-            val pages = remember(itemsPerPage) { accentColors.chunked(itemsPerPage) }
-            val pagerState = rememberPagerState(pageCount = { pages.size })
+                val pages = remember { accentColors.chunked(ColorsPerPage) }
+                val selectedIndex = accentColors.indexOf(selectedColor).coerceAtLeast(0)
+                val selectedPage = (selectedIndex / ColorsPerPage).coerceAtMost(pages.lastIndex)
+                val pagerState = rememberPagerState(
+                    initialPage = if (isDynamic) 0 else selectedPage,
+                    pageCount = { pages.size },
+                )
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.fillMaxWidth(),
-                ) { page ->
-                    Row(
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    HorizontalPager(
+                        state = pagerState,
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(
-                            PaletteGap,
-                            Alignment.CenterHorizontally,
-                        ),
-                    ) {
-                        pages[page].forEach { color ->
-                            PalettePreviewOption(
-                                seedColor = color,
-                                paletteStyle = paletteStyle,
-                                selected = !isDynamic && selectedColor == color,
-                                contentDescription = stringResource(
-                                    R.string.appearance_color_option,
-                                    color.toHexRgb(),
-                                ),
-                                onClick = { onColorSelected(color) },
-                            )
+                    ) { page ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                        ) {
+                            pages[page].forEach { color ->
+                                PalettePreviewOption(
+                                    seedColor = color,
+                                    paletteStyle = paletteStyle,
+                                    selected = !isDynamic && selectedColor == color,
+                                    contentDescription = stringResource(
+                                        R.string.appearance_color_option,
+                                        color.toHexRgb(),
+                                    ),
+                                    onClick = { onColorSelected(color) },
+                                )
+                            }
                         }
                     }
-                }
 
-                if (pages.size > 1) {
-                    Row(
-                        modifier = Modifier.padding(top = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        repeat(pages.size) { index ->
-                            val indicatorWidth by animateDpAsState(
-                                targetValue = if (pagerState.currentPage == index) 20.dp else 8.dp,
-                                label = "palette_page_indicator",
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .width(indicatorWidth)
-                                    .height(8.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (pagerState.currentPage == index) {
-                                            MaterialTheme.colorScheme.primary
-                                        } else {
-                                            MaterialTheme.colorScheme.surfaceContainerHighest
-                                        }
-                                    ),
-                            )
+                    if (pages.size > 1) {
+                        Row(
+                            modifier = Modifier.padding(top = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            repeat(pages.size) { page ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (pagerState.settledPage == page) {
+                                                MaterialTheme.colorScheme.primary
+                                            } else {
+                                                MaterialTheme.colorScheme.surfaceContainerHighest
+                                            }
+                                        ),
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
-    }
+        },
+    )
 }
 
 @Composable
@@ -434,81 +428,65 @@ private fun PalettePreviewOption(
     onClick: () -> Unit,
 ) {
     val previewScheme = remember(seedColor, paletteStyle) {
-        dynamicColorScheme(
-            seedColor = seedColor,
+        seedColor.toDynamicScheme(
             isDark = false,
             style = paletteStyle,
             specVersion = ColorSpec.SpecVersion.SPEC_2025,
         )
     }
 
-    Surface(
-        onClick = onClick,
+    Box(
         modifier = Modifier
             .size(PaletteSize)
             .semantics {
                 this.contentDescription = contentDescription
                 this.selected = selected
-            },
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(
-            width = if (selected) 2.dp else 1.dp,
-            color = if (selected) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.outlineVariant
-            },
-        ),
+            }
+            .clip(CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
     ) {
-        Box(
-            modifier = Modifier.padding(10.dp),
-            contentAlignment = Alignment.Center,
+        Column(
+            modifier = Modifier.fillMaxSize(),
         ) {
-            Column(
+            Box(
                 modifier = Modifier
+                    .weight(1f)
                     .fillMaxSize()
-                    .clip(CircleShape),
+                    .background(previewScheme.primaryPalette.toneColor(60)),
+            )
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
             ) {
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxWidth()
-                        .background(previewScheme.primary),
+                        .fillMaxSize()
+                        .background(previewScheme.secondaryPalette.toneColor(80)),
                 )
-                Row(
+                Box(
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxWidth(),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxSize()
-                            .background(previewScheme.secondary),
-                    )
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxSize()
-                            .background(previewScheme.tertiary),
-                    )
-                }
+                        .fillMaxSize()
+                        .background(previewScheme.tertiaryPalette.toneColor(40)),
+                )
             }
+        }
 
-            if (selected) {
-                Surface(
-                    modifier = Modifier.size(24.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = stringResource(R.string.common_selected),
-                        modifier = Modifier.padding(4.dp),
-                    )
-                }
+        if (selected) {
+            Surface(
+                modifier = Modifier.size(24.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = stringResource(R.string.common_selected),
+                    modifier = Modifier.padding(4.dp),
+                )
             }
         }
     }
@@ -542,7 +520,9 @@ private val accentColors = listOf(
     Color(0xFF009688),
     Color(0xFF4CAF50),
     Color(0xFFF9A825),
+    Color(0xFF0288D1),
+    Color(0xFFC2185B),
 )
 
-private val PaletteSize = 70.dp
-private val PaletteGap = 10.dp
+private const val ColorsPerPage = 5
+private val PaletteSize = 48.dp
