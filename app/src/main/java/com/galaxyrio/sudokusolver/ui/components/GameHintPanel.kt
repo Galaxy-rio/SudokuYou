@@ -40,16 +40,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.galaxyrio.sudokusolver.R
+import com.galaxyrio.sudokusolver.data.settings.CoordinateNotation
 import com.galaxyrio.sudokusolver.domain.game.HintIssue
 import com.galaxyrio.sudokusolver.domain.solver.SolveTrace
 import com.galaxyrio.sudokusolver.domain.solver.SolveTraceStatus
 import com.galaxyrio.sudokusolver.ui.motion.materialQuickCrossfade
 import com.galaxyrio.sudokusolver.ui.motion.materialQuickFadeIn
 import com.galaxyrio.sudokusolver.ui.motion.materialQuickFadeOut
+import com.galaxyrio.sudokusolver.ui.util.cellCoordinateLabel
 import com.galaxyrio.sudokusolver.ui.util.localizedAction
 import com.galaxyrio.sudokusolver.ui.util.localizedExplanation
 import com.galaxyrio.sudokusolver.ui.util.localizedName
@@ -63,6 +66,7 @@ fun GameHintPanel(
     selectedStepIndex: Int,
     areHintDetailsVisible: Boolean,
     showErrorDetails: Boolean,
+    coordinateNotation: CoordinateNotation,
     onStepSelected: (Int) -> Unit,
     onRevealDetails: () -> Unit,
     onApplyNext: () -> Unit,
@@ -80,6 +84,7 @@ fun GameHintPanel(
             issue != null -> RecoveryIssue(
                 issue = issue,
                 showErrorDetails = showErrorDetails,
+                coordinateNotation = coordinateNotation,
                 onApplyRecovery = onApplyNext,
             )
             trace == null || trace.steps.isEmpty() -> EmptyTrace(trace?.status)
@@ -87,6 +92,7 @@ fun GameHintPanel(
                 trace = trace,
                 selectedStepIndex = selectedStepIndex,
                 areHintDetailsVisible = areHintDetailsVisible,
+                coordinateNotation = coordinateNotation,
                 onStepSelected = onStepSelected,
                 onRevealDetails = onRevealDetails,
                 onApplyNext = onApplyNext,
@@ -99,8 +105,10 @@ fun GameHintPanel(
 private fun RecoveryIssue(
     issue: HintIssue,
     showErrorDetails: Boolean,
+    coordinateNotation: CoordinateNotation,
     onApplyRecovery: () -> Unit,
 ) {
+    val resources = LocalResources.current
     val title = when (issue) {
         is HintIssue.IncorrectValues -> R.string.game_hint_incorrect_values_title
         is HintIssue.MissingCandidates -> R.string.game_hint_missing_candidates_title
@@ -139,8 +147,7 @@ private fun RecoveryIssue(
                     Text(
                         text = stringResource(
                             R.string.game_hint_error_cell_item,
-                            cell.row + 1,
-                            cell.col + 1,
+                            resources.cellCoordinateLabel(cell, coordinateNotation),
                         ),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -150,8 +157,7 @@ private fun RecoveryIssue(
                     Text(
                         text = stringResource(
                             R.string.game_hint_incorrect_value_item,
-                            entry.cell.row + 1,
-                            entry.cell.col + 1,
+                            resources.cellCoordinateLabel(entry.cell, coordinateNotation),
                             entry.enteredDigit,
                         ),
                         style = MaterialTheme.typography.titleSmall,
@@ -163,8 +169,7 @@ private fun RecoveryIssue(
                         text = stringResource(
                             R.string.game_hint_missing_candidate_item,
                             candidate.digit,
-                            candidate.cell.row + 1,
-                            candidate.cell.col + 1,
+                            resources.cellCoordinateLabel(candidate.cell, coordinateNotation),
                         ),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -243,6 +248,7 @@ private fun TraceBrowser(
     trace: SolveTrace,
     selectedStepIndex: Int,
     areHintDetailsVisible: Boolean,
+    coordinateNotation: CoordinateNotation,
     onStepSelected: (Int) -> Unit,
     onRevealDetails: () -> Unit,
     onApplyNext: () -> Unit,
@@ -261,6 +267,7 @@ private fun TraceBrowser(
         HintStepDetails(
             trace = trace,
             selectedStepIndex = index,
+            coordinateNotation = coordinateNotation,
         )
     } else {
         Surface(
@@ -357,6 +364,7 @@ private fun TraceBrowser(
 private fun HintStepDetails(
     trace: SolveTrace,
     selectedStepIndex: Int,
+    coordinateNotation: CoordinateNotation,
 ) {
     SharedTransitionLayout {
         AnimatedContent(
@@ -398,12 +406,12 @@ private fun HintStepDetails(
                         verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
                         Text(
-                            text = step.localizedExplanation(),
+                            text = step.localizedExplanation(coordinateNotation),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            text = step.localizedAction(),
+                            text = step.localizedAction(coordinateNotation),
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurface,
                         )

@@ -23,6 +23,13 @@ enum class PaletteStyleOption {
     CONTENT,
 }
 
+enum class CoordinateNotation {
+    LOCALIZED,
+    RCB,
+    K9,
+    EXCEL,
+}
+
 data class AppSettings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val themeColorArgb: Int = DEFAULT_THEME_COLOR,
@@ -36,6 +43,7 @@ data class AppSettings(
     val showHintDetails: Boolean = true,
     val showErrorDetails: Boolean = true,
     val showErrorsImmediately: Boolean = false,
+    val coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
     val exportFormat: SudokuExportFormat = SudokuExportFormat.SUSSER,
     val includeCandidatesInCurrentExport: Boolean = true,
 ) {
@@ -59,6 +67,7 @@ interface SettingsRepository {
     fun setShowHintDetails(enabled: Boolean)
     fun setShowErrorDetails(enabled: Boolean)
     fun setShowErrorsImmediately(enabled: Boolean)
+    fun setCoordinateNotation(notation: CoordinateNotation)
     fun setExportFormat(format: SudokuExportFormat)
     fun setIncludeCandidatesInCurrentExport(enabled: Boolean)
 }
@@ -138,6 +147,11 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         update { copy(showErrorsImmediately = enabled) }
     }
 
+    override fun setCoordinateNotation(notation: CoordinateNotation) {
+        preferences.edit { putInt(KEY_COORDINATE_NOTATION, notation.ordinal) }
+        update { copy(coordinateNotation = notation) }
+    }
+
     override fun setExportFormat(format: SudokuExportFormat) {
         preferences.edit { putInt(KEY_EXPORT_FORMAT, format.ordinal) }
         update { copy(exportFormat = format) }
@@ -172,6 +186,14 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         showHintDetails = preferences.getBoolean(KEY_SHOW_HINT_DETAILS, true),
         showErrorDetails = preferences.getBoolean(KEY_SHOW_ERROR_DETAILS, true),
         showErrorsImmediately = preferences.getBoolean(KEY_SHOW_ERRORS_IMMEDIATELY, false),
+        coordinateNotation = enumValueAtOrDefault(
+            values = CoordinateNotation.entries,
+            index = preferences.getInt(
+                KEY_COORDINATE_NOTATION,
+                CoordinateNotation.LOCALIZED.ordinal,
+            ),
+            default = CoordinateNotation.LOCALIZED,
+        ),
         exportFormat = enumValueAtOrDefault(
             values = SudokuExportFormat.entries,
             index = preferences.getInt(
@@ -204,6 +226,7 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         const val KEY_SHOW_HINT_DETAILS = "show_hint_details"
         const val KEY_SHOW_ERROR_DETAILS = "show_error_details"
         const val KEY_SHOW_ERRORS_IMMEDIATELY = "show_errors_immediately"
+        const val KEY_COORDINATE_NOTATION = "coordinate_notation"
         const val KEY_EXPORT_FORMAT = "export_format"
         const val KEY_INCLUDE_CANDIDATES_IN_CURRENT_EXPORT =
             "include_candidates_in_current_export"

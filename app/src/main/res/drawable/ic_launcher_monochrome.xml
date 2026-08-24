@@ -4,9 +4,7 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Material Symbols Outlined grid_3x3, FILL 0, wght 600, GRAD 0, opsz 24. -->
-    <!-- Its 36dp visual bounds occupy exactly one third of the 108dp icon canvas. -->
     <path
-        android:fillColor="#1F1F1F"
+        android:fillColor="#000000"
         android:pathData="M44.1903,36H49.92V72H44.1903ZM58.08,36H63.8097V72H58.08ZM36,44.1903H72V49.92H36ZM36,58.08H72V63.8097H36Z" />
 </vector>

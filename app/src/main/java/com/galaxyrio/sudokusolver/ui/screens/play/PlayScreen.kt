@@ -769,7 +769,7 @@ private fun SavedGameItem(
             },
             supportingContent = {
                 Text(
-                    text = "${game.difficulty.label()} · " +
+                    text = "${game.difficulty.label()}\n" +
                         "${formatElapsedTime(game.timeSpentSeconds)} · $numbersLeft",
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,

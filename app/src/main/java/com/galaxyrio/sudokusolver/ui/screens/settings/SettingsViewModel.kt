@@ -8,10 +8,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.galaxyrio.sudokusolver.data.settings.AppSettings
+import com.galaxyrio.sudokusolver.data.settings.CoordinateNotation
 import com.galaxyrio.sudokusolver.data.settings.PaletteStyleOption
 import com.galaxyrio.sudokusolver.data.settings.SettingsRepository
-import com.galaxyrio.sudokusolver.domain.model.SudokuExportFormat
 import com.galaxyrio.sudokusolver.data.settings.ThemeMode
+import com.galaxyrio.sudokusolver.domain.model.SudokuExportFormat
 import com.materialkolor.PaletteStyle
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +32,7 @@ data class SettingsUiState(
     val showHintDetails: Boolean = true,
     val showErrorDetails: Boolean = true,
     val showErrorsImmediately: Boolean = false,
+    val coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
     val exportFormat: SudokuExportFormat = SudokuExportFormat.SUSSER,
     val includeCandidatesInCurrentExport: Boolean = true,
 )
@@ -74,6 +76,9 @@ class SettingsViewModel(
     fun setShowErrorsImmediately(enabled: Boolean) =
         repository.setShowErrorsImmediately(enabled)
 
+    fun setCoordinateNotation(notation: CoordinateNotation) =
+        repository.setCoordinateNotation(notation)
+
     fun setExportFormat(format: SudokuExportFormat) = repository.setExportFormat(format)
 
     fun setIncludeCandidatesInCurrentExport(enabled: Boolean) =
@@ -101,6 +106,7 @@ private fun AppSettings.asUiState(): SettingsUiState = SettingsUiState(
     showHintDetails = showHintDetails,
     showErrorDetails = showErrorDetails,
     showErrorsImmediately = showErrorsImmediately,
+    coordinateNotation = coordinateNotation,
     exportFormat = exportFormat,
     includeCandidatesInCurrentExport = includeCandidatesInCurrentExport,
 )

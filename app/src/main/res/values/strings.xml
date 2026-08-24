@@ -65,12 +65,12 @@
     </plurals>
 
     <string name="settings_title">Settings</string>
-    <string name="settings_appearance">Look &amp; feel</string>
-    <string name="settings_appearance_summary">Theme, color, and board</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_appearance_summary">Theme and board</string>
     <string name="settings_game">Game</string>
-    <string name="settings_game_summary">Input and rules</string>
+    <string name="settings_game_summary">Rules and hints</string>
     <string name="settings_assistance">Assistance</string>
-    <string name="settings_assistance_summary">Learning aids</string>
+    <string name="settings_assistance_summary">Learning and assistance</string>
     <string name="settings_files">Files</string>
     <string name="settings_files_summary">Import and export</string>
     <string name="settings_language">Language</string>
@@ -122,13 +122,24 @@
     <string name="language_chinese_simplified_summary">Simplified Chinese</string>
 
     <string name="game_settings_title">Game</string>
-    <string name="game_settings_input_rules_section">Input and rules</string>
+    <string name="game_settings_input_rules_section">Rules</string>
     <string name="game_settings_show_hint_details">Show hint details</string>
-    <string name="game_settings_show_hint_details_summary">Immediately show the explanation, affected candidates, and board diagram. Turn this off to reveal each hint only when requested.</string>
+    <string name="game_settings_show_hint_details_summary">Show full explanations and board markings</string>
     <string name="game_settings_show_error_details">Show error details</string>
-    <string name="game_settings_show_error_details_summary">Identify exact incorrect values and candidates, and allow missing candidates to be restored.</string>
+    <string name="game_settings_show_error_details_summary">Identify incorrect values and removed candidates</string>
     <string name="game_settings_show_errors_immediately">Show errors immediately</string>
-    <string name="game_settings_show_errors_immediately_summary">Open the hint panel after a non-conflicting wrong entry or after a required candidate is removed.</string>
+    <string name="game_settings_show_errors_immediately_summary">Show a hint as soon as an entry or candidate is wrong</string>
+    <string name="game_settings_hints_section">Hints</string>
+    <string name="game_settings_coordinate_notation">Coordinate notation</string>
+    <string name="game_settings_coordinate_notation_summary">%1$s · %2$s</string>
+    <string name="coordinate_notation_localized">Natural language</string>
+    <string name="coordinate_notation_localized_example">row 2, column 6</string>
+    <string name="coordinate_notation_rcb">RCB</string>
+    <string name="coordinate_notation_rcb_example">R2C6</string>
+    <string name="coordinate_notation_k9">K9</string>
+    <string name="coordinate_notation_k9_example">B6</string>
+    <string name="coordinate_notation_excel">Excel notation</string>
+    <string name="coordinate_notation_excel_example">F2</string>
     <string name="assistance_settings_title">Assistance</string>
     <string name="assistance_settings_placeholder">Learning and assistance options will be available in a future version.</string>
     <string name="files_settings_title">Files</string>
@@ -244,12 +255,12 @@
     <string name="game_hint_incorrect_values_title">Incorrect entries</string>
     <string name="game_hint_incorrect_values_explanation">These entered values conflict with the original puzzle solution.</string>
     <string name="game_hint_incorrect_values_private_explanation">The following cells contain incorrect entries.</string>
-    <string name="game_hint_incorrect_value_item">Cell r%1$dc%2$d: entered value %3$d</string>
+    <string name="game_hint_incorrect_value_item">%1$s: entered value %2$d</string>
     <string name="game_hint_missing_candidates_title">Missing candidates</string>
     <string name="game_hint_missing_candidates_explanation">The current Sukaku has no solution because these candidates from the original solution were removed.</string>
     <string name="game_hint_missing_candidates_private_explanation">Candidate choices in the following cells make the current Sukaku unsolvable.</string>
-    <string name="game_hint_missing_candidate_item">Restore candidate %1$d in r%2$dc%3$d.</string>
-    <string name="game_hint_error_cell_item">Cell r%1$dc%2$d</string>
+    <string name="game_hint_missing_candidate_item">Restore candidate %1$d in %2$s.</string>
+    <string name="game_hint_error_cell_item">%1$s</string>
     <string name="game_hint_step_count">Step %1$d of %2$d</string>
     <string name="game_hint_no_supported_step">No supported logical step was found from this position.</string>
     <string name="game_hint_already_solved">This puzzle is already solved.</string>
@@ -259,7 +270,7 @@
     <string name="game_hint_previous_step">Previous step</string>
     <string name="game_hint_next_step">Next step</string>
     <string name="game_hint_last_step">Last step</string>
-    <string name="game_hint_cell">r%1$dc%2$d</string>
+    <string name="game_hint_cell">row %1$d, column %2$d</string>
     <string name="game_hint_row">row %1$d</string>
     <string name="game_hint_column">column %1$d</string>
     <string name="game_hint_box">box %1$d</string>

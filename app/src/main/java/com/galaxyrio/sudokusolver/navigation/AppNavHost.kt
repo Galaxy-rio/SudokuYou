@@ -239,6 +239,8 @@ fun AppNavHost(
                             onShowErrorDetailsChange = settingsViewModel::setShowErrorDetails,
                             onShowErrorsImmediatelyChange =
                                 settingsViewModel::setShowErrorsImmediately,
+                            onCoordinateNotationChange =
+                                settingsViewModel::setCoordinateNotation,
                             onBack = onBack,
                             modifier = Modifier.fillMaxSize(),
                         )

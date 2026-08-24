@@ -323,6 +323,7 @@ fun GameRoute(
                     selectedStepIndex = uiState.selectedHintStepIndex,
                     areHintDetailsVisible = uiState.areHintDetailsVisible,
                     showErrorDetails = uiState.showErrorDetails,
+                    coordinateNotation = uiState.coordinateNotation,
                     onStepSelected = viewModel::selectHintStep,
                     onRevealDetails = viewModel::revealHintDetails,
                     onApplyNext = {
@@ -1075,9 +1076,10 @@ private fun AdaptiveGameContent(
                     isHintVisible = isHintVisible,
                     onBoardBoundsChanged = onBoardBoundsChanged,
                     onCellSelected = onCellSelected,
-                    modifier = boardModifier
+                    modifier = Modifier
                         .weight(1f)
-                        .widthIn(max = 560.dp),
+                        .widthIn(max = 560.dp)
+                        .then(boardModifier),
                 )
                 GameControlArea(
                     uiState = uiState,
@@ -1105,14 +1107,19 @@ private fun AdaptiveGameContent(
                     isHintVisible = isHintVisible,
                     onBoardBoundsChanged = onBoardBoundsChanged,
                     onCellSelected = onCellSelected,
-                    modifier = boardModifier
+                    // The shared bounds must describe the board itself, not this layout's
+                    // surrounding spacing. Keeping the padding outside the shared modifier
+                    // makes the full-size board line up exactly with the saved-game thumbnail
+                    // during a predictive-back container transform.
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(
                             start = 16.dp,
                             top = 4.dp,
                             end = 16.dp,
                             bottom = 4.dp,
-                        ),
+                        )
+                        .then(boardModifier),
                 )
                 GameControlArea(
                     uiState = uiState,

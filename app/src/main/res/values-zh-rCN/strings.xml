@@ -63,12 +63,12 @@
     </plurals>
 
     <string name="settings_title">设置</string>
-    <string name="settings_appearance">外观与体验</string>
-    <string name="settings_appearance_summary">主题、颜色与棋盘</string>
+    <string name="settings_appearance">外观</string>
+    <string name="settings_appearance_summary">主题与棋盘</string>
     <string name="settings_game">游戏</string>
-    <string name="settings_game_summary">输入与规则</string>
+    <string name="settings_game_summary">规则与提示</string>
     <string name="settings_assistance">辅助</string>
-    <string name="settings_assistance_summary">学习辅助</string>
+    <string name="settings_assistance_summary">学习与辅助</string>
     <string name="settings_files">文件</string>
     <string name="settings_files_summary">导入与导出</string>
     <string name="settings_language">语言</string>
@@ -120,13 +120,24 @@
     <string name="language_chinese_simplified_summary">简体中文</string>
 
     <string name="game_settings_title">游戏</string>
-    <string name="game_settings_input_rules_section">输入与规则</string>
+    <string name="game_settings_input_rules_section">规则</string>
     <string name="game_settings_show_hint_details">显示提示详情</string>
-    <string name="game_settings_show_hint_details_summary">立即显示解释、受影响的候选数和棋盘标记。关闭后，每条提示仅在主动揭示时显示详情。</string>
+    <string name="game_settings_show_hint_details_summary">直接显示完整说明与棋盘标记</string>
     <string name="game_settings_show_error_details">显示错误详情</string>
-    <string name="game_settings_show_error_details_summary">指出具体填错的数字和误删的候选数，并允许恢复缺失候选数。</string>
+    <string name="game_settings_show_error_details_summary">显示填错的数字与误删的候选数</string>
     <string name="game_settings_show_errors_immediately">立即显示错误</string>
-    <string name="game_settings_show_errors_immediately_summary">填入不冲突但错误的数字，或删除解题所需的候选数后，立即打开提示窗口。</string>
+    <string name="game_settings_show_errors_immediately_summary">输入或候选数出错时立即提示</string>
+    <string name="game_settings_hints_section">提示</string>
+    <string name="game_settings_coordinate_notation">坐标表示</string>
+    <string name="game_settings_coordinate_notation_summary">%1$s · %2$s</string>
+    <string name="coordinate_notation_localized">自然语言</string>
+    <string name="coordinate_notation_localized_example">第 2 行第 6 列</string>
+    <string name="coordinate_notation_rcb">RCB</string>
+    <string name="coordinate_notation_rcb_example">R2C6</string>
+    <string name="coordinate_notation_k9">K9</string>
+    <string name="coordinate_notation_k9_example">B6</string>
+    <string name="coordinate_notation_excel">Excel 坐标</string>
+    <string name="coordinate_notation_excel_example">F2</string>
     <string name="assistance_settings_title">辅助</string>
     <string name="assistance_settings_placeholder">学习与辅助选项将在后续版本中开放。</string>
     <string name="files_settings_title">文件</string>
@@ -241,12 +252,12 @@
     <string name="game_hint_incorrect_values_title">填入数字错误</string>
     <string name="game_hint_incorrect_values_explanation">这些填入数字与原题答案冲突。</string>
     <string name="game_hint_incorrect_values_private_explanation">以下格子填入了错误数字。</string>
-    <string name="game_hint_incorrect_value_item">第 %1$d 行第 %2$d 列当前填入了 %3$d。</string>
+    <string name="game_hint_incorrect_value_item">%1$s当前填入了 %2$d。</string>
     <string name="game_hint_missing_candidates_title">缺失候选数</string>
     <string name="game_hint_missing_candidates_explanation">当前 Sukaku 无解，因为下列属于原题答案的候选数已被删除。</string>
     <string name="game_hint_missing_candidates_private_explanation">以下格子的候选数状态使当前 Sukaku 无解。</string>
-    <string name="game_hint_missing_candidate_item">在第 %2$d 行第 %3$d 列恢复候选数 %1$d。</string>
-    <string name="game_hint_error_cell_item">第 %1$d 行第 %2$d 列</string>
+    <string name="game_hint_missing_candidate_item">在%2$s恢复候选数 %1$d。</string>
+    <string name="game_hint_error_cell_item">%1$s</string>
     <string name="game_hint_step_count">第 %1$d / %2$d 步</string>
     <string name="game_hint_no_supported_step">从当前局面没有找到已支持的逻辑步骤。</string>
     <string name="game_hint_already_solved">这道题已经完成。</string>

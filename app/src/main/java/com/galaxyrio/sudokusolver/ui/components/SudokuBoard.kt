@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
@@ -69,18 +70,15 @@ fun SudokuBoard(
     config: BoardConfig = BoardConfig(),
 ) {
     val thickLine = 2.dp
-    val thinLine = 1.dp
+    val thinLine = 0.6.dp
     val cornerRadius = 12.dp
-    val lineColor = if (config.useColoredBoard) {
-        MaterialTheme.colorScheme.secondary
-    } else {
-        MaterialTheme.colorScheme.outline
-    }
+    val colorScheme = MaterialTheme.colorScheme
     val boardColor = if (config.useColoredBoard) {
-        MaterialTheme.colorScheme.primary
+        colorScheme.primary
     } else {
-        MaterialTheme.colorScheme.onSurface
+        colorScheme.onSurface
     }
+    val lineColor = lerp(boardColor, colorScheme.surface, 0.5f)
     val conflictingCells = remember(sudoku) {
         buildSet {
             repeat(Sudoku.GRID_SIZE) { row ->

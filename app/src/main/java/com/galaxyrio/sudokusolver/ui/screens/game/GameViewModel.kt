@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.galaxyrio.sudokusolver.data.GameRepository
 import com.galaxyrio.sudokusolver.data.settings.AppSettings
+import com.galaxyrio.sudokusolver.data.settings.CoordinateNotation
 import com.galaxyrio.sudokusolver.domain.game.CandidateCalculator
 import com.galaxyrio.sudokusolver.domain.game.HintIssue
 import com.galaxyrio.sudokusolver.domain.game.HintIssueDetector
@@ -79,6 +80,7 @@ data class GameUiState(
     val showHintDetails: Boolean = true,
     val showErrorDetails: Boolean = true,
     val showErrorsImmediately: Boolean = false,
+    val coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
     val isHintDetailsRevealed: Boolean = false,
     val immediateHintRequestId: Long = 0,
     val hasPersistenceError: Boolean = false,
@@ -1036,4 +1038,5 @@ private fun GameUiState.withGameSettings(settings: AppSettings): GameUiState = c
     showHintDetails = settings.showHintDetails,
     showErrorDetails = settings.showErrorDetails,
     showErrorsImmediately = settings.showErrorsImmediately,
+    coordinateNotation = settings.coordinateNotation,
 )

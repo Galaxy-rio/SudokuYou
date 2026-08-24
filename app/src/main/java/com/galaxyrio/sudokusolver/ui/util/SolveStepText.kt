@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import com.galaxyrio.sudokusolver.R
+import com.galaxyrio.sudokusolver.data.settings.CoordinateNotation
 import com.galaxyrio.sudokusolver.domain.solver.CellRef
 import com.galaxyrio.sudokusolver.domain.solver.HouseRef
 import com.galaxyrio.sudokusolver.domain.solver.HouseType
@@ -77,11 +78,16 @@ internal fun TechniqueId.localizedName(): String = stringResource(
 )
 
 @Composable
-internal fun SolveStep.localizedExplanation(): String {
+internal fun SolveStep.localizedExplanation(
+    coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
+): String {
     val resources = LocalResources.current
+    val coordinateLabel: (CellRef) -> String = { cell ->
+        resources.cellCoordinateLabel(cell, coordinateNotation)
+    }
     val cells = evidence.causeCells
         .sortedBy(CellRef::index)
-        .joinToString { resources.cellLabel(it) }
+        .joinToString { coordinateLabel(it) }
     val digits = evidence.focusDigits
         .ifEmpty { evidence.causeCandidates.map { it.digit }.toSet() }
         .sorted()
@@ -95,20 +101,20 @@ internal fun SolveStep.localizedExplanation(): String {
     return when (technique) {
         TechniqueId.LAST_DIGIT -> resources.getString(
             R.string.game_hint_explanation_last_digit,
-            placement?.cell?.let(resources::cellLabel).orEmpty(),
+            placement?.cell?.let(coordinateLabel).orEmpty(),
             firstHouse,
             placement?.digit ?: 0,
         )
         TechniqueId.NAKED_SINGLE -> resources.getString(
             R.string.game_hint_explanation_naked_single,
-            placement?.cell?.let(resources::cellLabel).orEmpty(),
+            placement?.cell?.let(coordinateLabel).orEmpty(),
             placement?.digit ?: 0,
         )
         TechniqueId.HIDDEN_SINGLE -> resources.getString(
             R.string.game_hint_explanation_hidden_single,
             (placement?.digit ?: 0).toString(),
             firstHouse,
-            placement?.cell?.let(resources::cellLabel).orEmpty(),
+            placement?.cell?.let(coordinateLabel).orEmpty(),
         )
         TechniqueId.NAKED_PAIR,
         TechniqueId.LOCKED_PAIR,
@@ -197,7 +203,7 @@ internal fun SolveStep.localizedExplanation(): String {
         -> resources.getString(
             R.string.game_hint_explanation_nishio_forcing,
             evidence.inferenceGraph.premise?.candidates?.firstOrNull()
-                ?.let(resources::candidateLabel)
+                ?.let { resources.candidateLabel(it, coordinateNotation) }
                 .orEmpty(),
             technique.localizedName(),
         )
@@ -214,9 +220,10 @@ internal fun SolveStep.localizedExplanation(): String {
                 when (premise.type) {
                     com.galaxyrio.sudokusolver.domain.solver.InferencePremiseType.NISHIO,
                     com.galaxyrio.sudokusolver.domain.solver.InferencePremiseType.DIGIT,
-                    -> premise.candidates.firstOrNull()?.let(resources::candidateLabel)
+                    -> premise.candidates.firstOrNull()
+                        ?.let { resources.candidateLabel(it, coordinateNotation) }
                     com.galaxyrio.sudokusolver.domain.solver.InferencePremiseType.CELL ->
-                        premise.candidates.firstOrNull()?.cell?.let(resources::cellLabel)
+                        premise.candidates.firstOrNull()?.cell?.let(coordinateLabel)
                     com.galaxyrio.sudokusolver.domain.solver.InferencePremiseType.REGION ->
                         resources.getString(
                             R.string.game_hint_forcing_region_premise,
@@ -256,7 +263,7 @@ internal fun SolveStep.localizedExplanation(): String {
         )
         TechniqueId.BUG_PLUS_ONE -> resources.getString(
             R.string.game_hint_explanation_bug_plus_one,
-            placement?.cell?.let(resources::cellLabel).orEmpty(),
+            placement?.cell?.let(coordinateLabel).orEmpty(),
             placement?.digit ?: 0,
         )
         TechniqueId.UNIQUE_RECTANGLE_TYPE_1,
@@ -279,7 +286,9 @@ internal fun SolveStep.localizedExplanation(): String {
 }
 
 @Composable
-internal fun SolveStep.localizedAction(): String {
+internal fun SolveStep.localizedAction(
+    coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
+): String {
     val resources = LocalResources.current
     return buildList {
         placements.forEach { placement ->
@@ -287,7 +296,7 @@ internal fun SolveStep.localizedAction(): String {
                 resources.getString(
                     R.string.game_hint_action_place,
                     placement.digit,
-                    resources.cellLabel(placement.cell),
+                    resources.cellCoordinateLabel(placement.cell, coordinateNotation),
                 )
             )
         }
@@ -297,7 +306,7 @@ internal fun SolveStep.localizedAction(): String {
                 resources.getString(
                     R.string.game_hint_candidate_at,
                     candidate.digit.toString(),
-                    resources.cellLabel(candidate.cell),
+                    resources.cellCoordinateLabel(candidate.cell, coordinateNotation),
                 )
             }
             add(resources.getString(R.string.game_hint_action_remove, candidates))
@@ -305,15 +314,13 @@ internal fun SolveStep.localizedAction(): String {
     }.joinToString(separator = "\n")
 }
 
-private fun Resources.cellLabel(cell: CellRef): String =
-    getString(R.string.game_hint_cell, cell.row + 1, cell.col + 1)
-
 private fun Resources.candidateLabel(
     candidate: com.galaxyrio.sudokusolver.domain.solver.CandidateRef,
+    coordinateNotation: CoordinateNotation,
 ): String = getString(
     R.string.game_hint_candidate_at,
     candidate.digit.toString(),
-    cellLabel(candidate.cell),
+    cellCoordinateLabel(candidate.cell, coordinateNotation),
 )
 
 private fun Resources.houseLabel(house: HouseRef): String = when (house.type) {

@@ -2,6 +2,7 @@ package com.galaxyrio.sudokusolver.ui.screens.game
 
 import com.galaxyrio.sudokusolver.data.GameRepository
 import com.galaxyrio.sudokusolver.data.settings.AppSettings
+import com.galaxyrio.sudokusolver.data.settings.CoordinateNotation
 import com.galaxyrio.sudokusolver.domain.game.CandidateCalculator
 import com.galaxyrio.sudokusolver.domain.game.HintIssue
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteColor
@@ -545,6 +546,27 @@ class GameViewModelTest {
         settingsFlow.value = settingsFlow.value.copy(exportFormat = SudokuExportFormat.EXCEL)
         advanceUntilIdle()
         assertTrue('\t' in viewModel.exportCurrentText())
+    }
+
+    @Test
+    fun coordinateNotationTracksTheCurrentGameSetting() = runViewModelTest {
+        val settingsFlow = MutableStateFlow(AppSettings())
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(),
+            newGameDifficulty = Difficulty.EASY,
+            savedGameId = null,
+            settings = settingsFlow,
+        )
+        advanceUntilIdle()
+
+        assertEquals(CoordinateNotation.LOCALIZED, viewModel.uiState.value.coordinateNotation)
+
+        settingsFlow.value = settingsFlow.value.copy(
+            coordinateNotation = CoordinateNotation.K9,
+        )
+        advanceUntilIdle()
+
+        assertEquals(CoordinateNotation.K9, viewModel.uiState.value.coordinateNotation)
     }
 
     @Test
