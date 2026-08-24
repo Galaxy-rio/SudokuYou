@@ -29,6 +29,7 @@ fun SudokuApp(
         ThemeMode.DARK -> true
     }
     val view = LocalView.current
+    val navController = rememberNavController()
 
     SideEffect {
         view.context.findActivity()?.window?.let { window ->
@@ -46,7 +47,6 @@ fun SudokuApp(
         colorSeed = settingsUiState.themeColor,
         paletteStyle = settingsUiState.paletteStyle,
     ) {
-        val navController = rememberNavController()
         AppNavHost(
             navController = navController,
             appContainer = appContainer,

@@ -4,16 +4,15 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialExpressiveTheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
+import com.materialkolor.rememberDynamicColorScheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -25,35 +24,32 @@ fun SudokuSolverTheme(
     paletteStyle: PaletteStyle = PaletteStyle.TonalSpot,
     content: @Composable () -> Unit,
 ) {
-    if (dynamicColor) {
-        val context = LocalContext.current
+    val context = LocalContext.current
+    val colorScheme = if (dynamicColor) {
         val platformColorScheme = if (darkTheme) {
             dynamicDarkColorScheme(context)
         } else {
             dynamicLightColorScheme(context)
         }
-        ExpressiveTheme(
-            colorScheme = if (darkTheme && amoled) {
-                platformColorScheme.withAmoledSurfaces()
-            } else {
-                platformColorScheme
-            },
-            content = content,
-        )
+        if (darkTheme && amoled) {
+            platformColorScheme.withAmoledSurfaces()
+        } else {
+            platformColorScheme
+        }
     } else {
-        DynamicMaterialTheme(
+        rememberDynamicColorScheme(
             seedColor = colorSeed,
             isDark = darkTheme,
             style = paletteStyle,
             isAmoled = darkTheme && amoled,
             specVersion = ColorSpec.SpecVersion.SPEC_2025,
-        ) {
-            ExpressiveTheme(
-                colorScheme = MaterialTheme.colorScheme,
-                content = content,
-            )
-        }
+        )
     }
+
+    ExpressiveTheme(
+        colorScheme = colorScheme,
+        content = content,
+    )
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)

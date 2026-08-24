@@ -1,11 +1,13 @@
 package com.galaxyrio.sudokusolver.ui.screens.settings.details
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,13 +19,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -31,6 +33,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedListItem
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,7 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -54,6 +57,8 @@ import com.galaxyrio.sudokusolver.data.settings.ThemeMode
 import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsUiState
 import com.galaxyrio.sudokusolver.ui.util.label
 import com.materialkolor.PaletteStyle
+import com.materialkolor.dynamicColorScheme
+import com.materialkolor.dynamiccolor.ColorSpec
 
 @Composable
 fun AppearanceSettingsScreen(
@@ -117,30 +122,25 @@ fun AppearanceSettingsScreen(
             }
 
             item(key = "accent_color") {
-                SegmentedListItem(
-                    onClick = { onDynamicColorsChange(true) },
-                    shapes = ListItemDefaults.segmentedShapes(index = 0, count = 4),
-                    colors = settingsItemColors(),
-                    content = {
-                        Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                            Text(stringResource(R.string.appearance_accent_color))
-                            Text(
-                                text = stringResource(R.string.appearance_dynamic_or_custom),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            ColorPicker(
-                                isDynamic = uiState.useDynamicColors,
-                                selectedColor = uiState.themeColor,
-                                onDynamicSelected = { onDynamicColorsChange(true) },
-                                onColorSelected = {
-                                    onDynamicColorsChange(false)
-                                    onThemeColorChange(it)
-                                },
-                                modifier = Modifier.padding(top = 12.dp),
-                            )
-                        }
-                    },
+                SeedColorPicker(
+                    isDynamic = uiState.useDynamicColors,
+                    selectedColor = uiState.themeColor,
+                    paletteStyle = uiState.paletteStyle,
+                    onColorSelected = onThemeColorChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                )
+            }
+
+            item(key = "dynamic_colors") {
+                SettingsSwitchItem(
+                    titleResource = R.string.appearance_dynamic_color,
+                    summaryResource = R.string.appearance_dynamic_color_summary,
+                    checked = uiState.useDynamicColors,
+                    index = 0,
+                    count = 4,
+                    onCheckedChange = onDynamicColorsChange,
                 )
             }
 
@@ -334,92 +334,187 @@ private fun <T> SelectionDialog(
 }
 
 @Composable
-private fun ColorPicker(
+private fun SeedColorPicker(
     isDynamic: Boolean,
     selectedColor: Color,
-    onDynamicSelected: () -> Unit,
+    paletteStyle: PaletteStyle,
     onColorSelected: (Color) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyRow(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        item(key = "dynamic") {
-            ColorOption(
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                selected = isDynamic,
-                showSelectedIcon = false,
-                contentDescription = stringResource(R.string.appearance_dynamic_color),
-                onClick = onDynamicSelected,
-            ) {
-                Icon(
-                    imageVector = Icons.Default.BrightnessAuto,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
+    Column(modifier = modifier) {
+        Text(
+            text = stringResource(R.string.appearance_accent_color),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 4.dp),
+        )
+        Text(
+            text = stringResource(R.string.appearance_dynamic_or_custom),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+        )
 
-        items(
-            items = accentColors,
-            key = { it.value.toLong() },
-        ) { color ->
-            ColorOption(
-                color = color,
-                selected = !isDynamic && selectedColor == color,
-                contentDescription = stringResource(R.string.appearance_custom_color),
-                onClick = { onColorSelected(color) },
-            )
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            val itemsPerPage = ((maxWidth + PaletteGap) / (PaletteSize + PaletteGap))
+                .toInt()
+                .coerceIn(1, accentColors.size)
+            val pages = remember(itemsPerPage) { accentColors.chunked(itemsPerPage) }
+            val pagerState = rememberPagerState(pageCount = { pages.size })
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxWidth(),
+                ) { page ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(
+                            PaletteGap,
+                            Alignment.CenterHorizontally,
+                        ),
+                    ) {
+                        pages[page].forEach { color ->
+                            PalettePreviewOption(
+                                seedColor = color,
+                                paletteStyle = paletteStyle,
+                                selected = !isDynamic && selectedColor == color,
+                                contentDescription = stringResource(
+                                    R.string.appearance_color_option,
+                                    color.toHexRgb(),
+                                ),
+                                onClick = { onColorSelected(color) },
+                            )
+                        }
+                    }
+                }
+
+                if (pages.size > 1) {
+                    Row(
+                        modifier = Modifier.padding(top = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        repeat(pages.size) { index ->
+                            val indicatorWidth by animateDpAsState(
+                                targetValue = if (pagerState.currentPage == index) 20.dp else 8.dp,
+                                label = "palette_page_indicator",
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .width(indicatorWidth)
+                                    .height(8.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (pagerState.currentPage == index) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.surfaceContainerHighest
+                                        }
+                                    ),
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun ColorOption(
-    color: Color,
+private fun PalettePreviewOption(
+    seedColor: Color,
+    paletteStyle: PaletteStyle,
     selected: Boolean,
-    showSelectedIcon: Boolean = true,
     contentDescription: String,
     onClick: () -> Unit,
-    content: @Composable (() -> Unit)? = null,
 ) {
-    Box(
+    val previewScheme = remember(seedColor, paletteStyle) {
+        dynamicColorScheme(
+            seedColor = seedColor,
+            isDark = false,
+            style = paletteStyle,
+            specVersion = ColorSpec.SpecVersion.SPEC_2025,
+        )
+    }
+
+    Surface(
+        onClick = onClick,
         modifier = Modifier
-            .size(48.dp)
-            .clip(CircleShape)
-            .background(color)
-            .then(
-                if (selected) {
-                    Modifier.border(
-                        width = 3.dp,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        shape = CircleShape,
-                    )
-                } else {
-                    Modifier
-                }
-            )
+            .size(PaletteSize)
             .semantics {
                 this.contentDescription = contentDescription
                 this.selected = selected
-            }
-            .clickable(
-                onClickLabel = contentDescription,
-                onClick = onClick,
-            ),
-        contentAlignment = Alignment.Center,
+            },
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(
+            width = if (selected) 2.dp else 1.dp,
+            color = if (selected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.outlineVariant
+            },
+        ),
     ) {
-        content?.invoke()
-        if (selected && showSelectedIcon) {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = stringResource(R.string.common_selected),
-                tint = if (color.luminance() > 0.5f) Color.Black else Color.White,
-            )
+        Box(
+            modifier = Modifier.padding(10.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .background(previewScheme.primary),
+                )
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxSize()
+                            .background(previewScheme.secondary),
+                    )
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxSize()
+                            .background(previewScheme.tertiary),
+                    )
+                }
+            }
+
+            if (selected) {
+                Surface(
+                    modifier = Modifier.size(24.dp),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = stringResource(R.string.common_selected),
+                        modifier = Modifier.padding(4.dp),
+                    )
+                }
+            }
         }
     }
 }
+
+private fun Color.toHexRgb(): String = "#%06X".format(toArgb() and 0xFFFFFF)
 
 private enum class AppearanceDialog {
     PALETTE_STYLE,
@@ -448,3 +543,6 @@ private val accentColors = listOf(
     Color(0xFF4CAF50),
     Color(0xFFF9A825),
 )
+
+private val PaletteSize = 70.dp
+private val PaletteGap = 10.dp

@@ -48,7 +48,7 @@ interface SettingsRepository {
     val settings: StateFlow<AppSettings>
 
     fun setThemeMode(mode: ThemeMode)
-    fun setThemeColorArgb(color: Int)
+    fun selectThemeColorArgb(color: Int)
     fun setPaletteStyle(style: PaletteStyleOption)
     fun setUseDynamicColors(enabled: Boolean)
     fun setIsAmoled(enabled: Boolean)
@@ -75,9 +75,17 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         update { copy(themeMode = mode) }
     }
 
-    override fun setThemeColorArgb(color: Int) {
-        preferences.edit { putInt(KEY_THEME_COLOR, color) }
-        update { copy(themeColorArgb = color) }
+    override fun selectThemeColorArgb(color: Int) {
+        preferences.edit {
+            putInt(KEY_THEME_COLOR, color)
+            putBoolean(KEY_USE_DYNAMIC_COLORS, false)
+        }
+        update {
+            copy(
+                themeColorArgb = color,
+                useDynamicColors = false,
+            )
+        }
     }
 
     override fun setPaletteStyle(style: PaletteStyleOption) {

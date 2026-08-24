@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
+    alias(libs.plugins.aboutLibraries)
 }
 
 android {
@@ -69,6 +70,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.materialKolor)
+    implementation(libs.aboutlibraries.core)
     implementation(libs.konfetti.compose)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
@@ -79,4 +81,20 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+aboutLibraries {
+    // The app links to authoritative web copies; collecting license bodies is unnecessary.
+    offlineMode = true
+
+    collect {
+        includeTestVariants = false
+        fetchRemoteLicense = false
+        fetchRemoteFunding = false
+    }
+
+    export {
+        // License bodies stay on their authoritative websites instead of being bundled in the app.
+        excludeFields.add("License.content")
+    }
 }

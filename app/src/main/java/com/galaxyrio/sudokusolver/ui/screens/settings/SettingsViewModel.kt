@@ -49,7 +49,7 @@ class SettingsViewModel(
 
     fun setThemeMode(mode: ThemeMode) = repository.setThemeMode(mode)
 
-    fun setThemeColor(color: Color) = repository.setThemeColorArgb(color.toArgb())
+    fun selectThemeColor(color: Color) = repository.selectThemeColorArgb(color.toArgb())
 
     fun setPaletteStyle(style: PaletteStyle) =
         repository.setPaletteStyle(style.asDataOption())

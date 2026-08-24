@@ -22,3 +22,17 @@ data class SavedGameDestination(
 data class SettingsDestination(
     val category: SettingsCategory,
 )
+
+@Serializable
+data object ChangelogsDestination
+
+@Serializable
+data object LicensesDestination
+
+@Serializable
+data object CrashHistoryDestination
+
+@Serializable
+data class CrashDetailsDestination(
+    val reportId: String,
+)

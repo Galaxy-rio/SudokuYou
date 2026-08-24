@@ -1,19 +1,30 @@
 package com.galaxyrio.sudokusolver.ui.screens.settings.details
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.GridOn
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -22,6 +33,9 @@ import com.galaxyrio.sudokusolver.R
 
 @Composable
 fun AboutSettingsScreen(
+    onOpenChangelogs: () -> Unit,
+    onOpenLicenses: () -> Unit,
+    onOpenCrashHistory: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -30,45 +44,131 @@ fun AboutSettingsScreen(
         onBack = onBack,
         modifier = modifier,
     ) { innerPadding ->
-        Column(
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+                .padding(horizontal = 16.dp),
         ) {
-            Surface(
-                shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.primaryContainer,
-            ) {
-                Icon(
-                    imageVector = Icons.Default.GridOn,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(24.dp),
+            item(key = "app_header") {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Surface(
+                        shape = MaterialTheme.shapes.extraLarge,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.GridOn,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(22.dp)
+                                .size(48.dp),
+                        )
+                    }
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.headlineSmall,
+                    )
+                    Text(
+                        text = stringResource(R.string.about_app_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Surface(
+                        shape = MaterialTheme.shapes.large,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    ) {
+                        Text(
+                            text = stringResource(
+                                R.string.about_version,
+                                BuildConfig.VERSION_NAME,
+                            ),
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
+                        )
+                    }
+                }
+            }
+
+            item(key = "app_section_heading") {
+                Text(
+                    text = stringResource(R.string.about_app_section),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 4.dp, top = 12.dp, bottom = 8.dp),
                 )
             }
-            Text(
-                text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(top = 24.dp),
-            )
-            Text(
-                text = stringResource(R.string.about_app_description),
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-            )
-            Text(
-                text = stringResource(R.string.about_version, BuildConfig.VERSION_NAME),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = 20.dp),
-            )
+
+            item(key = "changelogs") {
+                AboutAppItem(
+                    titleResource = R.string.about_changelogs,
+                    summaryResource = R.string.about_changelogs_summary,
+                    icon = Icons.Default.History,
+                    index = 0,
+                    count = 3,
+                    onClick = onOpenChangelogs,
+                )
+            }
+            item(key = "licenses") {
+                AboutAppItem(
+                    titleResource = R.string.about_licenses,
+                    summaryResource = R.string.about_licenses_summary,
+                    icon = Icons.Default.Policy,
+                    index = 1,
+                    count = 3,
+                    onClick = onOpenLicenses,
+                )
+            }
+            item(key = "crash_history") {
+                AboutAppItem(
+                    titleResource = R.string.about_crash_history,
+                    summaryResource = R.string.about_crash_history_summary,
+                    icon = Icons.Default.BugReport,
+                    index = 2,
+                    count = 3,
+                    onClick = onOpenCrashHistory,
+                )
+            }
+
+            item(key = "bottom_spacing") {
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
+}
+
+@Composable
+private fun AboutAppItem(
+    @StringRes titleResource: Int,
+    @StringRes summaryResource: Int,
+    icon: ImageVector,
+    index: Int,
+    count: Int,
+    onClick: () -> Unit,
+) {
+    SegmentedListItem(
+        onClick = onClick,
+        shapes = ListItemDefaults.segmentedShapes(index = index, count = count),
+        colors = ListItemDefaults.segmentedColors(
+            containerColor = MaterialTheme.colorScheme.surfaceBright,
+        ),
+        leadingContent = {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        },
+        content = { Text(stringResource(titleResource)) },
+        supportingContent = { Text(stringResource(summaryResource)) },
+    )
 }

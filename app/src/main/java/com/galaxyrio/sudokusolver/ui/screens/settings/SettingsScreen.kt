@@ -12,11 +12,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,7 +55,7 @@ enum class SettingsCategory {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onOpenNavigation: () -> Unit,
+    onBack: () -> Unit,
     onNavigateTo: (SettingsCategory) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -78,10 +78,10 @@ fun SettingsScreen(
                 ),
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
-                    IconButton(onClick = onOpenNavigation) {
+                    IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = stringResource(R.string.nav_open_menu),
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.common_back),
                         )
                     }
                 },

@@ -9,12 +9,12 @@
     <string name="nav_settings">设置</string>
     <string name="nav_open_menu">打开导航菜单</string>
     <string name="nav_close_menu">关闭导航菜单</string>
+    <string name="nav_open_settings">打开设置</string>
 
     <string name="common_back">返回</string>
     <string name="common_cancel">取消</string>
     <string name="common_retry">重试</string>
     <string name="common_selected">已选择</string>
-
     <string name="difficulty_easy">简单</string>
     <string name="difficulty_medium">中等</string>
     <string name="difficulty_hard">困难</string>
@@ -49,8 +49,8 @@
     </plurals>
 
     <string name="settings_title">设置</string>
-    <string name="settings_appearance">外观</string>
-    <string name="settings_appearance_summary">主题与棋盘</string>
+    <string name="settings_appearance">外观与体验</string>
+    <string name="settings_appearance_summary">主题、颜色与棋盘</string>
     <string name="settings_game">游戏</string>
     <string name="settings_game_summary">输入与规则</string>
     <string name="settings_assistance">辅助</string>
@@ -61,11 +61,11 @@
     <string name="settings_about">关于</string>
     <string name="settings_about_summary">版本与应用信息</string>
 
-    <string name="appearance_title">外观</string>
+    <string name="appearance_title">外观与体验</string>
     <string name="appearance_theme_section">主题</string>
     <string name="appearance_board_section">棋盘</string>
     <string name="appearance_accent_color">强调色</string>
-    <string name="appearance_dynamic_or_custom">动态或自定义</string>
+    <string name="appearance_dynamic_or_custom">选择预设调色板，或在下方使用壁纸动态配色</string>
     <string name="appearance_palette_style">调色板样式</string>
     <string name="appearance_theme_mode">主题模式</string>
     <string name="appearance_amoled_mode">AMOLED 模式</string>
@@ -79,7 +79,8 @@
     <string name="appearance_alternative_error_color">替代错误颜色</string>
     <string name="appearance_alternative_error_color_summary">红色主题下改用绿色标记错误</string>
     <string name="appearance_dynamic_color">动态配色</string>
-    <string name="appearance_custom_color">自定义强调色</string>
+    <string name="appearance_dynamic_color_summary">自动使用设备壁纸中的颜色</string>
+    <string name="appearance_color_option">主题颜色 %1$s</string>
 
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>
@@ -118,6 +119,79 @@
     <string name="about_title">关于</string>
     <string name="about_app_description">一款使用 Jetpack Compose 与 Material 3 Expressive 构建的原生数独应用。</string>
     <string name="about_version">版本 %1$s</string>
+    <string name="about_app_section">应用</string>
+    <string name="about_changelogs">更新日志</string>
+    <string name="about_changelogs_summary">查看不同版本的更新内容</string>
+    <string name="about_licenses">开源许可</string>
+    <string name="about_licenses_summary">查看本应用使用的开源库</string>
+    <string name="about_crash_history">崩溃历史</string>
+    <string name="about_crash_history_summary">查看仅保存在本设备上的崩溃报告</string>
+
+    <string name="changelogs_title">更新日志</string>
+    <string name="changelogs_empty_title">暂无更新日志</string>
+    <string name="changelogs_empty_summary">后续版本的发布说明会显示在这里。</string>
+
+    <string name="licenses_title">开源许可</string>
+    <string name="licenses_loading">正在载入许可信息…</string>
+    <string name="licenses_load_failed">无法载入许可信息。</string>
+    <string name="licenses_third_party">第三方库</string>
+    <plurals name="licenses_library_count">
+        <item quantity="other">已检测到 %1$d 个库</item>
+    </plurals>
+    <string name="licenses_search">搜索库、作者或许可证…</string>
+    <string name="licenses_clear_search">清除搜索</string>
+    <string name="licenses_no_results">没有匹配的开源库</string>
+    <string name="licenses_unknown">暂无许可信息</string>
+    <string name="licenses_unknown_version">未知版本</string>
+    <string name="licenses_unknown_developer">未知开发者</string>
+    <string name="licenses_artifact_id">构件 ID</string>
+    <string name="licenses_developer">开发者</string>
+    <string name="licenses_license">许可证</string>
+    <string name="licenses_full_text">许可证全文</string>
+    <string name="licenses_expand_details">展开许可详情</string>
+    <string name="licenses_collapse_details">收起许可详情</string>
+    <string name="licenses_expanded">已展开</string>
+    <string name="licenses_collapsed">已收起</string>
+
+    <string name="crash_history_title">崩溃历史</string>
+    <string name="crash_history_clear">清空崩溃历史</string>
+    <string name="crash_history_clear_title">清空所有崩溃报告？</string>
+    <string name="crash_history_clear_message">这会永久删除保存在本设备上的全部崩溃报告。</string>
+    <string name="crash_history_clear_confirm">全部清空</string>
+    <string name="crash_history_clear_failed">无法清空崩溃历史</string>
+    <string name="crash_history_empty_title">尚未记录崩溃</string>
+    <string name="crash_history_empty_summary">如果应用因未捕获的错误而关闭，本地报告会显示在这里。</string>
+    <string name="crash_history_load_failed">无法载入崩溃历史</string>
+    <string name="crash_history_load_failed_summary">无法读取本地报告文件。</string>
+    <string name="crash_history_privacy">报告仅保存在本设备上，不会自动上传，并最多保留 30 天。</string>
+
+    <string name="crash_details_title">崩溃详情</string>
+    <string name="crash_details_copy">复制崩溃报告</string>
+    <string name="crash_details_copied">已复制崩溃报告</string>
+    <string name="crash_details_share">分享崩溃报告</string>
+    <string name="crash_details_delete">删除</string>
+    <string name="crash_details_delete_title">删除这份崩溃报告？</string>
+    <string name="crash_details_delete_message">删除后将无法恢复这份报告。</string>
+    <string name="crash_details_delete_failed">无法删除崩溃报告</string>
+    <string name="crash_details_missing">找不到崩溃报告</string>
+    <string name="crash_details_missing_summary">报告可能已过期、被删除或无法读取。</string>
+    <string name="crash_details_share_notice">异常消息和堆栈可能包含应用数据，请在分享前检查报告内容。</string>
+    <string name="crash_details_environment">运行环境</string>
+    <string name="crash_details_thread">线程</string>
+    <string name="crash_details_app_version">应用版本</string>
+    <string name="crash_details_android">Android</string>
+    <string name="crash_details_device">设备</string>
+    <string name="crash_details_stack_trace">堆栈信息</string>
+    <string name="crash_details_share_subject">数独崩溃报告</string>
+    <string name="crash_details_share_chooser">分享崩溃报告</string>
+    <string name="crash_report_time">时间：%1$s</string>
+    <string name="crash_report_exception">异常：%1$s</string>
+    <string name="crash_report_message">消息：%1$s</string>
+    <string name="crash_report_thread">线程：%1$s</string>
+    <string name="crash_report_app">应用：%1$s（%2$d）</string>
+    <string name="crash_report_android">Android：%1$s（API %2$d）</string>
+    <string name="crash_report_device">设备：%1$s</string>
+    <string name="crash_report_stack_trace">堆栈信息：</string>
 
     <string name="info_title">数独说明</string>
     <string name="info_body">在每一行、每一列和每个 3 × 3 宫格中填入 1 到 9，且数字不能重复。</string>

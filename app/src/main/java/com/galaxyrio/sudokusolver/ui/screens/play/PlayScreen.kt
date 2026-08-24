@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -115,6 +116,7 @@ fun PlayMenuRoute(
     animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: PlayViewModel,
     onOpenNavigation: () -> Unit,
+    onOpenSettings: () -> Unit,
     onStartGame: (Difficulty) -> Unit,
     onContinueGame: (Long) -> Unit,
     onOpenImportedGame: (Long) -> Unit,
@@ -142,6 +144,7 @@ fun PlayMenuRoute(
         sharedTransitionScope = sharedTransitionScope,
         animatedVisibilityScope = animatedVisibilityScope,
         onOpenNavigation = onOpenNavigation,
+        onOpenSettings = onOpenSettings,
         onStartGame = onStartGame,
         onContinueGame = onContinueGame,
         onDeleteGames = viewModel::deleteGames,
@@ -159,6 +162,7 @@ fun PlayMenuScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     onOpenNavigation: () -> Unit,
+    onOpenSettings: () -> Unit,
     onStartGame: (Difficulty) -> Unit,
     onContinueGame: (Long) -> Unit,
     onDeleteGames: (Set<Long>) -> Unit,
@@ -269,6 +273,13 @@ fun PlayMenuScreen(
                             Icon(
                                 imageVector = Icons.Default.SelectAll,
                                 contentDescription = stringResource(R.string.play_select_all_games),
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = onOpenSettings) {
+                            Icon(
+                                imageVector = Icons.Outlined.Settings,
+                                contentDescription = stringResource(R.string.nav_open_settings),
                             )
                         }
                     }

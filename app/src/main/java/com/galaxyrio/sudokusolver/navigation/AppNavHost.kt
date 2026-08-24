@@ -34,9 +34,13 @@ import com.galaxyrio.sudokusolver.ui.screens.settings.details.AboutSettingsScree
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.AppLanguage
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.AppearanceSettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.AssistanceSettingsScreen
+import com.galaxyrio.sudokusolver.ui.screens.settings.details.ChangelogsScreen
+import com.galaxyrio.sudokusolver.ui.screens.settings.details.CrashDetailsScreen
+import com.galaxyrio.sudokusolver.ui.screens.settings.details.CrashHistoryScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.FilesSettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.GameSettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.LanguageSettingsScreen
+import com.galaxyrio.sudokusolver.ui.screens.settings.details.LicensesScreen
 import com.galaxyrio.sudokusolver.ui.motion.materialBackwardEnter
 import com.galaxyrio.sudokusolver.ui.motion.materialBackwardExit
 import com.galaxyrio.sudokusolver.ui.motion.materialContainerEnter
@@ -195,7 +199,7 @@ fun AppNavHost(
                         SettingsCategory.APPEARANCE -> AppearanceSettingsScreen(
                             uiState = settingsUiState,
                             onThemeModeChange = settingsViewModel::setThemeMode,
-                            onThemeColorChange = settingsViewModel::setThemeColor,
+                            onThemeColorChange = settingsViewModel::selectThemeColor,
                             onPaletteStyleChange = settingsViewModel::setPaletteStyle,
                             onDynamicColorsChange = settingsViewModel::setUseDynamicColors,
                             onAmoledChange = settingsViewModel::setIsAmoled,
@@ -240,10 +244,75 @@ fun AppNavHost(
                         )
 
                         SettingsCategory.ABOUT -> AboutSettingsScreen(
+                            onOpenChangelogs = {
+                                navController.navigate(ChangelogsDestination)
+                            },
+                            onOpenLicenses = {
+                                navController.navigate(LicensesDestination)
+                            },
+                            onOpenCrashHistory = {
+                                navController.navigate(CrashHistoryDestination)
+                            },
                             onBack = onBack,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }
+                }
+
+                composable<ChangelogsDestination>(
+                    enterTransition = { materialForwardEnter(hierarchyTravelPx) },
+                    exitTransition = { materialForwardExit(hierarchyTravelPx) },
+                    popEnterTransition = { materialBackwardEnter(hierarchyTravelPx) },
+                    popExitTransition = { materialBackwardExit(hierarchyTravelPx) },
+                ) {
+                    ChangelogsScreen(
+                        onBack = { navController.popBackStack() },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+
+                composable<LicensesDestination>(
+                    enterTransition = { materialForwardEnter(hierarchyTravelPx) },
+                    exitTransition = { materialForwardExit(hierarchyTravelPx) },
+                    popEnterTransition = { materialBackwardEnter(hierarchyTravelPx) },
+                    popExitTransition = { materialBackwardExit(hierarchyTravelPx) },
+                ) {
+                    LicensesScreen(
+                        repository = appContainer.licensesRepository,
+                        onBack = { navController.popBackStack() },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+
+                composable<CrashHistoryDestination>(
+                    enterTransition = { materialForwardEnter(hierarchyTravelPx) },
+                    exitTransition = { materialForwardExit(hierarchyTravelPx) },
+                    popEnterTransition = { materialBackwardEnter(hierarchyTravelPx) },
+                    popExitTransition = { materialBackwardExit(hierarchyTravelPx) },
+                ) {
+                    CrashHistoryScreen(
+                        repository = appContainer.crashHistoryRepository,
+                        onOpenCrash = { reportId ->
+                            navController.navigate(CrashDetailsDestination(reportId))
+                        },
+                        onBack = { navController.popBackStack() },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+
+                composable<CrashDetailsDestination>(
+                    enterTransition = { materialForwardEnter(hierarchyTravelPx) },
+                    exitTransition = { materialForwardExit(hierarchyTravelPx) },
+                    popEnterTransition = { materialBackwardEnter(hierarchyTravelPx) },
+                    popExitTransition = { materialBackwardExit(hierarchyTravelPx) },
+                ) { backStackEntry ->
+                    val destination = backStackEntry.toRoute<CrashDetailsDestination>()
+                    CrashDetailsScreen(
+                        reportId = destination.reportId,
+                        repository = appContainer.crashHistoryRepository,
+                        onBack = { navController.popBackStack() },
+                        modifier = Modifier.fillMaxSize(),
+                    )
                 }
             }
         }

@@ -9,12 +9,12 @@
     <string name="nav_settings">Settings</string>
     <string name="nav_open_menu">Open navigation menu</string>
     <string name="nav_close_menu">Close navigation menu</string>
+    <string name="nav_open_settings">Open settings</string>
 
     <string name="common_back">Back</string>
     <string name="common_cancel">Cancel</string>
     <string name="common_retry">Retry</string>
     <string name="common_selected">Selected</string>
-
     <string name="difficulty_easy">Easy</string>
     <string name="difficulty_medium">Medium</string>
     <string name="difficulty_hard">Hard</string>
@@ -51,8 +51,8 @@
     </plurals>
 
     <string name="settings_title">Settings</string>
-    <string name="settings_appearance">Appearance</string>
-    <string name="settings_appearance_summary">Theme and board</string>
+    <string name="settings_appearance">Look &amp; feel</string>
+    <string name="settings_appearance_summary">Theme, color, and board</string>
     <string name="settings_game">Game</string>
     <string name="settings_game_summary">Input and rules</string>
     <string name="settings_assistance">Assistance</string>
@@ -63,11 +63,11 @@
     <string name="settings_about">About</string>
     <string name="settings_about_summary">Version and app information</string>
 
-    <string name="appearance_title">Appearance</string>
+    <string name="appearance_title">Look &amp; feel</string>
     <string name="appearance_theme_section">Theme</string>
     <string name="appearance_board_section">Board</string>
     <string name="appearance_accent_color">Accent color</string>
-    <string name="appearance_dynamic_or_custom">Dynamic or custom</string>
+    <string name="appearance_dynamic_or_custom">Choose a preset palette, or use your wallpaper colors below</string>
     <string name="appearance_palette_style">Palette style</string>
     <string name="appearance_theme_mode">Theme mode</string>
     <string name="appearance_amoled_mode">AMOLED mode</string>
@@ -81,7 +81,8 @@
     <string name="appearance_alternative_error_color">Alternative error color</string>
     <string name="appearance_alternative_error_color_summary">Use a green error color for red themes</string>
     <string name="appearance_dynamic_color">Dynamic color</string>
-    <string name="appearance_custom_color">Custom accent color</string>
+    <string name="appearance_dynamic_color_summary">Automatically use colors from the device wallpaper</string>
+    <string name="appearance_color_option">Theme color %1$s</string>
 
     <string name="theme_mode_system">System default</string>
     <string name="theme_mode_light">Light</string>
@@ -120,6 +121,80 @@
     <string name="about_title">About</string>
     <string name="about_app_description">A native Sudoku app built with Jetpack Compose and Material 3 Expressive.</string>
     <string name="about_version">Version %1$s</string>
+    <string name="about_app_section">App</string>
+    <string name="about_changelogs">Changelogs</string>
+    <string name="about_changelogs_summary">See what changed between versions</string>
+    <string name="about_licenses">Licenses</string>
+    <string name="about_licenses_summary">Open-source libraries used by this app</string>
+    <string name="about_crash_history">Crash history</string>
+    <string name="about_crash_history_summary">View reports stored only on this device</string>
+
+    <string name="changelogs_title">Changelogs</string>
+    <string name="changelogs_empty_title">No changelogs yet</string>
+    <string name="changelogs_empty_summary">Release notes will appear here in a future update.</string>
+
+    <string name="licenses_title">Licenses</string>
+    <string name="licenses_loading">Loading licenses…</string>
+    <string name="licenses_load_failed">Licenses could not be loaded.</string>
+    <string name="licenses_third_party">Third-party libraries</string>
+    <plurals name="licenses_library_count">
+        <item quantity="one">%1$d library detected</item>
+        <item quantity="other">%1$d libraries detected</item>
+    </plurals>
+    <string name="licenses_search">Search libraries, authors, licenses…</string>
+    <string name="licenses_clear_search">Clear search</string>
+    <string name="licenses_no_results">No matching libraries</string>
+    <string name="licenses_unknown">License information unavailable</string>
+    <string name="licenses_unknown_version">Unknown version</string>
+    <string name="licenses_unknown_developer">Unknown developer</string>
+    <string name="licenses_artifact_id">Artifact ID</string>
+    <string name="licenses_developer">Developer</string>
+    <string name="licenses_license">License</string>
+    <string name="licenses_full_text">Full license text</string>
+    <string name="licenses_expand_details">Expand license details</string>
+    <string name="licenses_collapse_details">Collapse license details</string>
+    <string name="licenses_expanded">Expanded</string>
+    <string name="licenses_collapsed">Collapsed</string>
+
+    <string name="crash_history_title">Crash history</string>
+    <string name="crash_history_clear">Clear crash history</string>
+    <string name="crash_history_clear_title">Clear all crash reports?</string>
+    <string name="crash_history_clear_message">This permanently removes every crash report stored on this device.</string>
+    <string name="crash_history_clear_confirm">Clear all</string>
+    <string name="crash_history_clear_failed">Crash history could not be cleared</string>
+    <string name="crash_history_empty_title">No crashes recorded</string>
+    <string name="crash_history_empty_summary">If the app closes because of an uncaught error, a local report will appear here.</string>
+    <string name="crash_history_load_failed">Crash history could not be loaded</string>
+    <string name="crash_history_load_failed_summary">The local report files could not be read.</string>
+    <string name="crash_history_privacy">Reports stay on this device, are never uploaded automatically, and are retained for up to 30 days.</string>
+
+    <string name="crash_details_title">Crash details</string>
+    <string name="crash_details_copy">Copy crash report</string>
+    <string name="crash_details_copied">Crash report copied</string>
+    <string name="crash_details_share">Share crash report</string>
+    <string name="crash_details_delete">Delete</string>
+    <string name="crash_details_delete_title">Delete this crash report?</string>
+    <string name="crash_details_delete_message">This report cannot be recovered after deletion.</string>
+    <string name="crash_details_delete_failed">Crash report could not be deleted</string>
+    <string name="crash_details_missing">Crash report not found</string>
+    <string name="crash_details_missing_summary">It may have expired, been deleted, or become unreadable.</string>
+    <string name="crash_details_share_notice">Exception messages and stack traces may contain app data. Review the report before sharing it.</string>
+    <string name="crash_details_environment">Environment</string>
+    <string name="crash_details_thread">Thread</string>
+    <string name="crash_details_app_version">App version</string>
+    <string name="crash_details_android">Android</string>
+    <string name="crash_details_device">Device</string>
+    <string name="crash_details_stack_trace">Stack trace</string>
+    <string name="crash_details_share_subject">Sudoku Solver crash report</string>
+    <string name="crash_details_share_chooser">Share crash report</string>
+    <string name="crash_report_time">Time: %1$s</string>
+    <string name="crash_report_exception">Exception: %1$s</string>
+    <string name="crash_report_message">Message: %1$s</string>
+    <string name="crash_report_thread">Thread: %1$s</string>
+    <string name="crash_report_app">App: %1$s (%2$d)</string>
+    <string name="crash_report_android">Android: %1$s (API %2$d)</string>
+    <string name="crash_report_device">Device: %1$s</string>
+    <string name="crash_report_stack_trace">Stack trace:</string>
 
     <string name="info_title">About Sudoku</string>
     <string name="info_body">Fill every row, column, and 3 × 3 block with the digits 1 through 9 without repeating a digit.</string>
