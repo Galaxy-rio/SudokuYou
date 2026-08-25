@@ -1,34 +1,70 @@
-# Sudoku You
+<div align="center">
+  <img src="fastlane/metadata/android/en-US/images/icon.png" width="128" alt="Sudoku You icon">
 
-Sudoku You is a free and open-source Sudoku app for Android, focused on offline play, careful reasoning, and human-style logical hints.
+  <h1>Sudoku You</h1>
 
-The app works without network access, advertising, accounts, analytics, or tracking. Games, settings, statistics, and crash reports are stored locally.
+  <p><strong>Offline Sudoku for thoughtful solving.</strong></p>
+
+  <p>
+    A free and open-source Android app with human-style logical hints,
+    advanced board tools, flexible import and export, and no tracking.
+  </p>
+
+  <p>
+    <a href="https://github.com/Galaxy-rio/SudokuYou/releases">
+      <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Github/github2.svg" alt="GitHub Releases">
+    </a>
+    <a href="LICENSE">
+      <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/LicenceGPLv3/licencegplv32.svg" alt="GPL-3.0-or-later license">
+    </a>
+    <a href="https://developer.android.com/about/versions/12">
+      <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Android/android2.svg" alt="Android 12 or later">
+    </a>
+    <a href="https://kotlinlang.org/">
+      <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Kotlin/kotlin2.svg" alt="Kotlin">
+    </a>
+    <a href="https://github.com/Galaxy-rio/SudokuYou/stargazers">
+      <img height="30" src="https://m3-markdown-badges.vercel.app/stars/9/2/Galaxy-rio/SudokuYou" alt="GitHub stars">
+    </a>
+    <a href="https://github.com/Galaxy-rio/SudokuYou/issues">
+      <img height="30" src="https://m3-markdown-badges.vercel.app/issues/9/2/Galaxy-rio/SudokuYou" alt="Open issues">
+    </a>
+  </p>
+
+  <p>
+    <a href="https://github.com/Galaxy-rio/SudokuYou/releases"><strong>Download from GitHub Releases</strong></a>
+  </p>
+</div>
 
 ## Features
 
-- Generate classic 9×9 puzzles locally with a unique solution.
-- Easy, Medium, Hard, and Brutal difficulty levels.
-- Import custom puzzles with format and unique-solution validation.
-- Automatic game saves, recent/completed game history, and per-difficulty statistics.
-- Pencil marks, automatic candidates, undo, redo, erase, and restart.
-- Step-by-step logical hints with explanations and board markings.
-- Basic and advanced techniques, including subsets, fish, wings, coloring, chains, unique rectangles, AIC, and forcing chains.
-- Advanced annotations for cells and candidates, including colors, frames, and solid or dashed links.
-- Import and export using Susser, multiline, pencilmark, Sukaku, Excel/TSV, OpenSudoku, and HoDoKu formats.
-- Material 3 interface with dynamic colors, custom accents, multiple palettes, light/dark modes, AMOLED black, and board highlighting.
-- English and Simplified Chinese, with an in-app language selector.
-- Local-only crash history and an in-app third-party license viewer.
+- **Play offline** — generate classic 9×9 puzzles locally with a unique solution, choose from Easy, Medium, Hard, and Brutal difficulties, or import your own puzzle.
+- **Understand every step** — follow human-style logical hints with explanations and board markings, from singles and subsets to fish, wings, coloring, chains, unique rectangles, AIC, and forcing chains.
+- **Work your way** — use pencil marks, automatic candidates, undo/redo, restart, and advanced annotations for cells, candidates, frames, and strong or weak links.
+- **Keep your progress** — continue automatically saved games, review recent and completed games, and track times and completion statistics by difficulty.
+- **Move puzzles freely** — import and export Susser, multiline, pencilmark, Sukaku, Excel/TSV, OpenSudoku, and HoDoKu formats.
+- **Make it yours** — customize the Material 3 interface with dynamic colors, custom accents, multiple palettes, light/dark modes, AMOLED black, and board highlighting.
+- **Use your language** — switch between English and Simplified Chinese independently from the system language.
+- **Stay private** — no network permission, advertising, accounts, analytics, or tracking; crash reports stay local unless you explicitly share them.
 
-Sudoku You requires Android 12 (API 31) or later.
+Built with Kotlin, Jetpack Compose, Material 3, and Room.
 
 ## Screenshots
 
 <p align="center">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="280" alt="Sudoku You home screen">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="280" alt="Sudoku You game screen">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="280" alt="Sudoku You logical hint screen">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="280" alt="Sudoku You about screen">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="215" alt="Home and recent games">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="215" alt="Sudoku game board">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="215" alt="Step-by-step logical hint">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="215" alt="About Sudoku You">
 </p>
+
+<p align="center"><sub>Home and history · Game board · Logical hints · About</sub></p>
+
+## Download
+
+Official builds are available from [GitHub Releases](https://github.com/Galaxy-rio/SudokuYou/releases).
+
+Sudoku You requires Android 12 (API 31) or later.
 
 ## Build from source
 
@@ -38,57 +74,41 @@ Prerequisites:
 - Android SDK Platform 37
 - Android SDK Build Tools
 
-On Linux or macOS:
+Linux or macOS:
 
 ```shell
-./gradlew assembleDebug
-./gradlew test
+./gradlew test lint assembleDebug
 ```
 
-On Windows:
+Windows:
 
 ```powershell
-.\gradlew.bat assembleDebug
-.\gradlew.bat test
+.\gradlew.bat test lint assembleDebug
 ```
 
-Release builds are intentionally unsigned when built from the repository. Keep release signing keys and credentials outside version control.
+Release builds produced directly from this repository are intentionally unsigned. Keep signing keys and credentials outside version control.
 
 ## Privacy
 
-Sudoku You does not request Android's network permission and does not automatically upload crash reports or other app data. See [PRIVACY.md](PRIVACY.md) for details.
+Sudoku You does not request Android's `INTERNET` permission and contains no advertising, accounts, analytics, telemetry, or tracking.
+
+Games, settings, statistics, annotations, and crash reports are stored by the app locally. Crash reports are never uploaded automatically. Eligible app data may be handled by Android's system backup according to the device's backup settings.
+
+See the [Privacy Policy](PRIVACY.md) for details.
 
 ## Contributing
 
-Bug reports and contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a change.
+Bug reports and contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a change.
+
+## Acknowledgements
+
+Special thanks to:
+
+- [Open Sudoku](https://gitlab.com/opensudoku/opensudoku) and [Sudoku Coach](https://sudoku.coach/en/learn) for their careful organization and explanations of human-style Sudoku logic and solving techniques.
+- [kyoyama-kazusa/Sudoku's Sudoku Tutorial](https://github.com/kyoyama-kazusa/Sudoku/tree/main/docs/tutorial) for making a broad and structured Sudoku tutorial available to the community.
 
 ## License
 
 Sudoku You is licensed under the [GNU General Public License v3.0 or later](LICENSE). Third-party notices are listed in [NOTICE](NOTICE).
 
 Copyright © 2026 Galaxy-rio.
-
----
-
-## 简体中文
-
-Sudoku You 是一款自由开源的 Android 数独应用，专注于完全离线游玩、认真推理和拟人化逐步提示。
-
-应用不申请网络权限，不包含广告、账户、分析或追踪功能。游戏、设置、统计和崩溃报告均保存在本地。
-
-### 主要功能
-
-- 在本机生成保证唯一解的经典 9×9 数独。
-- 简单、中等、困难和残酷四种难度。
-- 导入自定义题目，并检查格式和唯一解。
-- 自动保存、最近/已完成对局历史，以及按难度统计。
-- 候选数、自动候选数、撤销、重做、擦除与重新开始。
-- 带文字解释和盘面标记的逐步逻辑提示。
-- 支持数集、鱼、翼、染色、链、唯一矩形、AIC 和强制链等进阶技巧。
-- 支持格子/候选数着色、框选以及实线或虚线链接等高级标注。
-- 支持 Susser、多行文本、铅笔候选盘、Sukaku、Excel/TSV、OpenSudoku 和 HoDoKu 格式的导入导出。
-- Material 3 界面，支持动态配色、自定义强调色、多种调色板、浅色/深色/AMOLED 模式和盘面高亮。
-- 英语和简体中文，可在应用内单独选择语言。
-- 本地崩溃历史和第三方开源许可证查看器。
-
-Sudoku You 需要 Android 12（API 31）或更高版本。构建方式、隐私说明和许可证请参阅上方对应章节。
