@@ -4,4 +4,5 @@ First stable release as Sudoku You.
 • Import/export in seven Sudoku text formats
 • Per-difficulty statistics, extensive Material 3 theming, and English/Simplified Chinese
 • Local-only crash history and a third-party license viewer
+• Fixed the release launcher's circular fallback icon on physical devices
 • Released under GPL-3.0-or-later

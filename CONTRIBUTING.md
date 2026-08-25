@@ -30,5 +30,5 @@ On Windows, use `gradlew.bat` instead of `./gradlew`.
 - Increase `versionCode` monotonically and update `versionName`.
 - Update `CHANGELOG.md` and both Fastlane changelog files.
 - Run unit tests, lint, and a release build from a clean checkout.
-- Create a Git tag matching the release version after the release commit is final.
+- Create a Git tag prefixed with `v` after the release commit is final, for example `v2.0.0`.
 - Verify the release APK signature and preserve the same release key for future updates.
