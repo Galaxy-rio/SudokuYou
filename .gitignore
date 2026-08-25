@@ -2,12 +2,7 @@
 .gradle
 /.kotlin/
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+/.idea/
 .DS_Store
 /build
 /app/release/
@@ -15,6 +10,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Local release workflow notes
+/docs/RELEASING.md
 
 # Release signing secrets
 *.jks
