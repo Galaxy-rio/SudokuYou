@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.SudokuSolver" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="Theme.SudokuYou" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:windowActionModeOverlay">true</item>
     </style>
 </resources>

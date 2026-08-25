@@ -1,0 +1,7 @@
+First stable release as Sudoku You.
+• Four offline puzzle difficulties with unique-solution generation and automatic saves
+• Step-by-step logical hints, pencil marks, advanced annotations, undo and redo
+• Import/export in seven Sudoku text formats
+• Per-difficulty statistics, extensive Material 3 theming, and English/Simplified Chinese
+• Local-only crash history and a third-party license viewer
+• Released under GPL-3.0-or-later

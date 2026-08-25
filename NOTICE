@@ -1,0 +1,24 @@
+Sudoku You
+Copyright (C) 2026 Galaxy-rio
+
+Sudoku You is licensed under the GNU General Public License, version 3 or
+later. See LICENSE for the complete license text.
+
+Material Symbols
+----------------
+
+The launcher grid symbol and the bundled undo, redo, and delete-history
+vector symbols are based on Google Material Symbols.
+
+Copyright Google LLC
+Licensed under the Apache License, Version 2.0.
+
+Source: https://github.com/google/material-design-icons
+License: https://www.apache.org/licenses/LICENSE-2.0
+
+Third-party libraries
+---------------------
+
+Third-party dependencies are declared in Gradle and retain their respective
+copyrights and licenses. Their license information is available from the
+in-app Settings > About > Open-source licenses screen.

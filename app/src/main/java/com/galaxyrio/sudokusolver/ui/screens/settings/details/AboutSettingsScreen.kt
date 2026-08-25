@@ -2,21 +2,25 @@ package com.galaxyrio.sudokusolver.ui.screens.settings.details
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Policy
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.LoadingIndicatorDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Surface
@@ -25,7 +29,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.galaxyrio.sudokusolver.BuildConfig
@@ -59,19 +65,7 @@ fun AboutSettingsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Surface(
-                        shape = MaterialTheme.shapes.extraLarge,
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.GridOn,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(22.dp)
-                                .size(48.dp),
-                        )
-                    }
+                    AnimatedAppIcon()
                     Text(
                         text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.headlineSmall,
@@ -143,6 +137,34 @@ fun AboutSettingsScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun AnimatedAppIcon(modifier: Modifier = Modifier) {
+    val iconSize = 92.dp
+    val animatedShapeContainerSize =
+        iconSize *
+            (LoadingIndicatorDefaults.ContainerWidth.value /
+                LoadingIndicatorDefaults.IndicatorSize.value)
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(iconSize)
+            .clearAndSetSemantics { },
+    ) {
+        LoadingIndicator(
+            color = MaterialTheme.colorScheme.primaryContainer,
+            modifier = Modifier.requiredSize(animatedShapeContainerSize),
+        )
+        Icon(
+            painter = painterResource(R.drawable.ic_launcher_monochrome),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier.size(iconSize),
+        )
     }
 }
 
