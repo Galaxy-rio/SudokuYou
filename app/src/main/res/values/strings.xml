@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Sudoku Solver</string>
+    <string name="app_name">Sudoku You</string>
 
     <string name="nav_info">Info</string>
     <string name="nav_play">Play</string>
@@ -210,7 +210,7 @@
     <string name="crash_details_android">Android</string>
     <string name="crash_details_device">Device</string>
     <string name="crash_details_stack_trace">Stack trace</string>
-    <string name="crash_details_share_subject">Sudoku Solver crash report</string>
+    <string name="crash_details_share_subject">Sudoku You crash report</string>
     <string name="crash_details_share_chooser">Share crash report</string>
     <string name="crash_report_time">Time: %1$s</string>
     <string name="crash_report_exception">Exception: %1$s</string>

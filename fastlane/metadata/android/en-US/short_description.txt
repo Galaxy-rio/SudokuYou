@@ -1,0 +1,1 @@
+Offline Sudoku with logical hints, advanced notes and flexible import/export

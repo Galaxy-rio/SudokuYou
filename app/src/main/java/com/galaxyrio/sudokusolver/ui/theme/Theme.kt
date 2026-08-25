@@ -16,7 +16,7 @@ import com.materialkolor.rememberDynamicColorScheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun SudokuSolverTheme(
+fun SudokuYouTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
     amoled: Boolean = false,

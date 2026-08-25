@@ -15,7 +15,7 @@ import com.galaxyrio.sudokusolver.data.AppContainer
 import com.galaxyrio.sudokusolver.data.settings.ThemeMode
 import com.galaxyrio.sudokusolver.navigation.AppNavHost
 import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsViewModel
-import com.galaxyrio.sudokusolver.ui.theme.SudokuSolverTheme
+import com.galaxyrio.sudokusolver.ui.theme.SudokuYouTheme
 
 @Composable
 fun SudokuApp(
@@ -40,7 +40,7 @@ fun SudokuApp(
         }
     }
 
-    SudokuSolverTheme(
+    SudokuYouTheme(
         darkTheme = useDarkTheme,
         dynamicColor = settingsUiState.useDynamicColors,
         amoled = settingsUiState.isAmoled,

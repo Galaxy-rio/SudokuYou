@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">数独</string>
+    <string name="app_name">Sudoku You</string>
 
     <string name="nav_info">说明</string>
     <string name="nav_play">游玩</string>
@@ -207,7 +207,7 @@
     <string name="crash_details_android">Android</string>
     <string name="crash_details_device">设备</string>
     <string name="crash_details_stack_trace">堆栈信息</string>
-    <string name="crash_details_share_subject">数独崩溃报告</string>
+    <string name="crash_details_share_subject">Sudoku You 崩溃报告</string>
     <string name="crash_details_share_chooser">分享崩溃报告</string>
     <string name="crash_report_time">时间：%1$s</string>
     <string name="crash_report_exception">异常：%1$s</string>
