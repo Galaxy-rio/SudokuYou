@@ -10,6 +10,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+/gradle/gradle-daemon-jvm.properties
 
 # Local release workflow notes
 /docs/RELEASING.md

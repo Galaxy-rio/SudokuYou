@@ -2,6 +2,13 @@
 
 All notable changes to Sudoku You are documented in this file.
 
+## [2.0.1] - 2026-08-31
+
+- Made minor UI refinements.
+- Added application license information.
+- Added x86 and x86_64 support.
+- Updated build tooling and other internals.
+
 ## [2.0.0] - 2026-08-25
 
 - First stable release under the Sudoku You name.

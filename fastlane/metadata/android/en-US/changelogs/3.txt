@@ -1,0 +1,4 @@
+Minor UI refinements.
+• Added application license information
+• Added x86 and x86_64 support
+• Updated build tooling and other internals

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Search
@@ -72,6 +74,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.data.licenses.LibraryLicense
 import com.galaxyrio.sudokusolver.data.licenses.LicensesRepository
+
+private const val SUDOKU_YOU_GITHUB_URL = "https://github.com/Galaxy-rio/SudokuYou"
+private const val SUDOKU_YOU_LICENSE_URL =
+    "https://github.com/Galaxy-rio/SudokuYou/blob/master/LICENSE"
+
+private val LicenseLeadingColumnWidth = 52.dp
+private val LicenseColumnSpacing = 16.dp
 
 @Composable
 fun LicensesScreen(
@@ -191,9 +200,17 @@ private fun LicensesList(
         modifier = modifier.padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
     ) {
+        item(key = "app_license") {
+            AppLicenseCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp, bottom = 24.dp),
+            )
+        }
+
         item(key = "intro") {
             Column(
-                modifier = Modifier.padding(start = 8.dp, top = 20.dp, bottom = 8.dp),
+                modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
@@ -284,6 +301,105 @@ private fun LicensesList(
     }
 }
 
+@Composable
+private fun AppLicenseCard(modifier: Modifier = Modifier) {
+    val uriHandler = LocalUriHandler.current
+    val openUri: (String) -> Unit = { url ->
+        runCatching { uriHandler.openUri(url) }
+    }
+
+    Surface(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.extraLarge,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 22.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    contentColor = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(52.dp),
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.AccountBalance,
+                            contentDescription = null,
+                            modifier = Modifier.size(28.dp),
+                        )
+                    }
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = stringResource(R.string.licenses_this_application),
+                        modifier = Modifier.padding(top = 2.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.72f),
+                    )
+                }
+            }
+
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                contentColor = MaterialTheme.colorScheme.primaryContainer,
+            ) {
+                Text(
+                    text = stringResource(R.string.licenses_app_license_name),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+
+            Text(
+                text = stringResource(R.string.licenses_app_license_summary),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+            )
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                TextButton(
+                    onClick = { openUri(SUDOKU_YOU_GITHUB_URL) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .pointerHoverIcon(PointerIcon.Hand),
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.OpenInNew,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.licenses_view_on_github))
+                }
+                TextButton(
+                    onClick = { openUri(SUDOKU_YOU_LICENSE_URL) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .pointerHoverIcon(PointerIcon.Hand),
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
+                ) {
+                    Text(stringResource(R.string.licenses_full_text))
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LicenseSearchBar(
@@ -357,22 +473,46 @@ private fun LibraryLicenseItem(
         modifier = Modifier
             .fillMaxWidth()
             .semantics { stateDescription = expandedState },
-        verticalAlignment = Alignment.Top,
-        leadingContent = { LibraryInitial(name = library.name) },
         content = {
-            Column {
-                Text(
-                    text = library.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    text = library.version
-                        ?: stringResource(R.string.licenses_unknown_version),
-                    modifier = Modifier.padding(top = 2.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    LibraryInitial(name = library.name)
+                    Spacer(modifier = Modifier.width(LicenseColumnSpacing))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = library.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            text = library.version
+                                ?: stringResource(R.string.licenses_unknown_version),
+                            modifier = Modifier.padding(top = 2.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Icon(
+                        imageVector = if (expanded) {
+                            Icons.Default.ExpandLess
+                        } else {
+                            Icons.Default.ExpandMore
+                        },
+                        contentDescription = stringResource(
+                            if (expanded) {
+                                R.string.licenses_collapse_details
+                            } else {
+                                R.string.licenses_expand_details
+                            },
+                        ),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
                 AnimatedVisibility(
                     visible = expanded,
                     enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
@@ -387,23 +527,6 @@ private fun LibraryLicenseItem(
                     )
                 }
             }
-        },
-        trailingContent = {
-            Icon(
-                imageVector = if (expanded) {
-                    Icons.Default.ExpandLess
-                } else {
-                    Icons.Default.ExpandMore
-                },
-                contentDescription = stringResource(
-                    if (expanded) {
-                        R.string.licenses_collapse_details
-                    } else {
-                        R.string.licenses_expand_details
-                    },
-                ),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         },
     )
 }
@@ -492,12 +615,17 @@ private fun LibraryLicenseDetails(
                     .pointerHoverIcon(PointerIcon.Hand),
                 contentPadding = PaddingValues(horizontal = 0.dp, vertical = 4.dp),
             ) {
-                Icon(
-                    imageVector = Icons.Default.Link,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                )
-                Spacer(modifier = Modifier.width(10.dp))
+                Box(
+                    modifier = Modifier.width(LicenseLeadingColumnWidth),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Link,
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+                Spacer(modifier = Modifier.width(LicenseColumnSpacing))
                 Text(
                     text = website,
                     modifier = Modifier.weight(1f),
@@ -536,23 +664,25 @@ private fun LicenseMetadataRow(
         verticalAlignment = Alignment.Top,
     ) {
         Box(
-            modifier = Modifier.size(22.dp),
-            contentAlignment = Alignment.Center,
+            modifier = Modifier.width(LicenseLeadingColumnWidth),
+            contentAlignment = Alignment.TopCenter,
         ) {
             icon()
         }
-        Spacer(modifier = Modifier.width(10.dp))
-        Text(
-            text = "$label:",
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.weight(1f),
-        )
+        Spacer(modifier = Modifier.width(LicenseColumnSpacing))
+        Row(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "$label:",
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
 }

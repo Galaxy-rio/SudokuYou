@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -21,11 +20,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.LoadingIndicatorDefaults
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -148,16 +149,24 @@ private fun AnimatedAppIcon(modifier: Modifier = Modifier) {
         iconSize *
             (LoadingIndicatorDefaults.ContainerWidth.value /
                 LoadingIndicatorDefaults.IndicatorSize.value)
+    val centeredLoadingShapes = remember {
+        listOf(
+            MaterialShapes.Cookie9Sided,
+            MaterialShapes.Sunny,
+            MaterialShapes.SoftBurst,
+        )
+    }
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .size(iconSize)
+            .size(animatedShapeContainerSize)
             .clearAndSetSemantics { },
     ) {
         LoadingIndicator(
             color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier.requiredSize(animatedShapeContainerSize),
+            polygons = centeredLoadingShapes,
+            modifier = Modifier.fillMaxSize(),
         )
         Icon(
             painter = painterResource(R.drawable.ic_launcher_monochrome),

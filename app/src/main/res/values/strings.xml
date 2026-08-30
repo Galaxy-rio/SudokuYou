@@ -161,6 +161,10 @@
     <string name="licenses_title">Licenses</string>
     <string name="licenses_loading">Loading licenses…</string>
     <string name="licenses_load_failed">Licenses could not be loaded.</string>
+    <string name="licenses_this_application">This application</string>
+    <string name="licenses_app_license_name" translatable="false">GPL-3.0-or-later</string>
+    <string name="licenses_app_license_summary">Sudoku You is free software. You may redistribute and modify it under the terms of the GNU General Public License, version 3 or later.</string>
+    <string name="licenses_view_on_github">View on GitHub</string>
     <string name="licenses_third_party">Third-party libraries</string>
     <plurals name="licenses_library_count">
         <item quantity="one">%1$d library detected</item>

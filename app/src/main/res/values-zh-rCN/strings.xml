@@ -159,6 +159,9 @@
     <string name="licenses_title">开源许可</string>
     <string name="licenses_loading">正在载入许可信息…</string>
     <string name="licenses_load_failed">无法载入许可信息。</string>
+    <string name="licenses_this_application">本应用</string>
+    <string name="licenses_app_license_summary">Sudoku You 是自由软件。您可以依据 GNU 通用公共许可证第 3 版或任何后续版本的条款重新分发和修改它。</string>
+    <string name="licenses_view_on_github">在 GitHub 上查看</string>
     <string name="licenses_third_party">第三方库</string>
     <plurals name="licenses_library_count">
         <item quantity="other">已检测到 %1$d 个库</item>
