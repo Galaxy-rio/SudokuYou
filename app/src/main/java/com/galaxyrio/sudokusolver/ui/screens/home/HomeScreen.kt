@@ -8,7 +8,9 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuOpen
 import androidx.compose.material.icons.filled.Analytics
@@ -112,6 +114,7 @@ fun HomeScreen(
         }
 
         ModalWideNavigationRail(
+            modifier = Modifier.width(HomeNavigationRailWidth),
             state = navigationRailState,
             hideOnCollapse = true,
             contentPadding = PaddingValues(top = 8.dp),
@@ -130,6 +133,7 @@ fun HomeScreen(
             HomeSection.entries.forEach { destination ->
                 val isSelected = destination == currentSection
                 WideNavigationRailItem(
+                    modifier = Modifier.fillMaxWidth(),
                     railExpanded = navigationRailState.targetValue ==
                         WideNavigationRailValue.Expanded,
                     icon = {
@@ -142,7 +146,12 @@ fun HomeScreen(
                             contentDescription = null,
                         )
                     },
-                    label = { Text(stringResource(destination.labelResource)) },
+                    label = {
+                        Text(
+                            text = stringResource(destination.labelResource),
+                            modifier = Modifier.width(HomeNavigationRailLabelWidth),
+                        )
+                    },
                     selected = isSelected,
                     onClick = {
                         currentSection = destination
@@ -153,6 +162,12 @@ fun HomeScreen(
         }
     }
 }
+
+// Material 3's expanded rail is 220.dp wide. Reserving a fixed-width label slot makes the
+// built-in active indicator fill the 180.dp destination container while keeping its standard
+// 20.dp outer margins. The item itself remains the full-width selectable target.
+private val HomeNavigationRailWidth = 220.dp
+private val HomeNavigationRailLabelWidth = 116.dp
 
 private enum class HomeSection(
     @param:StringRes val labelResource: Int,
