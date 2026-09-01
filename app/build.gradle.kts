@@ -29,8 +29,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
-            // Preserve launcher resource paths for OEM system UI compatibility.
-            isShrinkResources = false
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
