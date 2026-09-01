@@ -11,6 +11,11 @@ android {
     namespace = "com.galaxyrio.sudokusolver"
     compileSdk = 37
 
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     defaultConfig {
         applicationId = "com.galaxyrio.sudokusolver"
         minSdk = 31
