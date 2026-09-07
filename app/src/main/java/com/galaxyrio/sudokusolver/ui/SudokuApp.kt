@@ -16,6 +16,7 @@ import com.galaxyrio.sudokusolver.data.settings.ThemeMode
 import com.galaxyrio.sudokusolver.navigation.AppNavHost
 import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsViewModel
 import com.galaxyrio.sudokusolver.ui.theme.SudokuYouTheme
+import com.galaxyrio.sudokusolver.ui.guide.UsageGuideHost
 
 @Composable
 fun SudokuApp(
@@ -47,12 +48,14 @@ fun SudokuApp(
         colorSeed = settingsUiState.themeColor,
         paletteStyle = settingsUiState.paletteStyle,
     ) {
-        AppNavHost(
-            navController = navController,
-            appContainer = appContainer,
-            settingsUiState = settingsUiState,
-            settingsViewModel = settingsViewModel,
-        )
+        UsageGuideHost(repository = appContainer.settingsRepository) {
+            AppNavHost(
+                navController = navController,
+                appContainer = appContainer,
+                settingsUiState = settingsUiState,
+                settingsViewModel = settingsViewModel,
+            )
+        }
     }
 }
 

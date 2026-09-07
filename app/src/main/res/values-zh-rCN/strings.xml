@@ -139,7 +139,6 @@
     <string name="coordinate_notation_excel">Excel 坐标</string>
     <string name="coordinate_notation_excel_example">F2</string>
     <string name="assistance_settings_title">辅助</string>
-    <string name="assistance_settings_placeholder">学习与辅助选项将在后续版本中开放。</string>
     <string name="files_settings_title">文件</string>
     <string name="about_title">关于</string>
     <string name="about_app_description">一款使用 Jetpack Compose 与 Material 3 Expressive 构建的原生数独应用。</string>

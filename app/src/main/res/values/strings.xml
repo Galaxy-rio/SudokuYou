@@ -141,7 +141,6 @@
     <string name="coordinate_notation_excel">Excel notation</string>
     <string name="coordinate_notation_excel_example">F2</string>
     <string name="assistance_settings_title">Assistance</string>
-    <string name="assistance_settings_placeholder">Learning and assistance options will be available in a future version.</string>
     <string name="files_settings_title">Files</string>
     <string name="about_title">About</string>
     <string name="about_app_description">A native Sudoku app built with Jetpack Compose and Material 3 Expressive.</string>

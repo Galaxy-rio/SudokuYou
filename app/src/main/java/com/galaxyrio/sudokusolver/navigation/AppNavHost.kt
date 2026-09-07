@@ -23,6 +23,7 @@ import androidx.navigation.toRoute
 import com.galaxyrio.sudokusolver.data.AppContainer
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
 import com.galaxyrio.sudokusolver.ui.components.BoardConfig
+import com.galaxyrio.sudokusolver.ui.guide.LocalUsageGuide
 import com.galaxyrio.sudokusolver.ui.screens.game.GameRoute
 import com.galaxyrio.sudokusolver.ui.screens.game.GameViewModel
 import com.galaxyrio.sudokusolver.ui.screens.home.HomeScreen
@@ -60,6 +61,7 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
 ) {
     val hierarchyTravelPx = with(LocalDensity.current) { HierarchyTravel.roundToPx() }
+    val usageGuide = LocalUsageGuide.current
 
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -247,6 +249,13 @@ fun AppNavHost(
 
                         SettingsCategory.ASSISTANCE -> AssistanceSettingsScreen(
                             onBack = onBack,
+                            onReplayUsageGuide = {
+                                usageGuide?.replay()
+                                navController.navigate(HomeDestination) {
+                                    popUpTo<HomeDestination> { inclusive = true }
+                                    launchSingleTop = true
+                                }
+                            },
                             modifier = Modifier.fillMaxSize(),
                         )
 

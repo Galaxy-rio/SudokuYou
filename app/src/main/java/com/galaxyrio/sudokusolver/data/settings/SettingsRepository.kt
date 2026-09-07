@@ -46,6 +46,7 @@ data class AppSettings(
     val coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
     val exportFormat: SudokuExportFormat = SudokuExportFormat.SUSSER,
     val includeCandidatesInCurrentExport: Boolean = true,
+    val hasSeenUsageGuide: Boolean = false,
 ) {
     companion object {
         const val DEFAULT_THEME_COLOR: Int = 0xFF6750A4.toInt()
@@ -70,6 +71,7 @@ interface SettingsRepository {
     fun setCoordinateNotation(notation: CoordinateNotation)
     fun setExportFormat(format: SudokuExportFormat)
     fun setIncludeCandidatesInCurrentExport(enabled: Boolean)
+    fun markUsageGuideSeen()
 }
 
 class PreferencesSettingsRepository(context: Context) : SettingsRepository {
@@ -162,6 +164,11 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         update { copy(includeCandidatesInCurrentExport = enabled) }
     }
 
+    override fun markUsageGuideSeen() {
+        preferences.edit { putBoolean(KEY_HAS_SEEN_USAGE_GUIDE, true) }
+        update { copy(hasSeenUsageGuide = true) }
+    }
+
     private fun readSettings(): AppSettings = AppSettings(
         themeMode = enumValueAtOrDefault(
             values = ThemeMode.entries,
@@ -206,6 +213,7 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
             KEY_INCLUDE_CANDIDATES_IN_CURRENT_EXPORT,
             true,
         ),
+        hasSeenUsageGuide = preferences.getBoolean(KEY_HAS_SEEN_USAGE_GUIDE, false),
     )
 
     private inline fun update(transform: AppSettings.() -> AppSettings) {
@@ -214,6 +222,7 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
 
     private companion object {
         const val PREFERENCES_NAME = "sudoku_settings"
+        const val KEY_HAS_SEEN_USAGE_GUIDE = "has_seen_usage_guide"
         const val KEY_THEME_MODE = "theme_mode"
         const val KEY_THEME_COLOR = "theme_color"
         const val KEY_PALETTE_STYLE = "palette_style"

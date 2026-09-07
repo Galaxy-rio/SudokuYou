@@ -12,6 +12,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,6 +32,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
@@ -37,6 +41,8 @@ import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Backspace
@@ -67,6 +73,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -80,7 +87,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.boundsInWindow
@@ -95,6 +104,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Density
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.galaxyrio.sudokusolver.R
@@ -113,6 +123,12 @@ import com.galaxyrio.sudokusolver.ui.components.GameHintPanel
 import com.galaxyrio.sudokusolver.ui.components.NumberPad
 import com.galaxyrio.sudokusolver.ui.components.SudokuBoard
 import com.galaxyrio.sudokusolver.ui.components.toComposeColor
+import com.galaxyrio.sudokusolver.ui.guide.GuideStep
+import com.galaxyrio.sudokusolver.ui.guide.GuideSeries
+import com.galaxyrio.sudokusolver.ui.guide.GuideMotionDurationMillis
+import com.galaxyrio.sudokusolver.ui.guide.GuideTarget
+import com.galaxyrio.sudokusolver.ui.guide.LocalUsageGuide
+import com.galaxyrio.sudokusolver.ui.guide.guideTarget
 import com.galaxyrio.sudokusolver.ui.screens.play.gameContainerKey
 import com.galaxyrio.sudokusolver.ui.screens.play.thumbnailKey
 import com.galaxyrio.sudokusolver.ui.util.formatElapsedTime
@@ -137,6 +153,17 @@ fun GameRoute(
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val usageGuide = LocalUsageGuide.current
+    val isWatchingGuide = usageGuide?.isGameGuide == true
+    val guideStep = usageGuide?.step
+    // Preview the advanced controls without changing the actual game or its annotations.
+    val displayedUiState = if (isWatchingGuide) {
+        uiState.copy(
+            isAdvancedMode = guideStep?.previewsAdvancedMode == true,
+            isAdvancedNoteMode = guideStep?.previewsAdvancedMode == true,
+            advancedInputTool = AdvancedInputTool.NONE,
+        )
+    } else uiState
     // ModalBottomSheet reserves space outside its content for the drag handle and its internal
     // spacing. Keep this value shared by overlap detection and the content height cap so both
     // calculations describe the complete visible sheet.
@@ -158,6 +185,7 @@ fun GameRoute(
     var elevatedBoardBottomPx by remember { mutableFloatStateOf(Float.NaN) }
     var normalNumberPadTopPx by remember { mutableFloatStateOf(Float.NaN) }
     var windowBottomPx by remember { mutableFloatStateOf(Float.NaN) }
+    var windowOrigin by remember { mutableStateOf(Offset.Zero) }
 
     fun copyToClipboard(text: String, confirmation: String) {
         val clipboard = context.getSystemService(ClipboardManager::class.java)
@@ -165,8 +193,8 @@ fun GameRoute(
         coroutineScope.launch { snackbarHostState.showSnackbar(confirmation) }
     }
 
-    LifecycleResumeEffect(viewModel) {
-        viewModel.onResume()
+    LifecycleResumeEffect(viewModel, isWatchingGuide) {
+        if (!isWatchingGuide) viewModel.onResume()
         onPauseOrDispose {
             viewModel.onPause()
         }
@@ -218,6 +246,7 @@ fun GameRoute(
             .fillMaxSize()
             .onGloballyPositioned { coordinates ->
                 windowBottomPx = coordinates.boundsInWindow().bottom
+                windowOrigin = coordinates.boundsInWindow().topLeft
             },
     ) {
         val density = LocalDensity.current
@@ -240,7 +269,7 @@ fun GameRoute(
         )
 
         GameScreen(
-            uiState = uiState,
+            uiState = displayedUiState,
             boardConfig = boardConfig,
             originGameId = originGameId,
             sharedTransitionScope = sharedTransitionScope,
@@ -293,6 +322,51 @@ fun GameRoute(
             snackbarHostState = snackbarHostState,
             modifier = Modifier.fillMaxSize(),
         )
+
+        if (guideStep?.series == GuideSeries.MENU) {
+            usageGuide.anchors[GuideTarget.MORE]?.bounds?.let { buttonBounds ->
+                val localButton = buttonBounds.translate(-windowOrigin)
+                val menuWidth = minOf(256.dp, maxWidth - 32.dp)
+                val menuTop = with(density) { localButton.bottom.toDp() } + 4.dp
+                val menuLeft = (with(density) { localButton.right.toDp() } - menuWidth)
+                    .coerceIn(16.dp, (maxWidth - menuWidth - 16.dp).coerceAtLeast(16.dp))
+                val reveal by animateFloatAsState(
+                    targetValue = if (guideStep == GuideStep.MENU) 1f else 0f,
+                    animationSpec = tween(GuideMotionDurationMillis, easing = FastOutSlowInEasing),
+                    label = "guide_menu_reveal",
+                )
+                // An in-window copy shares the real menu contents and stays under the guide.
+                // Measure it even when collapsed to keep this series' navigation stationary.
+                Surface(
+                    modifier = Modifier.offset(menuLeft, menuTop).width(menuWidth)
+                        .heightIn(max = (maxHeight - menuTop - 24.dp).coerceAtLeast(1.dp))
+                        .guideTarget(GuideTarget.MORE_MENU)
+                        .graphicsLayer {
+                            alpha = reveal
+                            scaleX = 0.85f + 0.15f * reveal
+                            scaleY = 0.85f + 0.15f * reveal
+                            transformOrigin = TransformOrigin(1f, 0f)
+                        },
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    shadowElevation = 8.dp,
+                ) {
+                    Column(Modifier.verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
+                        GameMenuItems(
+                            isAdvancedMode = false,
+                            hasAdvancedDraft = false,
+                            gameActionsEnabled = true,
+                            onToggleAdvancedMode = usageGuide::next,
+                            onFillCandidates = {},
+                            onDeleteDraft = {},
+                            onExportOriginal = {},
+                            onExportCurrent = {},
+                            onRestart = {},
+                        )
+                    }
+                }
+            }
+        }
 
         if (showHint) {
             fun dismissHint() {
@@ -562,7 +636,7 @@ private fun GameScaffold(
                     )
                 }
 
-                // Keep the top-bar slot non-zero throughout its exit animation. Otherwise
+                // Keep the top-bar slot non-zero throughout its exit animation. Otherwise,
                 // Scaffold adds the status-bar inset only after AnimatedVisibility reaches zero,
                 // which makes the board first enter the status bar and then snap back down.
                 Column {
@@ -641,6 +715,53 @@ private fun GameScaffold(
 }
 
 @Composable
+private fun GameMenuItems(
+    isAdvancedMode: Boolean,
+    hasAdvancedDraft: Boolean,
+    gameActionsEnabled: Boolean,
+    onToggleAdvancedMode: () -> Unit,
+    onFillCandidates: () -> Unit,
+    onDeleteDraft: () -> Unit,
+    onExportOriginal: () -> Unit,
+    onExportCurrent: () -> Unit,
+    onRestart: () -> Unit,
+) {
+    val modeLabel = stringResource(
+        if (isAdvancedMode) R.string.game_simple_mode else R.string.game_advanced_mode,
+    )
+    DropdownMenuItem(
+        text = { Text(modeLabel) },
+        onClick = onToggleAdvancedMode,
+        modifier = Modifier.guideTarget(GuideTarget.ADVANCED_MODE, modeLabel, onToggleAdvancedMode),
+    )
+    DropdownMenuItem(
+        text = { Text(stringResource(R.string.game_auto_candidates)) },
+        enabled = gameActionsEnabled,
+        onClick = onFillCandidates,
+    )
+    DropdownMenuItem(
+        text = { Text(stringResource(R.string.game_delete_draft)) },
+        enabled = gameActionsEnabled && hasAdvancedDraft,
+        onClick = onDeleteDraft,
+    )
+    HorizontalDivider()
+    DropdownMenuItem(
+        text = { Text(stringResource(R.string.game_export_original)) },
+        onClick = onExportOriginal,
+    )
+    DropdownMenuItem(
+        text = { Text(stringResource(R.string.game_export_current)) },
+        onClick = onExportCurrent,
+    )
+    HorizontalDivider()
+    DropdownMenuItem(
+        text = { Text(stringResource(R.string.game_restart)) },
+        enabled = gameActionsEnabled,
+        onClick = onRestart,
+    )
+}
+
+@Composable
 private fun GameTopBar(
     difficulty: String,
     elapsedTime: String,
@@ -657,6 +778,13 @@ private fun GameTopBar(
 ) {
     var menuExpanded by rememberSaveable { mutableStateOf(false) }
     var showRestartConfirmation by rememberSaveable { mutableStateOf(false) }
+    val usageGuide = LocalUsageGuide.current
+    val moreLabel = stringResource(R.string.game_more_options)
+    val openMenu: () -> Unit = {
+        if (usageGuide?.isGameGuide == true) {
+            usageGuide.onMoreExpanded(usageGuide.step != GuideStep.MENU)
+        } else menuExpanded = true
+    }
 
     Column {
         TopAppBar(
@@ -671,7 +799,10 @@ private fun GameTopBar(
             },
             actions = {
                 Box {
-                    IconButton(onClick = { menuExpanded = true }) {
+                    IconButton(
+                        onClick = openMenu,
+                        modifier = Modifier.guideTarget(GuideTarget.MORE, moreLabel, openMenu),
+                    ) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = stringResource(R.string.game_more_options),
@@ -681,62 +812,19 @@ private fun GameTopBar(
                         expanded = menuExpanded,
                         onDismissRequest = { menuExpanded = false },
                     ) {
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    stringResource(
-                                        if (isAdvancedMode) {
-                                            R.string.game_simple_mode
-                                        } else {
-                                            R.string.game_advanced_mode
-                                        }
-                                    )
-                                )
-                            },
-                            onClick = {
+                        GameMenuItems(
+                            isAdvancedMode = isAdvancedMode,
+                            hasAdvancedDraft = hasAdvancedDraft,
+                            gameActionsEnabled = gameActionsEnabled,
+                            onToggleAdvancedMode = {
                                 onAdvancedModeChange(!isAdvancedMode)
                                 menuExpanded = false
                             },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.game_auto_candidates)) },
-                            enabled = gameActionsEnabled,
-                            onClick = {
-                                onFillCandidates()
-                                menuExpanded = false
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.game_delete_draft)) },
-                            enabled = gameActionsEnabled && hasAdvancedDraft,
-                            onClick = {
-                                onDeleteDraft()
-                                menuExpanded = false
-                            },
-                        )
-                        HorizontalDivider()
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.game_export_original)) },
-                            onClick = {
-                                onExportOriginal()
-                                menuExpanded = false
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.game_export_current)) },
-                            onClick = {
-                                onExportCurrent()
-                                menuExpanded = false
-                            },
-                        )
-                        HorizontalDivider()
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.game_restart)) },
-                            enabled = gameActionsEnabled,
-                            onClick = {
-                                menuExpanded = false
-                                showRestartConfirmation = true
-                            },
+                            onFillCandidates = { onFillCandidates(); menuExpanded = false },
+                            onDeleteDraft = { onDeleteDraft(); menuExpanded = false },
+                            onExportOriginal = { onExportOriginal(); menuExpanded = false },
+                            onExportCurrent = { onExportCurrent(); menuExpanded = false },
+                            onRestart = { menuExpanded = false; showRestartConfirmation = true },
                         )
                     }
                 }
@@ -820,21 +908,21 @@ private fun GameBottomBar(
             contentDescription = stringResource(R.string.game_undo),
             enabled = canUndo,
             onClick = onUndo,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).guideTarget(GuideTarget.UNDO),
         )
         ToolbarAction(
             icon = ImageVector.vectorResource(R.drawable.ic_material_symbol_redo),
             contentDescription = stringResource(R.string.game_redo),
             enabled = canRedo,
             onClick = onRedo,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).guideTarget(GuideTarget.REDO),
         )
         ToolbarAction(
             icon = Icons.AutoMirrored.Filled.Backspace,
             contentDescription = stringResource(R.string.game_erase),
             enabled = enabled,
             onClick = onErase,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).guideTarget(GuideTarget.ERASE),
         )
         ToolbarToggleAction(
             icon = Icons.Default.Edit,
@@ -842,14 +930,14 @@ private fun GameBottomBar(
             checked = isNoteMode,
             enabled = enabled,
             onCheckedChange = { onToggleNoteMode() },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).guideTarget(GuideTarget.NOTES),
         )
         ToolbarAction(
             icon = Icons.Default.Lightbulb,
             contentDescription = stringResource(R.string.game_hint),
             enabled = enabled,
             onClick = onShowHint,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).guideTarget(GuideTarget.HINT),
         )
     }
 }
@@ -1059,6 +1147,16 @@ private fun AdaptiveGameContent(
         val useSideBySideLayout = maxWidth >= 600.dp || maxWidth > maxHeight
 
         if (useSideBySideLayout) {
+            // A weighted child otherwise receives a fixed width, forcing its square board
+            // beyond the available height and moving the guide target over both app bars.
+            val boardSize = minOf((maxWidth - 56.dp) / 2, maxHeight - 32.dp, 560.dp)
+                .coerceAtLeast(1.dp)
+            val density = LocalDensity.current
+            val boardDensity = Density(
+                density.density,
+                // Keep the fixed digit/candidate typography inside the smaller square cells.
+                fontScale = minOf(density.fontScale, boardSize.value / 324f),
+            )
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -1070,17 +1168,21 @@ private fun AdaptiveGameContent(
                     Alignment.CenterVertically
                 },
             ) {
-                GameBoard(
-                    uiState = uiState,
-                    boardConfig = boardConfig,
-                    isHintVisible = isHintVisible,
-                    onBoardBoundsChanged = onBoardBoundsChanged,
-                    onCellSelected = onCellSelected,
-                    modifier = Modifier
-                        .weight(1f)
-                        .widthIn(max = 560.dp)
-                        .then(boardModifier),
-                )
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    contentAlignment = if (isHintLayoutElevated) Alignment.TopCenter else Alignment.Center,
+                ) {
+                    CompositionLocalProvider(LocalDensity provides boardDensity) {
+                        GameBoard(
+                            uiState = uiState,
+                            boardConfig = boardConfig,
+                            isHintVisible = isHintVisible,
+                            onBoardBoundsChanged = onBoardBoundsChanged,
+                            onCellSelected = onCellSelected,
+                            modifier = Modifier.size(boardSize).then(boardModifier),
+                        )
+                    }
+                }
                 GameControlArea(
                     uiState = uiState,
                     isNumberPadVisible = !isHintLayoutElevated,

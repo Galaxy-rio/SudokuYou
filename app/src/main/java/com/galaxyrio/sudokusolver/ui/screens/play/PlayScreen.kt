@@ -106,6 +106,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
 import com.galaxyrio.sudokusolver.domain.model.SudokuExportFormat
+import com.galaxyrio.sudokusolver.ui.guide.GuideTarget
+import com.galaxyrio.sudokusolver.ui.guide.GuideStep
+import com.galaxyrio.sudokusolver.ui.guide.LocalUsageGuide
+import com.galaxyrio.sudokusolver.ui.guide.guideTarget
 import com.galaxyrio.sudokusolver.ui.util.formatElapsedTime
 import com.galaxyrio.sudokusolver.ui.util.label
 import com.galaxyrio.sudokusolver.ui.util.titleResource
@@ -176,6 +180,7 @@ fun PlayMenuScreen(
 ) {
     var selectedGameIds by rememberSaveable { mutableStateOf(emptyList<Long>()) }
     var isFabMenuExpanded by rememberSaveable { mutableStateOf(false) }
+    val usageGuide = LocalUsageGuide.current
     var isImportSheetVisible by rememberSaveable { mutableStateOf(false) }
     var playScreenOriginInWindow by remember { mutableStateOf(Offset.Zero) }
     var fabMenuBoundsInWindow by remember { mutableStateOf(Rect.Zero) }
@@ -194,6 +199,12 @@ fun PlayMenuScreen(
         val availableIds = uiState.savedGames.mapTo(mutableSetOf()) { it.id }
         selectedGameIds = selectedGameIds.filter { it in availableIds }
     }
+    LaunchedEffect(usageGuide?.runId) {
+        if (usageGuide?.isHomeGuide == true) {
+            selectedGameIds = emptyList()
+            isFabMenuExpanded = usageGuide.step == GuideStep.DIFFICULTY
+        }
+    }
     LaunchedEffect(isSelectionMode) {
         if (isSelectionMode) isFabMenuExpanded = false
     }
@@ -202,6 +213,7 @@ fun PlayMenuScreen(
     }
     BackHandler(enabled = isFabMenuExpanded && !isSelectionMode) {
         isFabMenuExpanded = false
+        usageGuide?.onFabExpanded(false)
     }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -293,7 +305,10 @@ fun PlayMenuScreen(
             PlayFabMenu(
                 expanded = isFabMenuExpanded && !isSelectionMode,
                 isSelectionMode = isSelectionMode,
-                onExpandedChange = { isFabMenuExpanded = it },
+                onExpandedChange = {
+                    isFabMenuExpanded = it
+                    usageGuide?.onFabExpanded(it)
+                },
                 onDelete = {
                     onDeleteGames(selectedGameIds.toSet())
                     selectedGameIds = emptyList()
@@ -305,10 +320,12 @@ fun PlayMenuScreen(
                 },
                 onStartGame = { difficulty ->
                     isFabMenuExpanded = false
+                    usageGuide?.onGameStarted()
                     onStartGame(difficulty)
                 },
                 modifier = Modifier
                     .offset(x = 16.dp, y = 16.dp)
+                    .guideTarget(GuideTarget.DIFFICULTIES)
                     .onGloballyPositioned { coordinates ->
                         fabMenuBoundsInWindow = coordinates.boundsInWindow()
                     },
@@ -423,7 +440,11 @@ private fun PlayFabMenu(
                         fraction = selectionProgress,
                     )
                 },
-                modifier = Modifier.semantics {
+                modifier = Modifier.guideTarget(
+                    target = GuideTarget.NEW_GAME,
+                    label = if (expanded) expandedDescription else collapsedDescription,
+                    onClick = { onExpandedChange(!expanded) },
+                ).semantics {
                     contentDescription = when {
                         isSelectionMode -> deleteDescription
                         expanded -> expandedDescription
@@ -496,6 +517,11 @@ private fun PlayFabMenu(
         Difficulty.entries.forEachIndexed { index, difficulty ->
             FloatingActionButtonMenuItem(
                 onClick = { onStartGame(difficulty) },
+                modifier = Modifier.guideTarget(
+                    target = GuideTarget.difficulty(difficulty),
+                    label = difficulty.label(),
+                    onClick = { onStartGame(difficulty) },
+                ),
                 icon = { DifficultyStarsIcon(starCount = index + 1) },
                 text = { Text(difficulty.label()) },
             )

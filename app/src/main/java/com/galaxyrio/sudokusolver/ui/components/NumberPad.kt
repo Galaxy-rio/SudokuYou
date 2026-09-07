@@ -46,6 +46,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteLineStyle
+import com.galaxyrio.sudokusolver.ui.guide.GuideTarget
+import com.galaxyrio.sudokusolver.ui.guide.guideTarget
 
 @Composable
 fun NumberPad(
@@ -76,6 +78,7 @@ fun NumberPad(
         Column(
             modifier = Modifier
                 .size(padSize)
+                .guideTarget(GuideTarget.NUMBERS)
                 .onGloballyPositioned { coordinates ->
                     onPadBoundsChanged?.invoke(coordinates.boundsInWindow())
                 },
@@ -237,6 +240,7 @@ fun AdvancedNumberPad(
                 advancedPadItem(
                     isSelected = isAdvancedNoteMode,
                     contentDescription = advancedNoteModeDescription,
+                    guideTarget = GuideTarget.ADVANCED_NOTES,
                     onClick = onAdvancedNoteModeClick,
                 ) {
                     Text("AN", style = MaterialTheme.typography.titleMedium)
@@ -248,6 +252,7 @@ fun AdvancedNumberPad(
                 advancedPadItem(
                     isSelected = showBivalueHighlights,
                     contentDescription = bivalueDescription,
+                    guideTarget = GuideTarget.BIVALUE,
                     onClick = onBivalueClick,
                 ) {
                     Text("XY", style = MaterialTheme.typography.titleMedium)
@@ -255,6 +260,7 @@ fun AdvancedNumberPad(
                 advancedPadItem(
                     isSelected = isPaintSelected,
                     contentDescription = paintDescription,
+                    guideTarget = GuideTarget.PAINT,
                     onClick = onPaintClick,
                 ) {
                     Icon(
@@ -265,6 +271,7 @@ fun AdvancedNumberPad(
                 advancedPadItem(
                     isSelected = frameHighlights,
                     contentDescription = frameDescription,
+                    guideTarget = GuideTarget.FRAME,
                     onClick = onFrameClick,
                 ) {
                     FrameToolGlyph()
@@ -272,6 +279,7 @@ fun AdvancedNumberPad(
                 advancedPadItem(
                     isSelected = isSolidLineSelected,
                     contentDescription = solidLineDescription,
+                    guideTarget = GuideTarget.SOLID_LINE,
                     onClick = onSolidLineClick,
                 ) {
                     LineToolGlyph(style = AdvancedNoteLineStyle.SOLID)
@@ -279,6 +287,7 @@ fun AdvancedNumberPad(
                 advancedPadItem(
                     isSelected = isDashedLineSelected,
                     contentDescription = dashedLineDescription,
+                    guideTarget = GuideTarget.DASHED_LINE,
                     onClick = onDashedLineClick,
                 ) {
                     LineToolGlyph(style = AdvancedNoteLineStyle.DASHED)
@@ -307,6 +316,7 @@ private fun ButtonGroupScope.advancedPadItem(
     isSelected: Boolean,
     contentDescription: String,
     onClick: () -> Unit,
+    guideTarget: GuideTarget? = null,
     content: @Composable () -> Unit,
 ) {
     customItem(
@@ -319,6 +329,7 @@ private fun ButtonGroupScope.advancedPadItem(
                 interactionSource = interactionSource,
                 modifier = Modifier
                     .weight(1f)
+                    .then(if (guideTarget != null) Modifier.guideTarget(guideTarget) else Modifier)
                     .animateWidth(
                         interactionSource = interactionSource,
                         compressionLimit = AdvancedPadButtonCompressionLimit,
