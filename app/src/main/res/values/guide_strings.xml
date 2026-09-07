@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_usage_guide">Usage guide</string>
+    <string name="settings_usage_guide_summary">Watch the introduction to starting games and using the tools again</string>
+    <string name="guide_welcome">New game</string>
+    <string name="guide_start">Tap this button to start a game.</string>
+    <string name="guide_difficulty_title">Choose a difficulty</string>
+    <string name="guide_difficulty">Choose a difficulty here to start your game.</string>
+    <string name="guide_numbers_title">Keyboard input</string>
+    <string name="guide_numbers">Select a cell, then tap a digit to fill it in. You can also select a digit first and tap cells to enter it repeatedly.</string>
+    <string name="guide_advanced_notes">AN turns advanced notes on or off. When enabled, the digit buttons can highlight several digits and their candidates at once. Turn AN off to return to regular digit input.</string>
+    <string name="guide_finish_title">Ready to play</string>
+    <string name="guide_finish_message">You can watch this guide again in Settings → Assistance.</string>
+    <string name="guide_skip">Skip</string>
+    <string name="guide_previous">Previous</string>
+    <string name="guide_next">Next</string>
+    <string name="guide_done">Finish</string>
+</resources>

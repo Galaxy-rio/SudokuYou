@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_usage_guide">使用指导</string>
+    <string name="settings_usage_guide_summary">重新观看使用指导，了解如何开始对局和使用工具</string>
+    <string name="guide_welcome">新游戏</string>
+    <string name="guide_start">点击这个按钮开始对局。</string>
+    <string name="guide_difficulty_title">选择难度</string>
+    <string name="guide_difficulty">在这里选择难度，开始对局。</string>
+    <string name="guide_numbers_title">键盘输入</string>
+    <string name="guide_numbers">先选中格子，再点击数字填入。也可以先选数字，再连续点击格子填入同一个数字。</string>
+    <string name="guide_advanced_notes">AN 用于开关高级笔记。开启后，数字按钮可以同时高亮多个数字及其候选数；关闭 AN 可恢复普通数字输入。</string>
+    <string name="guide_finish_title">准备就绪</string>
+    <string name="guide_finish_message">你可以在「设置 → 辅助」中再次查看使用指导。</string>
+    <string name="guide_skip">跳过</string>
+    <string name="guide_previous">上一步</string>
+    <string name="guide_next">下一步</string>
+    <string name="guide_done">完成</string>
+</resources>
