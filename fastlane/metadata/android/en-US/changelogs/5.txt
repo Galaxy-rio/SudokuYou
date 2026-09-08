@@ -1,0 +1,4 @@
+Minor UI refinements.
+• Added a high-contrast mode
+• Added an onboarding guide shown on first launch, which can be replayed from Settings
+• Fixed a bug where rapidly pressing the Back button could leave a blank page
