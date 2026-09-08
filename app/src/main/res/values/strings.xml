@@ -86,8 +86,8 @@
     <string name="appearance_theme_mode">Theme mode</string>
     <string name="appearance_amoled_mode">AMOLED mode</string>
     <string name="appearance_amoled_mode_summary">Use true black in the dark theme</string>
-    <string name="appearance_colored_board">Colored board</string>
-    <string name="appearance_colored_board_summary">Apply theme colors to the board</string>
+    <string name="appearance_high_contrast_board">High contrast</string>
+    <string name="appearance_high_contrast_board_summary">Use stronger cell highlights and contrasting text</string>
     <string name="appearance_position_lines">Position lines</string>
     <string name="appearance_position_lines_summary">Highlight the selected cell’s row and column</string>
     <string name="appearance_position_block">Position block</string>

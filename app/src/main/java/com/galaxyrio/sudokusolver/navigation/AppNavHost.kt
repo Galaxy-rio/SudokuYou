@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -137,9 +138,9 @@ fun AppNavHost(
                     exitTransition = { materialForwardExit(hierarchyTravelPx) },
                     popEnterTransition = { materialBackwardEnter(hierarchyTravelPx) },
                     popExitTransition = { materialBackwardExit(hierarchyTravelPx) },
-                ) {
+                ) { backStackEntry ->
                     SettingsScreen(
-                        onBack = { navController.popBackStack() },
+                        onBack = { navController.popBackStackFrom(backStackEntry) },
                         onNavigateTo = { category ->
                             navController.navigate(SettingsDestination(category))
                         },
@@ -162,7 +163,7 @@ fun AppNavHost(
                         settingsUiState = settingsUiState,
                         sharedTransitionScope = sharedTransitionScope,
                         animatedVisibilityScope = this,
-                        onBack = { navController.popBackStack() },
+                        onBack = { navController.popBackStackFrom(backStackEntry) },
                     )
                 }
 
@@ -205,7 +206,7 @@ fun AppNavHost(
                         settingsUiState = settingsUiState,
                         sharedTransitionScope = sharedTransitionScope,
                         animatedVisibilityScope = this,
-                        onBack = { navController.popBackStack() },
+                        onBack = { navController.popBackStackFrom(backStackEntry) },
                     )
                 }
 
@@ -216,7 +217,7 @@ fun AppNavHost(
                     popExitTransition = { materialBackwardExit(hierarchyTravelPx) },
                 ) { backStackEntry ->
                     val destination = backStackEntry.toRoute<SettingsDestination>()
-                    val onBack: () -> Unit = { navController.popBackStack() }
+                    val onBack: () -> Unit = { navController.popBackStackFrom(backStackEntry) }
 
                     when (destination.category) {
                         SettingsCategory.APPEARANCE -> AppearanceSettingsScreen(
@@ -226,7 +227,7 @@ fun AppNavHost(
                             onPaletteStyleChange = settingsViewModel::setPaletteStyle,
                             onDynamicColorsChange = settingsViewModel::setUseDynamicColors,
                             onAmoledChange = settingsViewModel::setIsAmoled,
-                            onColoredBoardChange = settingsViewModel::setColoredBoard,
+                            onHighContrastBoardChange = settingsViewModel::setHighContrastBoard,
                             onPositionLinesChange = settingsViewModel::setPositionLines,
                             onPositionBlockChange = settingsViewModel::setPositionBlock,
                             onAlternativeErrorColorChange =
@@ -296,9 +297,9 @@ fun AppNavHost(
                     exitTransition = { materialForwardExit(hierarchyTravelPx) },
                     popEnterTransition = { materialBackwardEnter(hierarchyTravelPx) },
                     popExitTransition = { materialBackwardExit(hierarchyTravelPx) },
-                ) {
+                ) { backStackEntry ->
                     ChangelogsScreen(
-                        onBack = { navController.popBackStack() },
+                        onBack = { navController.popBackStackFrom(backStackEntry) },
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -308,10 +309,10 @@ fun AppNavHost(
                     exitTransition = { materialForwardExit(hierarchyTravelPx) },
                     popEnterTransition = { materialBackwardEnter(hierarchyTravelPx) },
                     popExitTransition = { materialBackwardExit(hierarchyTravelPx) },
-                ) {
+                ) { backStackEntry ->
                     LicensesScreen(
                         repository = appContainer.licensesRepository,
-                        onBack = { navController.popBackStack() },
+                        onBack = { navController.popBackStackFrom(backStackEntry) },
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -321,13 +322,13 @@ fun AppNavHost(
                     exitTransition = { materialForwardExit(hierarchyTravelPx) },
                     popEnterTransition = { materialBackwardEnter(hierarchyTravelPx) },
                     popExitTransition = { materialBackwardExit(hierarchyTravelPx) },
-                ) {
+                ) { backStackEntry ->
                     CrashHistoryScreen(
                         repository = appContainer.crashHistoryRepository,
                         onOpenCrash = { reportId ->
                             navController.navigate(CrashDetailsDestination(reportId))
                         },
-                        onBack = { navController.popBackStack() },
+                        onBack = { navController.popBackStackFrom(backStackEntry) },
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -342,7 +343,7 @@ fun AppNavHost(
                     CrashDetailsScreen(
                         reportId = destination.reportId,
                         repository = appContainer.crashHistoryRepository,
-                        onBack = { navController.popBackStack() },
+                        onBack = { navController.popBackStackFrom(backStackEntry) },
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -374,7 +375,7 @@ private fun GameDestinationContent(
     GameRoute(
         viewModel = gameViewModel,
         boardConfig = BoardConfig(
-            useColoredBoard = settingsUiState.coloredBoard,
+            useHighContrast = settingsUiState.highContrastBoard,
             highlightCross = settingsUiState.positionLines,
             highlightBlock = settingsUiState.positionBlock,
             useAltErrorColor = settingsUiState.alternativeErrorColor,
@@ -385,6 +386,18 @@ private fun GameDestinationContent(
         onBack = onBack,
         modifier = Modifier.fillMaxSize(),
     )
+}
+
+private fun NavHostController.popBackStackFrom(source: NavBackStackEntry): Boolean {
+    // Exiting content can still receive clicks while its navigation transition is running.
+    // Only the current, fully entered page may pop, and the root must stay in the stack.
+    if (currentBackStackEntry !== source ||
+        source.lifecycle.currentState != Lifecycle.State.RESUMED ||
+        previousBackStackEntry == null
+    ) {
+        return false
+    }
+    return popBackStack()
 }
 
 private fun NavBackStackEntry.usesSavedGameContainerTransform(): Boolean =

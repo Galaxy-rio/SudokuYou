@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -46,7 +47,7 @@ import com.galaxyrio.sudokusolver.domain.solver.CellRef
 import com.galaxyrio.sudokusolver.domain.solver.SolveStep
 
 data class BoardConfig(
-    val useColoredBoard: Boolean = false,
+    val useHighContrast: Boolean = false,
     val highlightCross: Boolean = true,
     val highlightBlock: Boolean = true,
     val useAltErrorColor: Boolean = false,
@@ -73,11 +74,7 @@ fun SudokuBoard(
     val thinLine = 0.6.dp
     val cornerRadius = 12.dp
     val colorScheme = MaterialTheme.colorScheme
-    val boardColor = if (config.useColoredBoard) {
-        colorScheme.primary
-    } else {
-        colorScheme.onSurface
-    }
+    val boardColor = colorScheme.onSurface
     val lineColor = lerp(boardColor, colorScheme.surface, 0.5f)
     val conflictingCells = remember(sudoku) {
         buildSet {
@@ -262,12 +259,38 @@ private fun SudokuCell(
     val backgroundColor = when {
         isError && isSelected -> errorColor
         isError -> errorContainerColor
-        isSelected && isFixed -> colorScheme.primary
+        isSelected && (isFixed || config.useHighContrast) -> colorScheme.primary
         isSelected -> colorScheme.primaryContainer
         config.highlightCross && isSelectedCross -> colorScheme.surfaceContainerHighest
         config.highlightBlock && isSelectedBlock -> colorScheme.surfaceContainer
-        isValueHighlighted -> colorScheme.secondaryContainer
+        isValueHighlighted -> if (config.useHighContrast) {
+            colorScheme.primary
+        } else {
+            colorScheme.secondaryContainer
+        }
         else -> colorScheme.surface
+    }
+    val textColor = if (config.useHighContrast) {
+        // Match the background priority, including overlapping position and value highlights.
+        when {
+            isError && isSelected -> onErrorColor
+            isError -> onErrorContainerColor
+            isSelected -> colorScheme.onPrimary
+            config.highlightCross && isSelectedCross -> colorScheme.onSurface
+            config.highlightBlock && isSelectedBlock -> colorScheme.onSurface
+            isValueHighlighted -> colorScheme.onPrimary
+            else -> colorScheme.onSurface
+        }
+    } else {
+        when {
+            isError && isSelected -> onErrorColor
+            isError -> onErrorContainerColor
+            isSelected && isFixed -> colorScheme.onPrimary
+            isSelected -> colorScheme.onPrimaryContainer
+            isFixed -> colorScheme.onSurface
+            isValueHighlighted -> colorScheme.onSecondaryContainer
+            else -> colorScheme.primary
+        }
     }
 
     Box(
@@ -289,16 +312,6 @@ private fun SudokuCell(
             )
         }
         if (value != null) {
-            val textColor = when {
-                isError && isSelected -> onErrorColor
-                isError -> onErrorContainerColor
-                isSelected && isFixed -> colorScheme.onPrimary
-                isSelected -> colorScheme.onPrimaryContainer
-                isFixed -> colorScheme.onSurface
-                isValueHighlighted -> colorScheme.onSecondaryContainer
-                else -> colorScheme.primary
-            }
-
             Text(
                 text = value.toString(),
                 style = MaterialTheme.typography.headlineSmall,
@@ -315,8 +328,11 @@ private fun SudokuCell(
                 highlightAllCandidates = highlightAllCandidates,
                 annotationColors = candidateAnnotationColors,
                 isSelected = isSelected,
+                useHighContrast = config.useHighContrast,
+                cellTextColor = textColor,
                 errorColor = errorColor,
                 errorContainerColor = errorContainerColor,
+                onErrorContainerColor = onErrorContainerColor,
             )
         }
     }
@@ -330,8 +346,11 @@ private fun CandidateGrid(
     highlightAllCandidates: Boolean,
     annotationColors: Map<Int, AdvancedNoteColor>,
     isSelected: Boolean,
-    errorColor: androidx.compose.ui.graphics.Color,
-    errorContainerColor: androidx.compose.ui.graphics.Color,
+    useHighContrast: Boolean,
+    cellTextColor: Color,
+    errorColor: Color,
+    errorContainerColor: Color,
+    onErrorContainerColor: Color,
 ) {
     Column(
         modifier = Modifier
@@ -351,6 +370,7 @@ private fun CandidateGrid(
                     val candidate = row * 3 + col + 1
                     val isHighlighted = candidate in candidates &&
                         (candidate in highlightNumbers || highlightAllCandidates)
+                    val isError = candidate in errorCandidates
                     val annotationColor = annotationColors[candidate]
                     Box(
                         contentAlignment = Alignment.Center,
@@ -358,10 +378,12 @@ private fun CandidateGrid(
                             .weight(1f)
                             .aspectRatio(1f)
                             .then(
-                                if (isHighlighted) {
+                                if (isHighlighted || (useHighContrast && isError)) {
                                     Modifier.background(
-                                        color = if (candidate in errorCandidates) {
+                                        color = if (isError) {
                                             errorContainerColor
+                                        } else if (useHighContrast) {
+                                            MaterialTheme.colorScheme.primary
                                         } else {
                                             MaterialTheme.colorScheme.secondaryContainer
                                         },
@@ -394,8 +416,11 @@ private fun CandidateGrid(
                                     fontWeight = FontWeight.Normal,
                                 ),
                                 color = when {
-                                    candidate in errorCandidates -> errorColor
+                                    isError && useHighContrast -> onErrorContainerColor
+                                    isError -> errorColor
+                                    isHighlighted && useHighContrast -> MaterialTheme.colorScheme.onPrimary
                                     isHighlighted -> MaterialTheme.colorScheme.onSecondaryContainer
+                                    useHighContrast -> cellTextColor
                                     isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
                                     else -> MaterialTheme.colorScheme.secondary
                                 },

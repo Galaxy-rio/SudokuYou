@@ -84,8 +84,8 @@
     <string name="appearance_theme_mode">主题模式</string>
     <string name="appearance_amoled_mode">AMOLED 模式</string>
     <string name="appearance_amoled_mode_summary">深色主题使用纯黑背景</string>
-    <string name="appearance_colored_board">彩色棋盘</string>
-    <string name="appearance_colored_board_summary">将主题颜色应用到棋盘</string>
+    <string name="appearance_high_contrast_board">高对比度</string>
+    <string name="appearance_high_contrast_board_summary">增强单元格高亮与文字的对比度</string>
     <string name="appearance_position_lines">行列高亮</string>
     <string name="appearance_position_lines_summary">高亮所选单元格所在的行和列</string>
     <string name="appearance_position_block">宫格高亮</string>

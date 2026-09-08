@@ -65,7 +65,7 @@ fun AppearanceSettingsScreen(
     onPaletteStyleChange: (PaletteStyle) -> Unit,
     onDynamicColorsChange: (Boolean) -> Unit,
     onAmoledChange: (Boolean) -> Unit,
-    onColoredBoardChange: (Boolean) -> Unit,
+    onHighContrastBoardChange: (Boolean) -> Unit,
     onPositionLinesChange: (Boolean) -> Unit,
     onPositionBlockChange: (Boolean) -> Unit,
     onAlternativeErrorColorChange: (Boolean) -> Unit,
@@ -175,14 +175,14 @@ fun AppearanceSettingsScreen(
                 SettingsSectionHeading(R.string.appearance_board_section)
             }
 
-            item(key = "colored_board") {
+            item(key = "high_contrast_board") {
                 SettingsSwitchItem(
-                    titleResource = R.string.appearance_colored_board,
-                    summaryResource = R.string.appearance_colored_board_summary,
-                    checked = uiState.coloredBoard,
+                    titleResource = R.string.appearance_high_contrast_board,
+                    summaryResource = R.string.appearance_high_contrast_board_summary,
+                    checked = uiState.highContrastBoard,
                     index = 0,
                     count = 4,
-                    onCheckedChange = onColoredBoardChange,
+                    onCheckedChange = onHighContrastBoardChange,
                 )
             }
 
