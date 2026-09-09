@@ -8,36 +8,20 @@
   <p><strong>离线数独，专注推理解题。</strong></p>
 
   <div>
-    <a href="https://github.com/Galaxy-rio/SudokuYou/stargazers">
-      <img height="60" src="https://m3-markdown-badges.vercel.app/stars/7/2/Galaxy-rio/SudokuYou" alt="GitHub 星标数">
-    </a>
-    <a href="https://github.com/Galaxy-rio/SudokuYou/issues">
-      <img height="60" src="https://m3-markdown-badges.vercel.app/issues/9/2/Galaxy-rio/SudokuYou" alt="待处理问题">
-    </a>
+    <a href="https://github.com/Galaxy-rio/SudokuYou/stargazers"><img height="60" src="https://m3-markdown-badges.vercel.app/stars/7/2/Galaxy-rio/SudokuYou" alt="GitHub 星标数"></a>
+    <a href="https://github.com/Galaxy-rio/SudokuYou/issues"><img height="60" src="https://m3-markdown-badges.vercel.app/issues/9/2/Galaxy-rio/SudokuYou" alt="待处理问题"></a>
   </div>
 
   <div>
-    <a href="https://developer.android.com/about/versions/12">
-      <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Android/android2.svg" alt="Android 12 或更高版本">
-    </a>
-    <a href="https://developer.android.com/studio">
-      <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/AndroidStudio/androidstudio3.svg" alt="Android Studio">
-    </a>
-    <a href="https://kotlinlang.org/">
-      <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Kotlin/kotlin2.svg" alt="Kotlin">
-    </a>
-    <a href="LICENSE">
-      <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/LicenceGPLv3/licencegplv32.svg" alt="GPL-3.0-or-later 许可证">
-    </a>
+    <a href="https://developer.android.com/about/versions/12"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Android/android2.svg" alt="Android 12 或更高版本"></a>
+    <a href="https://developer.android.com/studio"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/AndroidStudio/androidstudio3.svg" alt="Android Studio"></a>
+    <a href="https://kotlinlang.org/"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Kotlin/kotlin2.svg" alt="Kotlin"></a>
+    <a href="LICENSE"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/LicenceGPLv3/licencegplv32.svg" alt="GPL-3.0-or-later 许可证"></a>
   </div>
 
   <p>
-    <a href="https://github.com/Galaxy-rio/SudokuYou/releases">
-      <img height="40" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Github/github2.svg" alt="GitHub 发布版本">
-    </a>
-    <a href="https://f-droid.org/packages/com.galaxyrio.sudokusolver">
-      <img height="60" style="vertical-align: -10px" src="https://f-droid.org/badge/get-it-on.svg" alt="F-Droid 发布版本">
-    </a>
+    <a href="https://github.com/Galaxy-rio/SudokuYou/releases"><img height="40" align="middle" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Github/github2.svg" alt="GitHub 发布版本"></a>
+    <a href="https://f-droid.org/packages/com.galaxyrio.sudokusolver"><img height="60" align="middle" src="https://f-droid.org/badge/get-it-on.svg" alt="F-Droid 发布版本"></a>
   </p>
 
 一款自由开源的数独应用，提供拟人化逻辑提示、高级盘面工具和灵活的导入导出功能，且无追踪。
