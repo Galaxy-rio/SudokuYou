@@ -3,37 +3,45 @@
 
   <h1>Sudoku You</h1>
 
+  <p>English | <a href="README.zh-CN.md">简体中文</a></p>
+
   <p><strong>Offline Sudoku for thoughtful solving.</strong></p>
 
-  <p>
-    A free and open-source Android app with human-style logical hints,
-    advanced board tools, flexible import and export, and no tracking.
-  </p>
+  <div>
+    <a href="https://github.com/Galaxy-rio/SudokuYou/stargazers">
+      <img height="60" src="https://m3-markdown-badges.vercel.app/stars/7/2/Galaxy-rio/SudokuYou" alt="GitHub stars">
+    </a>
+    <a href="https://github.com/Galaxy-rio/SudokuYou/issues">
+      <img height="60" src="https://m3-markdown-badges.vercel.app/issues/9/2/Galaxy-rio/SudokuYou" alt="Open issues">
+    </a>
+  </div>
 
-  <p>
-    <a href="https://github.com/Galaxy-rio/SudokuYou/releases">
-      <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Github/github2.svg" alt="GitHub Releases">
-    </a>
-    <a href="LICENSE">
-      <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/LicenceGPLv3/licencegplv32.svg" alt="GPL-3.0-or-later license">
-    </a>
+  <div>
     <a href="https://developer.android.com/about/versions/12">
       <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Android/android2.svg" alt="Android 12 or later">
+    </a>
+        <a href="https://developer.android.com/studio">
+      <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/AndroidStudio/androidstudio3.svg" alt="AndroidStudio">
     </a>
     <a href="https://kotlinlang.org/">
       <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Kotlin/kotlin2.svg" alt="Kotlin">
     </a>
-    <a href="https://github.com/Galaxy-rio/SudokuYou/stargazers">
-      <img height="30" src="https://m3-markdown-badges.vercel.app/stars/9/2/Galaxy-rio/SudokuYou" alt="GitHub stars">
+        <a href="LICENSE">
+      <img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/LicenceGPLv3/licencegplv32.svg" alt="GPL-3.0-or-later license">
     </a>
-    <a href="https://github.com/Galaxy-rio/SudokuYou/issues">
-      <img height="30" src="https://m3-markdown-badges.vercel.app/issues/9/2/Galaxy-rio/SudokuYou" alt="Open issues">
+  </div>
+
+  <p>
+    <a href="https://github.com/Galaxy-rio/SudokuYou/releases">
+      <img height="40" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Github/github2.svg" alt="GitHub Releases">
+    </a>
+        <a href="https://f-droid.org/packages/com.galaxyrio.sudokusolver">
+      <img height="60" style="vertical-align: -10px" src="https://f-droid.org/badge/get-it-on.svg" alt="F-Droid Releases">
     </a>
   </p>
 
-  <p>
-    <a href="https://github.com/Galaxy-rio/SudokuYou/releases"><strong>Download from GitHub Releases</strong></a>
-  </p>
+A free and open-source Sudoku app with human-style logical hints, advanced board tools, flexible import and export, and no tracking.
+
 </div>
 
 ## Features
@@ -47,7 +55,7 @@
 - **Use your language** — switch between English and Simplified Chinese independently from the system language.
 - **Stay private** — no network permission, advertising, accounts, analytics, or tracking; crash reports stay local unless you explicitly share them.
 
-Built with Kotlin, Jetpack Compose, Material 3, and Room.
+Built with Kotlin, Jetpack Compose and Material 3.
 
 ## Screenshots
 
@@ -62,7 +70,7 @@ Built with Kotlin, Jetpack Compose, Material 3, and Room.
 
 ## Download
 
-Official builds are available from [GitHub Releases](https://github.com/Galaxy-rio/SudokuYou/releases).
+Official builds are available from [GitHub Releases](https://github.com/Galaxy-rio/SudokuYou/releases) and [F-Droid](https://f-droid.org/packages/com.galaxyrio.sudokusolver)
 
 Sudoku You requires Android 12 (API 31) or later.
 
