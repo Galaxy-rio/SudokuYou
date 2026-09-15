@@ -97,6 +97,8 @@ Bug reports and contributions are welcome. Please read [CONTRIBUTING.md](CONTRIB
 Special thanks to:
 
 - [Open Sudoku](https://gitlab.com/opensudoku/opensudoku) and [Sudoku Coach](https://sudoku.coach/en/learn) for their careful organization and explanations of human-style Sudoku logic and solving techniques.
+
+See the [technique coverage and difficulty audit](docs/solver-coverage.md) for supported variants, bilingual hints, and validation scope.
 - [kyoyama-kazusa/Sudoku's Sudoku Tutorial](https://github.com/kyoyama-kazusa/Sudoku/tree/main/docs/tutorial) for making a broad and structured Sudoku tutorial available to the community.
 
 ## License

@@ -10,6 +10,12 @@ import org.junit.Test
 class HumanSolverTest {
 
     @Test
+    fun defaultSearchNeverUsesAHarderTierBeforeAnEasierTier() {
+        val levels = HumanSolver.defaultDetectors().map { it.technique.level.ordinal }
+        assertEquals(levels.sorted(), levels)
+    }
+
+    @Test
     fun solverUsesExplicitSukakuCandidates() {
         val cells = MutableList(Sudoku.CELL_COUNT) { Cell() }
         cells[0] = Cell(candidates = setOf(9))

@@ -18,7 +18,9 @@ import com.galaxyrio.sudokusolver.domain.solver.CandidateRef
 import com.galaxyrio.sudokusolver.domain.solver.HouseRef
 import com.galaxyrio.sudokusolver.domain.solver.InferenceLink
 import com.galaxyrio.sudokusolver.domain.solver.InferenceLinkType
+import com.galaxyrio.sudokusolver.domain.solver.InferenceTruth
 import com.galaxyrio.sudokusolver.domain.solver.SolveStep
+import com.galaxyrio.sudokusolver.domain.solver.TechniqueId
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -116,13 +118,40 @@ internal fun StepOverlayCanvas(
             )
         }
 
+        evidence.groupedLinks.forEach { link ->
+            val centers = listOf(link.from, link.to).map { group ->
+                drawCandidateGroup(geometry, group, colors.causeCandidate, thinStroke)
+            }
+            drawLinkBetweenCenters(
+                geometry, centers[0], centers[1], link.type, colors,
+                strongStroke, dualStroke, dashLength, dashGap, arrowLength,
+            )
+        }
+
         evidence.causeCandidates.forEach { candidate ->
+            val candidateColor = if (step.technique == TechniqueId.THREE_D_MEDUSA) {
+                // Medusa stores the actual two-color assignment. A contradiction may
+                // add a second fact for a candidate; its first node retains its color.
+                when (evidence.inferenceGraph.nodes.firstOrNull { it.candidate == candidate }?.truth) {
+                    InferenceTruth.TRUE -> colors.weakLink
+                    InferenceTruth.FALSE -> colors.strongLink
+                    null -> colors.causeCandidate
+                }
+            } else {
+                colors.causeCandidate
+            }
             drawCandidateMarker(
                 geometry = geometry,
                 candidate = candidate,
-                fill = colors.causeCandidate.copy(alpha = 0.22f),
-                outline = colors.causeCandidate,
+                fill = candidateColor.copy(alpha = 0.22f),
+                outline = candidateColor,
                 strokeWidth = thinStroke,
+            )
+        }
+        evidence.finCandidates.forEach { candidate ->
+            drawCandidateMarker(
+                geometry, candidate, colors.placementCandidate.copy(alpha = 0.28f),
+                colors.placementCandidate, strongStroke,
             )
         }
         step.placements.forEach { placement ->
@@ -151,6 +180,28 @@ internal fun StepOverlayCanvas(
             )
         }
     }
+}
+
+/** A rail joins only the members of a group, including groups with a gap between members. */
+private fun DrawScope.drawCandidateGroup(
+    geometry: BoardGeometry,
+    group: Set<CandidateRef>,
+    color: Color,
+    strokeWidth: Float,
+): Offset {
+    val centers = group.map(geometry::candidateCenter)
+    if (centers.size == 1) return centers.single()
+    val horizontal = group.map { it.cell.row }.distinct().size == 1
+    val offset = if (horizontal) Offset(0f, -geometry.candidateSize * 0.65f) else {
+        Offset(-geometry.candidateSize * 0.65f, 0f)
+    }
+    centers.forEach { center ->
+        drawLine(color, center, center + offset, strokeWidth, cap = StrokeCap.Round)
+    }
+    val ordered = centers.sortedBy { if (horizontal) it.x else it.y }
+    drawLine(color, ordered.first() + offset, ordered.last() + offset, strokeWidth, cap = StrokeCap.Round)
+    // A displaced anchor keeps the link visible when a singleton lies in the group's gap.
+    return (ordered.first() + ordered.last()) * 0.5f + offset
 }
 
 /** Highlights invalid player entries or candidates that must be restored to make Sukaku valid. */
@@ -276,6 +327,24 @@ private fun DrawScope.drawInferenceLink(
 ) {
     val from = geometry.candidateCenter(link.from)
     val to = geometry.candidateCenter(link.to)
+    drawLinkBetweenCenters(
+        geometry, from, to, link.type, colors,
+        strongStroke, dualStroke, dashLength, dashGap, arrowLength,
+    )
+}
+
+private fun DrawScope.drawLinkBetweenCenters(
+    geometry: BoardGeometry,
+    from: Offset,
+    to: Offset,
+    type: InferenceLinkType,
+    colors: StepOverlayColors,
+    strongStroke: Float,
+    dualStroke: Float,
+    dashLength: Float,
+    dashGap: Float,
+    arrowLength: Float,
+) {
     val delta = to - from
     val length = sqrt(delta.x * delta.x + delta.y * delta.y)
     if (length <= 0f) return
@@ -284,13 +353,13 @@ private fun DrawScope.drawInferenceLink(
     val endpointPadding = min(geometry.candidateSize * 0.30f, length * 0.18f)
     val lineStart = from + direction * endpointPadding
     val lineEnd = to - direction * endpointPadding
-    val color = when (link.type) {
+    val color = when (type) {
         InferenceLinkType.STRONG -> colors.strongLink
         InferenceLinkType.WEAK -> colors.weakLink
         InferenceLinkType.DUAL -> colors.dualLink
     }
-    val strokeWidth = if (link.type == InferenceLinkType.DUAL) dualStroke else strongStroke
-    val pathEffect = if (link.type == InferenceLinkType.WEAK) {
+    val strokeWidth = if (type == InferenceLinkType.DUAL) dualStroke else strongStroke
+    val pathEffect = if (type == InferenceLinkType.WEAK) {
         PathEffect.dashPathEffect(floatArrayOf(dashLength, dashGap))
     } else {
         null

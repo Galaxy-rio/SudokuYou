@@ -97,6 +97,8 @@ Sudoku You 不申请 Android 的 `INTERNET` 权限，也不包含广告、账户
 特别感谢：
 
 - [Open Sudoku](https://gitlab.com/opensudoku/opensudoku) 和 [Sudoku Coach](https://sudoku.coach/en/learn) 对拟人化数独逻辑和解题技巧的细致整理与讲解。
+
+支持的技巧变体、中英文提示和难度验证范围见[技巧覆盖与难度核对表](docs/solver-coverage.zh-CN.md)。
 - [kyoyama-kazusa/Sudoku 的数独教程](https://github.com/kyoyama-kazusa/Sudoku/tree/main/docs/tutorial) 为社区提供内容广泛、结构清晰的数独教程。
 
 ## 许可证

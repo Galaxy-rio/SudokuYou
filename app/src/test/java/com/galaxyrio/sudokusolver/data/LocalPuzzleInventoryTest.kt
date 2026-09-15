@@ -10,10 +10,34 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LocalPuzzleInventoryTest {
+    @Test
+    fun puzzlesRatedBeforeTechniqueExpansionAreDiscarded() = runTest {
+        val dao = FakePuzzleInventoryDao()
+        dao.insert(
+            PuzzleInventoryEntity(
+                difficulty = Difficulty.HARD,
+                sudoku = puzzle(1),
+                fingerprint = "old-rating",
+                generatorVersion = 1,
+                createdAt = 1L,
+            )
+        )
+        val inventory = LocalPuzzleInventory(
+            puzzleDao = dao,
+            applicationScope = backgroundScope,
+            generationDispatcher = UnconfinedTestDispatcher(testScheduler),
+            generatePuzzle = { puzzle(2) },
+        )
+
+        assertNull(inventory.take(Difficulty.HARD))
+        assertEquals(0, dao.count(Difficulty.HARD, 1))
+    }
+
     @Test
     fun refillPrioritizesRequestedDifficultyAndStopsAtTwoPerDifficulty() = runTest {
         val dao = FakePuzzleInventoryDao()

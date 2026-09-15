@@ -22,3 +22,6 @@ local.properties
 *.pfx
 keystore.properties
 signing.properties
+/docs/solver-technique-parity.md
+/docs/solver-coverage.md
+/docs/solver-coverage.zh-CN.md

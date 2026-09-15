@@ -57,6 +57,10 @@ class SudokuRulesTest {
                     }
                 )
                 assertTrue(SudokuValidator.isSolved(solved))
+                val originalGrid = Array(Sudoku.GRID_SIZE) { row ->
+                    IntArray(Sudoku.GRID_SIZE) { col -> puzzle.getCell(row, col).value }
+                }
+                assertEquals(UniquenessResult.Unique, UniqueSolutionChecker().check(originalGrid, grid))
             }
         }
     }

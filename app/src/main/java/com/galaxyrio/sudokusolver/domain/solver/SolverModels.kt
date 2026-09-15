@@ -93,6 +93,8 @@ enum class TechniqueId(val level: TechniqueLevel) {
     TURBOT_CRANE(TechniqueLevel.MEDIUM),
     XY_WING(TechniqueLevel.MEDIUM),
     XYZ_WING(TechniqueLevel.MEDIUM),
+    W_WING(TechniqueLevel.MEDIUM),
+    FINNED_X_WING(TechniqueLevel.MEDIUM),
     REMOTE_PAIR(TechniqueLevel.MEDIUM),
     CHUTE_REMOTE_PAIR_SINGLE(TechniqueLevel.MEDIUM),
     CHUTE_REMOTE_PAIR_DOUBLE(TechniqueLevel.MEDIUM),
@@ -112,16 +114,27 @@ enum class TechniqueId(val level: TechniqueLevel) {
     UNIQUE_RECTANGLE_TYPE_6(TechniqueLevel.MEDIUM),
     UNIQUE_RECTANGLE_TYPE_7(TechniqueLevel.MEDIUM),
     JELLYFISH(TechniqueLevel.HARD),
+    FINNED_SWORDFISH(TechniqueLevel.HARD),
+    FINNED_JELLYFISH(TechniqueLevel.HARD),
     BUG_PLUS_ONE(TechniqueLevel.HARD),
     X_CHAIN(TechniqueLevel.HARD),
     X_CHAIN_LOOP(TechniqueLevel.HARD),
     X_CHAIN_ONE_ENDPOINT(TechniqueLevel.HARD),
+    GROUPED_X_CHAIN(TechniqueLevel.HARD),
     WXYZ_WING(TechniqueLevel.HARD),
+    SUE_DE_COQ_TYPE_1(TechniqueLevel.HARD),
+    SUE_DE_COQ_TYPE_2(TechniqueLevel.HARD),
+    FIVE_Y_WING(TechniqueLevel.HARD),
+    SIX_Y_WING(TechniqueLevel.HARD),
+    SEVEN_Y_WING(TechniqueLevel.HARD),
+    EIGHT_Y_WING(TechniqueLevel.HARD),
+    NINE_Y_WING(TechniqueLevel.HARD),
     STARFISH(TechniqueLevel.HARD),
     WHALE(TechniqueLevel.HARD),
     LEVIATHAN(TechniqueLevel.HARD),
     XY_CHAIN(TechniqueLevel.BRUTAL),
     XY_CHAIN_LOOP(TechniqueLevel.BRUTAL),
+    THREE_D_MEDUSA(TechniqueLevel.BRUTAL),
     AIC(TechniqueLevel.BRUTAL),
     NISHIO_FORCING_CHAIN(TechniqueLevel.BRUTAL),
     NISHIO_FORCING_NET(TechniqueLevel.BRUTAL),
@@ -162,6 +175,18 @@ data class InferenceLink(
     val type: InferenceLinkType,
     val branchId: Int? = null,
 )
+
+/** Each endpoint means that at least one of its candidates is true. */
+data class GroupedInferenceLink(
+    val from: Set<CandidateRef>,
+    val to: Set<CandidateRef>,
+    val type: InferenceLinkType,
+) {
+    init {
+        require(from.isNotEmpty() && to.isNotEmpty())
+        require((from + to).map(CandidateRef::digit).distinct().size == 1)
+    }
+}
 
 enum class InferenceTruth {
     TRUE,
@@ -297,6 +322,10 @@ data class StepEvidence(
     val coverHouses: List<HouseRef> = emptyList(),
     val links: List<InferenceLink> = emptyList(),
     val inferenceGraph: InferenceGraph = InferenceGraph.fromLinks(links),
+    val wingCells: Set<CellRef> = emptySet(),
+    val finCandidates: Set<CandidateRef> = emptySet(),
+    /** Group propositions must never be rendered as individual strong links. */
+    val groupedLinks: List<GroupedInferenceLink> = emptyList(),
 )
 
 data class SolveStep(

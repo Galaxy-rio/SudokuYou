@@ -103,6 +103,7 @@ class LocalPuzzleInventory(
 
     companion object {
         const val MAXIMUM_STOCK_PER_DIFFICULTY = 2
-        const val GENERATOR_VERSION = 1
+        // Technique coverage and search order affect ratings, so older stock must be regenerated.
+        const val GENERATOR_VERSION = 2
     }
 }
