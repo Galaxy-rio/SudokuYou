@@ -1,0 +1,2 @@
+• 新增解题技巧：W-Wing、鳍鱼／Sashimi、分组 X 链、3D Medusa、高阶 Y-Wing、Sue de Coq
+• 改进盘面提示

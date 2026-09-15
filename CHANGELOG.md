@@ -2,6 +2,18 @@
 
 All notable changes to Sudoku You are documented in this file.
 
+## [2.1.0] - 2026-09-15
+
+### English
+
+- Added new solving techniques: W-Wing, Finned / Sashimi Fish, Grouped X-Chain, 3D Medusa, higher-order Y-Wing, and Sue de Coq.
+- Improved on-board hints.
+
+### 简体中文
+
+- 新增解题技巧：W-Wing、鳍鱼／Sashimi、分组 X 链、3D Medusa、高阶 Y-Wing、Sue de Coq。
+- 改进盘面提示。
+
 ## [2.0.3] - 2026-09-08
 
 ### English

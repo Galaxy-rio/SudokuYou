@@ -1,0 +1,2 @@
+• Added new solving techniques: W-Wing, Finned / Sashimi Fish, Grouped X-Chain, 3D Medusa, higher-order Y-Wing, and Sue de Coq
+• Improved on-board hints
