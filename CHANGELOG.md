@@ -2,6 +2,16 @@
 
 All notable changes to Sudoku You are documented in this file.
 
+## [2.1.1] - 2026-09-21
+
+### English
+
+- Added support for Android 11.
+
+### 简体中文
+
+- 新增对 Android 11 的支持。
+
 ## [2.1.0] - 2026-09-15
 
 ### English

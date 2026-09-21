@@ -13,7 +13,7 @@
   </div>
 
   <div>
-    <a href="https://developer.android.com/about/versions/12"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Android/android2.svg" alt="Android 12 或更高版本"></a>
+    <a href="https://developer.android.com/about/versions/11"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Android/android2.svg" alt="Android 11 或更高版本"></a>
     <a href="https://developer.android.com/studio"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/AndroidStudio/androidstudio3.svg" alt="Android Studio"></a>
     <a href="https://kotlinlang.org/"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Kotlin/kotlin2.svg" alt="Kotlin"></a>
     <a href="LICENSE"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/LicenceGPLv3/licencegplv32.svg" alt="GPL-3.0-or-later 许可证"></a>
@@ -56,7 +56,7 @@
 
 官方版本可从 [GitHub Releases](https://github.com/Galaxy-rio/SudokuYou/releases) 和 [F-Droid](https://f-droid.org/packages/com.galaxyrio.sudokusolver) 获取。
 
-Sudoku You 需要 Android 12（API 31）或更高版本。
+Sudoku You 需要 Android 11（API 30）或更高版本。
 
 ## 从源码构建
 

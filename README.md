@@ -13,7 +13,7 @@
   </div>
 
   <div>
-    <a href="https://developer.android.com/about/versions/12"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Android/android2.svg" alt="Android 12 or later"></a>
+    <a href="https://developer.android.com/about/versions/11"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Android/android2.svg" alt="Android 11 or later"></a>
     <a href="https://developer.android.com/studio"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/AndroidStudio/androidstudio3.svg" alt="AndroidStudio"></a>
     <a href="https://kotlinlang.org/"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Kotlin/kotlin2.svg" alt="Kotlin"></a>
     <a href="LICENSE"><img height="30" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/LicenceGPLv3/licencegplv32.svg" alt="GPL-3.0-or-later license"></a>
@@ -56,7 +56,7 @@ Built with Kotlin, Jetpack Compose and Material 3.
 
 Official builds are available from [GitHub Releases](https://github.com/Galaxy-rio/SudokuYou/releases) and [F-Droid](https://f-droid.org/packages/com.galaxyrio.sudokusolver)
 
-Sudoku You requires Android 12 (API 31) or later.
+Sudoku You requires Android 11 (API 30) or later.
 
 ## Build from source
 

@@ -15,4 +15,4 @@ Features:
 Privacy:
 Sudoku You requests no network permission and includes no ads, accounts, analytics or tracking. Games and preferences are stored locally. Crash reports are retained locally for up to 30 days and are never uploaded automatically; you decide whether to copy or share them.
 
-Sudoku You is licensed under GNU GPL v3.0 or later and requires Android 12 or later.
+Sudoku You is licensed under GNU GPL v3.0 or later and requires Android 11 or later.

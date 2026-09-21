@@ -18,10 +18,10 @@ android {
 
     defaultConfig {
         applicationId = "com.galaxyrio.sudokusolver"
-        minSdk = 31
+        minSdk = 30
         targetSdk = 37
-        versionCode = 6
-        versionName = "2.1.0"
+        versionCode = 7
+        versionName = "2.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -1,5 +1,6 @@
 package com.galaxyrio.sudokusolver.ui.theme
 
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -25,7 +26,9 @@ fun SudokuYouTheme(
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
-    val colorScheme = if (dynamicColor) {
+    val usePlatformDynamicColor =
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val colorScheme = if (usePlatformDynamicColor) {
         val platformColorScheme = if (darkTheme) {
             dynamicDarkColorScheme(context)
         } else {
