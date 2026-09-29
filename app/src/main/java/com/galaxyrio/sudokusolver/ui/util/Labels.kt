@@ -6,10 +6,21 @@ import androidx.compose.ui.res.stringResource
 import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.data.settings.ThemeMode
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
+import com.galaxyrio.sudokusolver.domain.solver.TechniqueLevel
 import com.materialkolor.PaletteStyle
 
 @Composable
 fun Difficulty.label(): String = stringResource(labelResource)
+
+@Composable
+internal fun TechniqueLevel.label(): String = stringResource(
+    when (this) {
+        TechniqueLevel.EASY -> R.string.difficulty_easy
+        TechniqueLevel.MEDIUM -> R.string.difficulty_medium
+        TechniqueLevel.HARD -> R.string.difficulty_hard
+        TechniqueLevel.BRUTAL -> R.string.difficulty_brutal
+    },
+)
 
 @get:StringRes
 val Difficulty.labelResource: Int

@@ -45,6 +45,7 @@ import com.galaxyrio.sudokusolver.ui.screens.play.PlayMenuRoute
 import com.galaxyrio.sudokusolver.ui.screens.play.PlayViewModel
 import com.galaxyrio.sudokusolver.ui.screens.statistics.StatisticsRoute
 import com.galaxyrio.sudokusolver.ui.screens.statistics.StatisticsViewModel
+import com.galaxyrio.sudokusolver.ui.screens.tutorial.TutorialScreen
 import com.galaxyrio.sudokusolver.ui.motion.materialTopLevelTransition
 import kotlinx.coroutines.launch
 
@@ -96,8 +97,7 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxSize(),
                     )
 
-                    HomeSection.TUTORIAL -> HomeSectionPlaceholderScreen(
-                        titleResource = section.labelResource,
+                    HomeSection.TUTORIAL -> TutorialScreen(
                         onOpenNavigation = openNavigation,
                         onOpenSettings = onOpenSettings,
                         modifier = Modifier.fillMaxSize(),

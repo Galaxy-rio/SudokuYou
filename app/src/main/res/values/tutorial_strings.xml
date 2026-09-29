@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tutorial_category_hidden">Hidden techniques</string>
+    <string name="tutorial_category_naked">Naked techniques</string>
+    <string name="tutorial_category_locked_candidates">Locked candidates</string>
+    <string name="tutorial_category_fish">Fish (X-Wing, etc.)</string>
+    <string name="tutorial_category_single_digit">Single-digit techniques</string>
+    <string name="tutorial_category_y_wings">Y-Wing techniques</string>
+    <string name="tutorial_category_w_wing">W-Wing technique</string>
+    <string name="tutorial_category_chains">Chaining techniques</string>
+    <string name="tutorial_category_uniqueness">Uniqueness techniques</string>
+
+    <string name="tutorial_technique_locked_candidate">Locked candidate</string>
+    <string name="tutorial_technique_simple_coloring">Simple Coloring</string>
+    <string name="tutorial_technique_cell_region_forcing_chain">Cell/Region Forcing Chain</string>
+    <string name="tutorial_technique_cell_region_forcing_net">Cell/Region Forcing Net</string>
+</resources>
