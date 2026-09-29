@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="tutorial_previous_step">Previous step</string>
+    <string name="tutorial_next_step">Next step</string>
+    <string name="tutorial_previous_example">Previous example</string>
+    <string name="tutorial_next_example">Next example</string>
+    <string name="tutorial_show_examples">Show examples</string>
+    <string name="tutorial_show_steps">Show steps</string>
+    <string name="tutorial_step_progress">Step %1$d of %2$d</string>
+    <string name="tutorial_example_progress">Example %1$d of %2$d</string>
+    <string name="tutorial_stage_rule">Understand the rule</string>
+    <string name="tutorial_stage_pattern">Find the pattern</string>
+    <string name="tutorial_stage_deduction">Make the deduction</string>
+    <string name="tutorial_stage_result">Apply it to the board</string>
+    <string name="tutorial_stage_takeaway">What to remember</string>
+    <string name="tutorial_example_house">In %1$s</string>
+    <string name="tutorial_pattern_legend">Pattern</string>
+    <string name="tutorial_excluded_legend">Exclusions</string>
+    <string name="tutorial_removed_legend">Remove ×</string>
+    <string name="tutorial_board_read_only">Read-only tutorial board</string>
+    <string name="tutorial_unavailable">This lesson is not available yet.</string>
+    <string name="tutorial_rule_hidden_single">Every row, column and box must contain each digit once. If a digit can go in only one cell of a region, it is a hidden single—even when that cell has other candidates.</string>
+    <string name="tutorial_rule_hidden_pair">A hidden pair is two digits whose only possible positions in one row, column or box are the same two cells. Other candidates may hide the pair inside those cells.</string>
+    <string name="tutorial_rule_hidden_triple">A hidden triple is three digits confined to three cells in one row, column or box. The cells may contain extra candidates, and each cell does not need to contain all three digits.</string>
+    <string name="tutorial_rule_hidden_quad">A hidden quadruple is four digits confined to four cells in one row, column or box. Count the combined positions of the four digits; they must occupy exactly four cells.</string>
+    <string name="tutorial_rule_naked_single">A naked single is an empty cell with just one candidate left. Check its row, column and box together: every other digit is already ruled out by a placed number.</string>
+    <string name="tutorial_rule_naked_pair">A naked pair is two cells in one row, column or box with exactly the same two candidates and no others. Those two digits must be reserved for the pair.</string>
+    <string name="tutorial_rule_naked_triple">A naked triple is three cells in one row, column or box whose candidates, combined, are exactly three digits. Each cell can have two or three of them; identical candidate lists are not required.</string>
+    <string name="tutorial_rule_naked_quad">A naked quadruple is four cells in one row, column or box whose candidates, combined, are exactly four digits. Individual cells can have fewer than four candidates.</string>
+    <string name="tutorial_find_hidden_single">Look for %1$s in %2$s. Red cells in this region are excluded; red givens outside it block other positions. Only %3$s remains, with the hidden single marked in green.</string>
+    <string name="tutorial_find_naked_single">Inspect %3$s in %2$s. Its row, column and box already contain all digits except %1$s. Only that candidate remains in the green cell.</string>
+    <!-- Group sizes are always 2, 3 or 4; singles use separate explanations. -->
+    <string name="tutorial_find_hidden_group" tools:ignore="PluralsCandidate">Look for %1$s throughout %2$s. Together, these digits appear only in the %4$d green cells: %3$s. Ignore the other candidates in those cells for now.</string>
+    <string name="tutorial_find_naked_group" tools:ignore="PluralsCandidate">Inspect the %4$d green cells in %2$s: %3$s. Their combined candidate set is %1$s, with no other digits. Count both the cells and the distinct candidates.</string>
+    <string name="tutorial_reason_hidden_single">This region still needs the digit. Every other position is excluded, so the remaining position is forced. The extra candidates in that cell do not change this conclusion.</string>
+    <string name="tutorial_reason_naked_single">A cell must contain one digit. All alternatives are excluded by its peers, so its one remaining candidate must be the value. No trial or guessing is needed.</string>
+    <string name="tutorial_reason_hidden_group" tools:ignore="PluralsCandidate">These %1$d digits need all %1$d cells. If another digit occupied one, only %2$s would remain for %1$d required digits. Remove the red, crossed-out candidates from inside the group.</string>
+    <string name="tutorial_reason_naked_group" tools:ignore="PluralsCandidate">These %1$d cells need all %1$d digits. Placing one of those digits elsewhere in a shared region would leave only %2$s for %1$d cells. Remove the red, crossed-out candidates outside the group.</string>
+    <plurals name="tutorial_remaining_cells">
+        <item quantity="one">%d cell</item>
+        <item quantity="other">%d cells</item>
+    </plurals>
+    <plurals name="tutorial_remaining_digits">
+        <item quantity="one">%d digit</item>
+        <item quantity="other">%d digits</item>
+    </plurals>
+    <string name="tutorial_result_single">The forced digit is now filled in. Its pencil mark is also removed from every peer in the same row, column or box. Going back restores the original teaching position.</string>
+    <string name="tutorial_result_hidden_group">The extra candidates have been removed. The hidden group is now a naked group containing only %1$s. This deduction reserves the digits; it does not yet decide the value of every cell.</string>
+    <string name="tutorial_result_naked_group">The group stays intact. Its digits, %1$s, have been removed from the other cells in each region shared by the entire group. Look for newly exposed singles next.</string>
+    <string name="tutorial_tip_hidden_single">Search one digit at a time in a row, column or box. A hidden single has one possible position in a region; a naked single has one possible digit in a cell. Both lead to a placement.</string>
+    <string name="tutorial_tip_hidden_pair">Both digits must be confined to the same two cells. After removing other candidates, the pair is naked. If both cells also share another region, its digits can be removed from the other cells there too.</string>
+    <string name="tutorial_tip_hidden_triple">The three digits can have different position lists, provided their combined positions fit in three cells. Looking for the complementary naked group among the other empty cells can make a hidden triple easier to spot.</string>
+    <string name="tutorial_tip_hidden_quad">Do not demand all four digits in every cell: their combined positions are what matter. Every hidden group has a complementary naked group among the other empty cells of its region; with full candidates, that smaller group may be easier to find.</string>
+    <string name="tutorial_tip_naked_single">Use complete candidate notes that respect all three regions. A lone note is not proof if other valid candidates were never written down. A cell may be a naked single even when its row, column and box each have several empty cells.</string>
+    <string name="tutorial_tip_naked_pair">Both cells must have the same two candidates and no extras. Check every region they share: a pair inside one box and one line can eliminate in both. You still do not know which cell takes which digit.</string>
+    <string name="tutorial_tip_naked_triple">A pattern such as {1, 2}, {2, 3}, {1, 3} is a valid triple. Three cells whose combined candidates contain four digits are not. Use complete notes and eliminate only in regions shared by all three cells.</string>
+    <string name="tutorial_tip_naked_quad">For example, {1, 2}, {2, 3}, {3, 4}, {1, 4} can form a quadruple. All four cells must share a region. Larger groups have smaller complementary groups, so singles through quadruples are sufficient for this family of techniques.</string>
+</resources>

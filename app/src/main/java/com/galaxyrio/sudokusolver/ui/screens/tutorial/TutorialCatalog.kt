@@ -1,6 +1,5 @@
 package com.galaxyrio.sudokusolver.ui.screens.tutorial
 
-import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.domain.solver.TechniqueId
@@ -17,8 +16,6 @@ internal data class TutorialTechnique(
     val id: String,
     @param:StringRes val titleResource: Int,
     val solverTechniques: List<TechniqueId>,
-    // Populate from the lesson's first example image when lesson content is added.
-    @param:DrawableRes val firstExampleImageResource: Int? = null,
 ) {
     val level: TechniqueLevel?
         get() = solverTechniques.maxOfOrNull { it.level }
@@ -26,7 +23,7 @@ internal data class TutorialTechnique(
 
 /**
  * Category and entry order follow https://sudoku.coach/en/learn/technique-overview.
- * Names and difficulty levels come from the app's solver; lessons are intentionally empty.
+ * Names and difficulty levels come from the app's solver; available lessons live in TutorialLessons.
  * An empty solverTechniques list reserves an entry for a technique not yet implemented.
  */
 internal val tutorialCategories: List<TutorialCategory> = listOf(

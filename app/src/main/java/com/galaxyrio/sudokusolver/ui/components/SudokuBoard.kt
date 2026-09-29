@@ -69,6 +69,7 @@ fun SudokuBoard(
     correctionCandidates: Set<CandidateRef> = emptySet(),
     onBoardBoundsChanged: ((Rect) -> Unit)? = null,
     config: BoardConfig = BoardConfig(),
+    readOnly: Boolean = false,
 ) {
     val thickLine = 2.dp
     val thinLine = 0.6.dp
@@ -162,7 +163,9 @@ fun SudokuBoard(
                                                 col + 1,
                                             )
                                         } + ", " + stringResource(
-                                            if (cell.isFixed) {
+                                            if (readOnly) {
+                                                R.string.tutorial_board_read_only
+                                            } else if (cell.isFixed) {
                                                 R.string.game_cell_fixed
                                             } else {
                                                 R.string.game_cell_editable

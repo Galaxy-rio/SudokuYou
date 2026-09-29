@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tutorial_previous_step">上一步</string>
+    <string name="tutorial_next_step">下一步</string>
+    <string name="tutorial_previous_example">上一个例子</string>
+    <string name="tutorial_next_example">下一个例子</string>
+    <string name="tutorial_show_examples">显示例子</string>
+    <string name="tutorial_show_steps">显示步骤</string>
+    <string name="tutorial_step_progress">步骤 %1$d / %2$d</string>
+    <string name="tutorial_example_progress">例子 %1$d / %2$d</string>
+    <string name="tutorial_stage_rule">理解规则</string>
+    <string name="tutorial_stage_pattern">寻找结构</string>
+    <string name="tutorial_stage_deduction">作出推理</string>
+    <string name="tutorial_stage_result">应用到棋盘</string>
+    <string name="tutorial_stage_takeaway">记住要点</string>
+    <string name="tutorial_example_house">观察%1$s</string>
+    <string name="tutorial_pattern_legend">技巧结构</string>
+    <string name="tutorial_excluded_legend">排除依据</string>
+    <string name="tutorial_removed_legend">删除 ×</string>
+    <string name="tutorial_board_read_only">只读教学棋盘</string>
+    <string name="tutorial_unavailable">这项技巧的教程尚未开放。</string>
+    <string name="tutorial_rule_hidden_single">每行、每列、每宫都必须包含一次每个数字。如果某个数字在一个区域内只剩一个可填位置，它就是隐性唯一数，即使这个格子里还有其他候选数。</string>
+    <string name="tutorial_rule_hidden_pair">在同一行、列或宫中，两个数字都只能出现在相同的两个格子里，就形成隐性数对。这两个格子中可能还混有其他候选数。</string>
+    <string name="tutorial_rule_hidden_triple">在同一行、列或宫中，三个数字的所有可填位置合起来恰好是三个格子，就形成隐性三数组。每格不必同时包含这三个数字，也可以有其他候选数。</string>
+    <string name="tutorial_rule_hidden_quad">在同一行、列或宫中，四个数字只能出现在四个格子里，就形成隐性四数组。应把四个数字的所有可填位置合起来数，必须恰好占四格。</string>
+    <string name="tutorial_rule_naked_single">一个空格只剩一个候选数时，它就是显性唯一数。综合检查所在行、列、宫后，其他数字都已被已填数字排除，因此剩下的数字必填。</string>
+    <string name="tutorial_rule_naked_pair">在同一行、列或宫中，两个格子都只包含相同的两个候选数，没有其他候选数，就形成显性数对。这两个数字必须留给这两个格子。</string>
+    <string name="tutorial_rule_naked_triple">在同一行、列或宫中，三个格子的候选数合起来只有三个不同数字，就形成显性三数组。每格可以包含其中两个或三个数字，不必完全相同。</string>
+    <string name="tutorial_rule_naked_quad">在同一行、列或宫中，四个格子的候选数合起来只有四个不同数字，就形成显性四数组。单个格子可以只有其中一部分候选数。</string>
+    <string name="tutorial_find_hidden_single">在%2$s中寻找 %1$s。区域内的红格是已排除的位置，区域外标红的已填数字展示排除依据。只剩下%3$s，绿色候选数就是隐性唯一数。</string>
+    <string name="tutorial_find_naked_single">观察%2$s中的%3$s。它所在的行、列、宫已经排除了除 %1$s 以外的所有数字，绿色格子因此只剩这一个候选数。</string>
+    <string name="tutorial_find_hidden_group">在%2$s中寻找 %1$s。这些数字的全部可填位置恰好是 %4$d 个绿色格子：%3$s。先忽略这些格子中的其他候选数。</string>
+    <string name="tutorial_find_naked_group">观察%2$s中的 %4$d 个绿色格子：%3$s。它们的候选数合起来只有 %1$s，没有其他数字。格子数和不同候选数的数量正好相等。</string>
+    <string name="tutorial_reason_hidden_single">这个区域必须包含该数字，而其他位置都已被排除，所以它只能填在剩下的格子中。格子里还有其他候选数，并不影响这个结论。</string>
+    <string name="tutorial_reason_naked_single">每个格子必须填入一个数字。同行、同列、同宫的已填数字已经排除了所有其他选择，唯一剩下的候选数就是答案，无须试填。</string>
+    <string name="tutorial_reason_hidden_group">这 %1$d 个数字需要占满这 %1$d 个格子。如果其中一格填了其他数字，就只剩 %2$s容纳 %1$d 个必需数字，不可能成立。因此可删除数组内部标红并打叉的其他候选数。</string>
+    <string name="tutorial_reason_naked_group">这 %1$d 个格子必须用满这 %1$d 个数字。如果共同区域内的其他格子占用了其中一个数字，就只剩 %2$s填 %1$d 格。因此可删除数组外部标红并打叉的同组候选数。</string>
+    <plurals name="tutorial_remaining_cells">
+        <item quantity="other">%d 格</item>
+    </plurals>
+    <plurals name="tutorial_remaining_digits">
+        <item quantity="other">%d 个数字</item>
+    </plurals>
+    <string name="tutorial_result_single">必填数字已经填入，同一行、列、宫的其他格子也同步删除了该候选数。返回上一步即可重新查看推理前的教学局面。</string>
+    <string name="tutorial_result_hidden_group">多余候选数已被删除，隐性数组现在变成了只含 %1$s 的显性数组。这一步确定了数字所属的格子集合，还不能直接确定每个格子的最终数字。</string>
+    <string name="tutorial_result_naked_group">数组本身保持不变。它的数字 %1$s 已从整个数组共同所在区域的其他格子中删除，接下来可以检查是否出现新的唯一数。</string>
+    <string name="tutorial_tip_hidden_single">每次选一个数字，在行、列或宫内寻找它的位置。隐性唯一数是“一个区域只剩一个位置”，显性唯一数是“一个格子只剩一个数字”，两者都可以直接填数。</string>
+    <string name="tutorial_tip_hidden_pair">两个数字必须都被限制在相同的两格内。删除其他候选数后，隐性数对就变成显性数对。如果两格还同属另一个区域，也可从那个区域的其他格子中删除这两个数字。</string>
+    <string name="tutorial_tip_hidden_triple">三个数字各自出现的位置可以不同，只要合起来恰好落在三格内。也可以检查该区域其他空格组成的互补显性数组，有时这样更容易发现隐性三数组。</string>
+    <string name="tutorial_tip_hidden_quad">每格不必同时含有四个数字，关键是四个数字的所有位置合起来只有四格。隐性数组与区域内其余空格组成的显性数组互补，候选数完整时，较小的互补数组可能更容易找到。</string>
+    <string name="tutorial_tip_naked_single">候选数必须完整，并同时符合行、列、宫的限制。如果只是漏记了其他合法候选数，单独一个笔记数字不能作为证明。即使三个区域各有多个空格，也可能出现显性唯一数。</string>
+    <string name="tutorial_tip_naked_pair">两格必须恰好包含相同的两个候选数，不能夹带其他数字。检查它们共同所属的每个区域：如果同时位于同一宫和同一行或列，两处都能删数，但仍不能确定两格各填哪个数字。</string>
+    <string name="tutorial_tip_naked_triple">例如 {1, 2}、{2, 3}、{1, 3} 可以构成显性三数组；三格候选数合起来有四个数字则不行。候选数必须完整，删数只能发生在三个格子共同所属的区域。</string>
+    <string name="tutorial_tip_naked_quad">例如 {1, 2}、{2, 3}、{3, 4}、{1, 4} 可以构成显性四数组，四格必须同属一个区域。更大的数组都有更小的互补数组，因此这类技巧通常只需寻找唯一数到四数组。</string>
+</resources>

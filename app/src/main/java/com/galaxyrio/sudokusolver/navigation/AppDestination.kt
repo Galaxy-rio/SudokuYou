@@ -11,6 +11,9 @@ data object HomeDestination
 data object SettingsRootDestination
 
 @Serializable
+data class TutorialTechniqueDestination(val techniqueId: String)
+
+@Serializable
 data class NewGameDestination(
     val difficulty: Difficulty,
 )

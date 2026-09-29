@@ -15,6 +15,7 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.lifecycle.Lifecycle
@@ -132,6 +133,23 @@ class BackNavigationTest {
         compose.runOnIdle { controller.navigate(SettingsRootDestination) }
         compose.waitForIdle()
         repeatBackDuringTransition()
+        assertHomeAfterTransition()
+    }
+
+    @Test
+    fun tutorialEntryAndRepeatedBackKeepTheTutorialList() {
+        compose.onNodeWithContentDescription(context.getString(R.string.nav_open_menu)).performClick()
+        compose.onNodeWithText(context.getString(R.string.nav_tutorial)).performClick()
+        compose.onNodeWithText(context.getString(R.string.technique_hidden_single)).performClick()
+        compose.waitForIdle()
+        assertDestination<TutorialTechniqueDestination>()
+        repeatBackDuringTransition()
+        assertHomeAfterTransition()
+        compose.onNodeWithText(context.getString(R.string.tutorial_category_hidden)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.technique_hidden_single)).assertIsDisplayed().performClick()
+        compose.waitForIdle()
+        assertDestination<TutorialTechniqueDestination>()
+        compose.onNodeWithContentDescription(backLabel).performClick()
         assertHomeAfterTransition()
     }
 

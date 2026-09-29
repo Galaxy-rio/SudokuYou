@@ -1,15 +1,17 @@
 package com.galaxyrio.sudokusolver.ui.screens.tutorial
 
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.SharedTransitionScope.PlaceholderSize.Companion.AnimatedSize
+import androidx.compose.animation.SharedTransitionScope.ResizeMode.Companion.RemeasureToBounds
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Settings
@@ -26,10 +28,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -37,14 +36,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.domain.model.Sudoku
+import com.galaxyrio.sudokusolver.domain.tutorial.TutorialLessons
 import com.galaxyrio.sudokusolver.ui.screens.play.SudokuThumbnail
 import com.galaxyrio.sudokusolver.ui.util.label
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun TutorialScreen(
     onOpenNavigation: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenTechnique: (String) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -120,6 +123,9 @@ fun TutorialScreen(
                         technique = technique,
                         index = index,
                         count = category.techniques.size,
+                        onClick = { onOpenTechnique(technique.id) },
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = animatedVisibilityScope,
                     )
                 }
             }
@@ -127,54 +133,51 @@ fun TutorialScreen(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun TutorialTechniqueItem(
     technique: TutorialTechnique,
     index: Int,
     count: Int,
+    onClick: () -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
-    // Read-only until lessons exist, with the same shapes and colors as recent games.
-    SegmentedListItem(
-        verticalAlignment = Alignment.CenterVertically,
-        shapes = ListItemDefaults.segmentedShapes(index = index, count = count),
-        colors = ListItemDefaults.segmentedColors(
-            containerColor = MaterialTheme.colorScheme.surfaceBright,
-        ),
-        content = {
-            Text(
-                text = stringResource(technique.titleResource),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+    val lesson = TutorialLessons.find(technique.id)
+    val content: @Composable () -> Unit = {
+        Text(stringResource(technique.titleResource), maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+    val supportingContent: @Composable () -> Unit = {
+        Text(technique.level?.label().orEmpty(), maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+    val colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceBright)
+    val shapes = ListItemDefaults.segmentedShapes(index = index, count = count)
+    with(sharedTransitionScope) {
+        if (lesson == null) {
+            SegmentedListItem(
+                verticalAlignment = Alignment.CenterVertically,
+                shapes = shapes, colors = colors, content = content, supportingContent = supportingContent,
+                leadingContent = { SudokuThumbnail(EmptyTutorialBoard, modifier = Modifier.size(64.dp)) },
             )
-        },
-        supportingContent = {
-            Text(
-                text = technique.level?.label().orEmpty(),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+        } else {
+            SegmentedListItem(
+                selected = false,
+                onClick = onClick,
+                verticalAlignment = Alignment.CenterVertically,
+                shapes = shapes, colors = colors, content = content, supportingContent = supportingContent,
+                leadingContent = {
+                    TutorialThumbnail(lesson.examples.first(), Modifier.size(64.dp).sharedBounds(
+                        rememberSharedContentState(tutorialBoardKey(technique.id)), animatedVisibilityScope,
+                        resizeMode = RemeasureToBounds,
+                    ))
+                },
+                modifier = Modifier.sharedBounds(
+                    rememberSharedContentState(tutorialContainerKey(technique.id)), animatedVisibilityScope,
+                    resizeMode = RemeasureToBounds, placeholderSize = AnimatedSize,
+                ),
             )
-        },
-        leadingContent = {
-            Box(modifier = Modifier.size(64.dp)) {
-                val imageResource = technique.firstExampleImageResource
-                if (imageResource == null) {
-                    SudokuThumbnail(
-                        board = EmptyTutorialBoard,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(imageResource),
-                        contentDescription = null,
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(4.dp)),
-                    )
-                }
-            }
-        },
-    )
+        }
+    }
 }
 
 private val EmptyTutorialBoard = List(Sudoku.CELL_COUNT) { 0 }

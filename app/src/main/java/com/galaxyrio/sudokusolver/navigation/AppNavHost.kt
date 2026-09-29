@@ -45,6 +45,7 @@ import com.galaxyrio.sudokusolver.ui.screens.settings.details.GameSettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.LanguageSettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.LicensesScreen
 import com.galaxyrio.sudokusolver.ui.screens.statistics.StatisticsViewModel
+import com.galaxyrio.sudokusolver.ui.screens.tutorial.TutorialDetailScreen
 import com.galaxyrio.sudokusolver.ui.motion.materialBackwardEnter
 import com.galaxyrio.sudokusolver.ui.motion.materialBackwardExit
 import com.galaxyrio.sudokusolver.ui.motion.materialContainerEnter
@@ -82,21 +83,21 @@ fun AppNavHost(
                 composable<HomeDestination>(
                     enterTransition = { EnterTransition.None },
                     exitTransition = {
-                        if (targetState.usesSavedGameContainerTransform()) {
+                        if (targetState.usesHomeContainerTransform()) {
                             materialContainerExit()
                         } else {
                             materialForwardExit(hierarchyTravelPx)
                         }
                     },
                     popEnterTransition = {
-                        if (initialState.usesSavedGameContainerTransform()) {
+                        if (initialState.usesHomeContainerTransform()) {
                             materialContainerEnter()
                         } else {
                             materialBackwardEnter(hierarchyTravelPx)
                         }
                     },
                     popExitTransition = { ExitTransition.None },
-                ) {
+                ) { backStackEntry ->
                     val playViewModel: PlayViewModel = viewModel(
                         factory = PlayViewModel.factory(appContainer.gameRepository)
                     )
@@ -130,6 +131,37 @@ fun AppNavHost(
                         onOpenSettings = {
                             navController.navigate(SettingsRootDestination)
                         },
+                        onOpenTechnique = { techniqueId ->
+                            if (navController.currentBackStackEntry === backStackEntry &&
+                                backStackEntry.lifecycle.currentState == Lifecycle.State.RESUMED
+                            ) {
+                                navController.navigate(TutorialTechniqueDestination(techniqueId)) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        },
+                    )
+                }
+
+                composable<TutorialTechniqueDestination>(
+                    enterTransition = { materialContainerEnter() },
+                    exitTransition = { materialContainerExit() },
+                    popEnterTransition = { materialContainerEnter() },
+                    popExitTransition = { materialContainerExit() },
+                ) { backStackEntry ->
+                    TutorialDetailScreen(
+                        techniqueId = backStackEntry.toRoute<TutorialTechniqueDestination>().techniqueId,
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = this,
+                        boardConfig = BoardConfig(
+                            useHighContrast = settingsUiState.highContrastBoard,
+                            highlightCross = settingsUiState.positionLines,
+                            highlightBlock = settingsUiState.positionBlock,
+                            useAltErrorColor = settingsUiState.alternativeErrorColor,
+                        ),
+                        coordinateNotation = settingsUiState.coordinateNotation,
+                        onBack = { navController.popBackStackFrom(backStackEntry) },
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
 
@@ -169,28 +201,28 @@ fun AppNavHost(
 
                 composable<SavedGameDestination>(
                     enterTransition = {
-                        if (targetState.usesSavedGameContainerTransform()) {
+                        if (targetState.usesHomeContainerTransform()) {
                             materialContainerEnter()
                         } else {
                             materialForwardEnter(hierarchyTravelPx)
                         }
                     },
                     exitTransition = {
-                        if (initialState.usesSavedGameContainerTransform()) {
+                        if (initialState.usesHomeContainerTransform()) {
                             materialContainerExit()
                         } else {
                             materialForwardExit(hierarchyTravelPx)
                         }
                     },
                     popEnterTransition = {
-                        if (targetState.usesSavedGameContainerTransform()) {
+                        if (targetState.usesHomeContainerTransform()) {
                             materialContainerEnter()
                         } else {
                             materialBackwardEnter(hierarchyTravelPx)
                         }
                     },
                     popExitTransition = {
-                        if (initialState.usesSavedGameContainerTransform()) {
+                        if (initialState.usesHomeContainerTransform()) {
                             materialContainerExit()
                         } else {
                             materialBackwardExit(hierarchyTravelPx)
@@ -400,8 +432,9 @@ private fun NavHostController.popBackStackFrom(source: NavBackStackEntry): Boole
     return popBackStack()
 }
 
-private fun NavBackStackEntry.usesSavedGameContainerTransform(): Boolean =
-    destination.hasRoute<SavedGameDestination>() &&
-        toRoute<SavedGameDestination>().useContainerTransform
+private fun NavBackStackEntry.usesHomeContainerTransform(): Boolean =
+    destination.hasRoute<TutorialTechniqueDestination>() ||
+        (destination.hasRoute<SavedGameDestination>() &&
+            toRoute<SavedGameDestination>().useContainerTransform)
 
 private val HierarchyTravel = 30.dp

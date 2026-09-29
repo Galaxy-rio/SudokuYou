@@ -60,6 +60,7 @@ fun HomeScreen(
     onContinueGame: (Long) -> Unit,
     onOpenImportedGame: (Long) -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenTechnique: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var currentSection by rememberSaveable {
@@ -100,6 +101,9 @@ fun HomeScreen(
                     HomeSection.TUTORIAL -> TutorialScreen(
                         onOpenNavigation = openNavigation,
                         onOpenSettings = onOpenSettings,
+                        onOpenTechnique = onOpenTechnique,
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = animatedVisibilityScope,
                         modifier = Modifier.fillMaxSize(),
                     )
 
