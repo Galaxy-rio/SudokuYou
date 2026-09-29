@@ -75,6 +75,7 @@ fun TutorialDetailScreen(
     coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
 ) {
     val lesson = TutorialLessons.find(techniqueId)
+    val catalogEntry = tutorialCategories.flatMap { it.techniques }.firstOrNull { it.id == techniqueId }
     var showingExamples by rememberSaveable(techniqueId) { mutableStateOf(false) }
     var stepIndex by rememberSaveable(techniqueId) { mutableIntStateOf(0) }
     var exampleIndex by rememberSaveable(techniqueId) { mutableIntStateOf(0) }
@@ -103,10 +104,10 @@ fun TutorialDetailScreen(
                 )
                 lesson?.let {
                     Text(
-                        text = it.technique.localizedName(),
+                        text = catalogEntry?.let { entry -> stringResource(entry.titleResource) } ?: it.technique.localizedName(),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 4.dp),
+                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 4.dp).testTag("tutorial_technique_title"),
                     )
                 }
             }
@@ -182,7 +183,7 @@ fun TutorialDetailScreen(
                     }
                 }
                 val text: @Composable (Modifier) -> Unit = { layoutModifier ->
-                    key(showingExamples, index) {
+                    key(techniqueId, showingExamples, index) {
                         TutorialExplanation(
                             example = example,
                             stage = stage,
@@ -239,7 +240,8 @@ private fun TutorialExplanation(
         )
         Text(
             text = if (showingExamples) {
-                stringResource(R.string.tutorial_example_house, example.house.tutorialLabel())
+                if (example.isAdvanced) example.technique.localizedName()
+                else stringResource(R.string.tutorial_example_house, example.house.tutorialLabel())
             } else stage.title(),
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.semantics { heading() },
@@ -250,6 +252,13 @@ private fun TutorialExplanation(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 TutorialLegend(PatternColor, stringResource(R.string.tutorial_pattern_legend))
+                if (example.deduction.evidence.finCandidates.isNotEmpty()) {
+                    TutorialLegend(MaterialTheme.colorScheme.primary, stringResource(R.string.tutorial_fin_legend))
+                }
+                if (example.coloring.isNotEmpty()) {
+                    TutorialLegend(ColoringFirst, stringResource(R.string.tutorial_coloring_first))
+                    TutorialLegend(ColoringSecond, stringResource(R.string.tutorial_coloring_second))
+                }
                 if ((stage == TutorialStage.PATTERN && example.isSingle) || stage == TutorialStage.DEDUCTION) {
                     TutorialLegend(
                         ExclusionColor,
@@ -259,7 +268,7 @@ private fun TutorialExplanation(
             }
         }
         Text(
-            text = if (showingExamples) example.patternText(notation) else example.stepText(stage, notation),
+            text = if (showingExamples && !example.isAdvanced) example.patternText(notation) else example.stepText(stage, notation),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -269,6 +278,20 @@ private fun TutorialExplanation(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            val evidence = example.deduction.evidence
+            if (evidence.inferenceGraph.edges.isNotEmpty() || evidence.groupedLinks.isNotEmpty()) {
+                Text(stringResource(R.string.tutorial_link_legend), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (evidence.inferenceGraph.premise != null) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    example.branchColors().entries.forEachIndexed { index, (_, color) ->
+                        TutorialLegend(color, stringResource(R.string.tutorial_branch, index + 1))
+                    }
+                }
+                Text(stringResource(R.string.tutorial_proof_heading), style = MaterialTheme.typography.titleMedium)
+                Text(example.forcingProofText(notation), style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 }

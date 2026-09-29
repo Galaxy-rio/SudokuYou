@@ -9,9 +9,13 @@ import com.galaxyrio.sudokusolver.data.settings.CoordinateNotation
 import com.galaxyrio.sudokusolver.domain.solver.HouseRef
 import com.galaxyrio.sudokusolver.domain.solver.HouseType
 import com.galaxyrio.sudokusolver.domain.solver.TechniqueId
+import com.galaxyrio.sudokusolver.domain.solver.InferenceNode
+import com.galaxyrio.sudokusolver.domain.solver.InferenceTruth
 import com.galaxyrio.sudokusolver.domain.tutorial.TutorialExample
 import com.galaxyrio.sudokusolver.domain.tutorial.TutorialStage
 import com.galaxyrio.sudokusolver.ui.util.cellCoordinateLabel
+import com.galaxyrio.sudokusolver.ui.util.localizedAction
+import com.galaxyrio.sudokusolver.ui.util.localizedExplanation
 
 @Composable
 internal fun TutorialStage.title(): String = stringResource(when (this) {
@@ -33,6 +37,16 @@ internal fun HouseRef.tutorialLabel(): String = stringResource(when (type) {
 internal fun TutorialExample.patternText(notation: CoordinateNotation): String {
     val resources = LocalResources.current
     val separator = stringResource(R.string.game_hint_list_separator)
+    if (isAdvanced) {
+        val groups = wingGroups
+        val explanation = deduction.localizedExplanation(notation)
+        return if (groups == null) explanation else {
+            fun cells(cells: Set<com.galaxyrio.sudokusolver.domain.solver.CellRef>) = cells.sortedBy { it.index }
+                .joinToString(separator) { resources.cellCoordinateLabel(it, notation) }
+            stringResource(R.string.tutorial_wing_groups, cells(groups.pivot), cells(groups.firstWing), cells(groups.secondWing)) +
+                "\n\n" + explanation
+        }
+    }
     return stringResource(
         when {
             isHidden && isSingle -> R.string.tutorial_find_hidden_single
@@ -49,6 +63,16 @@ internal fun TutorialExample.patternText(notation: CoordinateNotation): String {
 
 @Composable
 internal fun TutorialExample.stepText(stage: TutorialStage, notation: CoordinateNotation): String {
+    if (isAdvanced) {
+        val copy = advancedLessonCopy(technique)
+        return when (stage) {
+            TutorialStage.RULE -> stringResource(copy.rule) + "\n\n" + stringResource(R.string.tutorial_candidate_context)
+            TutorialStage.PATTERN -> patternText(notation)
+            TutorialStage.DEDUCTION -> stringResource(copy.reason) + "\n\n" + patternText(notation)
+            TutorialStage.RESULT -> deduction.localizedAction(notation) + "\n\n" + stringResource(R.string.tutorial_result_advanced)
+            TutorialStage.TAKEAWAY -> stringResource(copy.tip)
+        }
+    }
     val copy = lessonCopy(technique)
     return when (stage) {
         TutorialStage.RULE -> stringResource(copy.first)
@@ -74,6 +98,36 @@ internal fun TutorialExample.stepText(stage: TutorialStage, notation: Coordinate
         )
         TutorialStage.TAKEAWAY -> stringResource(copy.second)
     }
+}
+
+/** A net joins facts within one assumption, never across different alternative branches. */
+@Composable
+internal fun TutorialExample.forcingProofText(notation: CoordinateNotation): String {
+    val graph = deduction.evidence.inferenceGraph
+    if (graph.premise == null) return ""
+    val resources = LocalResources.current
+    val and = stringResource(R.string.tutorial_fact_and)
+    fun fact(node: InferenceNode): String {
+        val candidate = resources.getString(R.string.game_hint_candidate_at,
+            node.candidate.digit.toString(), resources.cellCoordinateLabel(node.candidate.cell, notation))
+        return resources.getString(if (node.truth == InferenceTruth.TRUE) R.string.tutorial_truth_true else R.string.tutorial_truth_false, candidate)
+    }
+    val byId = graph.nodes.associateBy { it.id }
+    return graph.nodes.groupBy { it.branchId }.toSortedMap().entries.mapIndexed { index, (_, nodes) ->
+        buildList {
+            add(resources.getString(R.string.tutorial_branch, index + 1))
+            nodes.forEach { node ->
+                if (node.isAssumption) {
+                    add(resources.getString(R.string.tutorial_assume, fact(node)))
+                } else {
+                    val premises = graph.edges.filter { it.toNodeId == node.id }
+                        .map { fact(byId.getValue(it.fromNodeId)) }.distinct()
+                    if (premises.isNotEmpty()) add(resources.getString(R.string.tutorial_implies,
+                        premises.joinToString(and), fact(node)))
+                }
+            }
+        }.joinToString("\n")
+    }.joinToString("\n\n")
 }
 
 // Original explanations of the rules described at sudoku.coach/en/learn/:

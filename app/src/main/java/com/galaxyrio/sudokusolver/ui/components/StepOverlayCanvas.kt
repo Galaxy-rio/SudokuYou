@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.galaxyrio.sudokusolver.domain.solver.CandidateRef
 import com.galaxyrio.sudokusolver.domain.solver.HouseRef
 import com.galaxyrio.sudokusolver.domain.solver.InferenceLink
@@ -29,12 +30,16 @@ import kotlin.math.sqrt
 internal fun StepOverlayCanvas(
     step: SolveStep,
     modifier: Modifier = Modifier,
+    showConclusions: Boolean = true,
+    linkColor: Color? = null,
+    branchColors: Map<Int, Color> = emptyMap(),
+    cellGap: Dp = 1.dp,
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val density = LocalDensity.current
     val outerInset = with(density) { 2.dp.toPx() }
     val blockGap = with(density) { 2.dp.toPx() }
-    val cellGap = with(density) { 1.dp.toPx() }
+    val cellGapPx = with(density) { cellGap.toPx() }
     val candidateInset = with(density) { 1.dp.toPx() }
     val thinStroke = with(density) { 1.25.dp.toPx() }
     val strongStroke = with(density) { 2.dp.toPx() }
@@ -51,9 +56,9 @@ internal fun StepOverlayCanvas(
         causeCandidate = colorScheme.tertiary,
         targetCandidate = colorScheme.error,
         placementCandidate = colorScheme.primary,
-        strongLink = colorScheme.error,
-        weakLink = colorScheme.primary,
-        dualLink = colorScheme.tertiary,
+        strongLink = linkColor ?: colorScheme.error,
+        weakLink = linkColor ?: colorScheme.primary,
+        dualLink = linkColor ?: colorScheme.tertiary,
     )
 
     Canvas(modifier = modifier) {
@@ -61,7 +66,7 @@ internal fun StepOverlayCanvas(
             boardSize = min(size.width, size.height),
             outerInset = outerInset,
             blockGap = blockGap,
-            cellGap = cellGap,
+            cellGap = cellGapPx,
             candidateInset = candidateInset,
         )
         val evidence = step.evidence
@@ -93,7 +98,7 @@ internal fun StepOverlayCanvas(
             step.placements.forEach { add(it.cell) }
             step.eliminations.forEach { add(it.candidate.cell) }
         }
-        targetCells.forEach { cell ->
+        if (showConclusions) targetCells.forEach { cell ->
             val bounds = geometry.cellBounds(cell)
             drawRoundRect(
                 color = colors.targetCell.copy(alpha = 0.34f),
@@ -106,10 +111,13 @@ internal fun StepOverlayCanvas(
         // The graph may contain several branches that split and converge. Legacy techniques are
         // automatically represented as a graph by StepEvidence, so the canvas has one code path.
         evidence.inferenceGraph.links.forEach { link ->
+            val branchColor = branchColors[link.branchId]
             drawInferenceLink(
                 geometry = geometry,
                 link = link,
-                colors = colors,
+                colors = if (branchColor == null) colors else colors.copy(
+                    strongLink = branchColor, weakLink = branchColor, dualLink = branchColor,
+                ),
                 strongStroke = strongStroke,
                 dualStroke = dualStroke,
                 dashLength = dashLength,
@@ -154,7 +162,7 @@ internal fun StepOverlayCanvas(
                 colors.placementCandidate, strongStroke,
             )
         }
-        step.placements.forEach { placement ->
+        if (showConclusions) step.placements.forEach { placement ->
             drawCandidateMarker(
                 geometry = geometry,
                 candidate = CandidateRef(placement.cell, placement.digit),
@@ -163,7 +171,7 @@ internal fun StepOverlayCanvas(
                 strokeWidth = strongStroke,
             )
         }
-        step.eliminations.forEach { elimination ->
+        if (showConclusions) step.eliminations.forEach { elimination ->
             val candidate = elimination.candidate
             drawCandidateMarker(
                 geometry = geometry,

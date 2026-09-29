@@ -18,14 +18,14 @@ class TutorialLessonTest {
         assertEquals(setOf(
             TechniqueId.HIDDEN_SINGLE, TechniqueId.HIDDEN_PAIR, TechniqueId.HIDDEN_TRIPLE, TechniqueId.HIDDEN_QUAD,
             TechniqueId.NAKED_SINGLE, TechniqueId.NAKED_PAIR, TechniqueId.NAKED_TRIPLE, TechniqueId.NAKED_QUAD,
-        ), TutorialLessons.all.map { it.technique }.toSet())
-        TutorialLessons.all.forEach { lesson ->
+        ), TutorialLessons.all.filterNot { it.examples.first().isAdvanced }.map { it.technique }.toSet())
+        TutorialLessons.all.filterNot { it.examples.first().isAdvanced }.forEach { lesson ->
             assertEquals(3, lesson.examples.size)
             assertEquals(HouseType.entries.toSet(), lesson.examples.map { it.house.type }.toSet())
             assertEquals(HouseType.BOX, lesson.examples.first().house.type)
             assertSame(lesson, TutorialLessons.find(lesson.technique.name))
         }
-        assertNull(TutorialLessons.find(TechniqueId.X_WING.name))
+        assertTrue(TutorialLessons.find(TechniqueId.X_WING.name)!!.examples.isNotEmpty())
         assertNull(TutorialLessons.find("unknown"))
     }
 

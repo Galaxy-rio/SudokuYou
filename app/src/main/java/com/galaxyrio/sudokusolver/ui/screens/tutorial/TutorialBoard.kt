@@ -20,6 +20,7 @@ import com.galaxyrio.sudokusolver.domain.tutorial.TutorialStage
 import com.galaxyrio.sudokusolver.ui.components.BoardConfig
 import com.galaxyrio.sudokusolver.ui.components.BoardGeometry
 import com.galaxyrio.sudokusolver.ui.components.SudokuBoard
+import com.galaxyrio.sudokusolver.ui.components.StepOverlayCanvas
 import com.galaxyrio.sudokusolver.ui.screens.play.SudokuThumbnail
 
 @Composable
@@ -34,6 +35,7 @@ internal fun TutorialBoard(
     val board = example.boardAt(stage)
     val notes = remember(example, stage) { example.annotations(stage) }
     val primary = MaterialTheme.colorScheme.primary
+    val secondary = MaterialTheme.colorScheme.tertiary
     Box(modifier = modifier.aspectRatio(1f).clip(RoundedCornerShape(12.dp))) {
         SudokuBoard(
             sudoku = board,
@@ -46,10 +48,32 @@ internal fun TutorialBoard(
             config = config,
             modifier = Modifier.fillMaxSize(),
         )
+        if (example.isAdvanced && (stage == TutorialStage.PATTERN || stage == TutorialStage.DEDUCTION)) {
+            // Use the existing proof renderer for links and grouped nodes. Cell/candidate colours
+            // remain in the tutorial layer, and conclusions appear only at the deduction stage.
+            val links = remember(example) {
+                example.deduction.copy(evidence = example.deduction.evidence.copy(
+                    causeCells = emptySet(), causeCandidates = emptySet(),
+                    houses = emptyList(), baseHouses = emptyList(), coverHouses = emptyList(),
+                ))
+            }
+            StepOverlayCanvas(
+                step = links, modifier = Modifier.fillMaxSize(), showConclusions = false,
+                linkColor = primary, cellGap = 0.6.dp,
+                branchColors = example.branchColors(),
+            )
+        }
         Canvas(Modifier.fillMaxSize()) {
             val geometry = BoardGeometry(size.minDimension, 2.dp.toPx(), 2.dp.toPx(), 0.6.dp.toPx(), 1.dp.toPx())
-            val bounds = geometry.houseBounds(example.house)
-            drawRect(primary.copy(alpha = 0.65f), bounds.topLeft, bounds.size, style = Stroke(1.25.dp.toPx()))
+            val evidence = example.deduction.evidence
+            val houses = if (example.isAdvanced) {
+                if (stage == TutorialStage.RULE) emptyList() else evidence.houses
+            } else listOf(example.house)
+            houses.forEach { house ->
+                val bounds = geometry.houseBounds(house)
+                val color = if (house in evidence.coverHouses) secondary else primary
+                drawRect(color.copy(alpha = 0.65f), bounds.topLeft, bounds.size, style = Stroke(1.25.dp.toPx()))
+            }
             if (stage != TutorialStage.RULE) {
                 example.patternCells.forEach { cell ->
                     val cellBounds = geometry.cellBounds(cell).deflate(1.dp.toPx())
@@ -57,10 +81,17 @@ internal fun TutorialBoard(
                 }
                 example.patternCandidates.filter { it.digit in board.cells[it.cell.index].candidates }.forEach { candidate ->
                     val candidateBounds = geometry.candidateBounds(candidate).deflate(0.3.dp.toPx())
-                    drawRect(PatternColor, candidateBounds.topLeft, candidateBounds.size, style = Stroke(1.dp.toPx()))
+                    val color = if (candidate in evidence.finCandidates) primary else {
+                        example.coloring[candidate]?.let { if (it) ColoringFirst else ColoringSecond } ?: PatternColor
+                    }
+                    drawRect(color, candidateBounds.topLeft, candidateBounds.size, style = Stroke(1.dp.toPx()))
                 }
             }
             if (stage == TutorialStage.DEDUCTION) {
+                example.deduction.placements.forEach { placement ->
+                    val bounds = geometry.cellBounds(placement.cell).deflate(1.dp.toPx())
+                    drawRect(PatternColor, bounds.topLeft, bounds.size, style = Stroke(2.dp.toPx()))
+                }
                 example.deduction.eliminations.forEach { elimination ->
                     val candidateBounds = geometry.candidateBounds(elimination.candidate).deflate(1.dp.toPx())
                     drawLine(ExclusionColor, candidateBounds.topLeft, candidateBounds.bottomRight, 1.dp.toPx())
@@ -100,6 +131,10 @@ private fun TutorialExample.annotations(stage: TutorialStage): AdvancedNotes {
         },
         candidateColors = buildMap {
             patternCandidates.forEach { put(AdvancedNotes.candidateKey(it.cell.index, it.digit), AdvancedNoteColor.GREEN) }
+            coloring.forEach { (candidate, first) ->
+                put(AdvancedNotes.candidateKey(candidate.cell.index, candidate.digit),
+                    if (first) AdvancedNoteColor.BLUE else AdvancedNoteColor.ORANGE)
+            }
             if (stage == TutorialStage.DEDUCTION) deduction.eliminations.forEach {
                 val candidate = it.candidate
                 put(AdvancedNotes.candidateKey(candidate.cell.index, candidate.digit), AdvancedNoteColor.RED)
@@ -110,5 +145,15 @@ private fun TutorialExample.annotations(stage: TutorialStage): AdvancedNotes {
 
 internal val PatternColor = Color(AdvancedNoteColor.GREEN.argb)
 internal val ExclusionColor = Color(AdvancedNoteColor.RED.argb)
+internal val ColoringFirst = Color(AdvancedNoteColor.BLUE.argb)
+internal val ColoringSecond = Color(AdvancedNoteColor.ORANGE.argb)
+internal fun TutorialExample.branchColors(): Map<Int, Color> {
+    val graph = deduction.evidence.inferenceGraph
+    if (graph.premise == null) return emptyMap()
+    val colors = listOf(ColoringFirst, Color(AdvancedNoteColor.VIOLET.argb), ColoringSecond, Color(AdvancedNoteColor.CYAN.argb))
+    return graph.nodes.map { it.branchId }.distinct().sorted().mapIndexed { index, branch ->
+        branch to colors[index % colors.size]
+    }.toMap()
+}
 internal fun tutorialContainerKey(id: String) = "tutorial_container_$id"
 internal fun tutorialBoardKey(id: String) = "tutorial_board_$id"

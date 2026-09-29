@@ -1,6 +1,7 @@
 package com.galaxyrio.sudokusolver.ui.screens.tutorial
 
 import androidx.activity.ComponentActivity
+import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
@@ -16,11 +17,13 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -28,7 +31,7 @@ import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.domain.tutorial.TutorialExample
 import com.galaxyrio.sudokusolver.domain.tutorial.TutorialLessons
 import com.galaxyrio.sudokusolver.ui.theme.SudokuYouTheme
-import com.galaxyrio.sudokusolver.ui.util.nameResourceId
+import java.io.File
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -56,27 +59,32 @@ class TutorialDetailScreenTest {
     }
 
     @Test
-    fun allEightLessonsHaveFiveStepsAndThreeExamplesWithCorrectBoundaries() {
+    fun everyCatalogLessonHasFiveStepsAndNavigableExamplesWithCorrectBoundaries() {
         showLesson()
-        TutorialLessons.all.forEach { lesson ->
-            compose.runOnIdle { techniqueId.value = lesson.technique.name }
-            compose.onNodeWithText(context.getString(lesson.technique.nameResourceId())).assertIsDisplayed()
+        val requestedLesson = InstrumentationRegistry.getArguments().getString("tutorialLesson")
+        val lessons = TutorialLessons.all.filter { requestedLesson == null || it.id == requestedLesson }
+        check(lessons.isNotEmpty())
+        lessons.forEach { lesson ->
+            compose.runOnIdle { techniqueId.value = lesson.id }
+            val entry = tutorialCategories.flatMap { it.techniques }.first { it.id == lesson.id }
+            compose.onNodeWithTag("tutorial_technique_title").assertTextEquals(context.getString(entry.titleResource)).assertIsDisplayed()
             assertProgress(examples = false, index = 1)
             action(R.string.tutorial_previous_step).assertIsNotEnabled()
             repeat(4) { index ->
                 action(R.string.tutorial_next_step).assertIsEnabled().performClick()
                 assertProgress(examples = false, index = index + 2)
+                if (index == 1) captureForVisualReview(lesson.id)
             }
             action(R.string.tutorial_next_step).assertIsNotEnabled()
             action(R.string.tutorial_show_examples).performClick()
-            assertProgress(examples = true, index = 1)
+            assertProgress(examples = true, index = 1, count = lesson.examples.size)
             action(R.string.tutorial_previous_example).assertIsNotEnabled()
-            repeat(2) { index ->
+            repeat(lesson.examples.size - 1) { index ->
                 action(R.string.tutorial_next_example).performClick()
-                assertProgress(examples = true, index = index + 2)
+                assertProgress(examples = true, index = index + 2, count = lesson.examples.size)
             }
             action(R.string.tutorial_next_example).assertIsNotEnabled()
-            repeat(2) { action(R.string.tutorial_previous_example).performClick() }
+            repeat(lesson.examples.size - 1) { action(R.string.tutorial_previous_example).performClick() }
             action(R.string.tutorial_previous_example).assertIsNotEnabled()
             action(R.string.tutorial_show_steps).performClick()
             assertProgress(examples = false, index = 5)
@@ -125,10 +133,19 @@ class TutorialDetailScreenTest {
     }
 
     private fun action(resource: Int) = compose.onNodeWithContentDescription(context.getString(resource))
-    private fun assertProgress(examples: Boolean, index: Int) {
+    private fun captureForVisualReview(id: String) {
+        if (InstrumentationRegistry.getArguments().getString("captureTutorials") != "true") return
+        if (id !in setOf("FINNED_JELLYFISH", "FIVE_Y_WING", "GROUPED_X_CHAIN", "THREE_D_MEDUSA",
+                "simple_coloring", "cell_region_forcing_net", "UNIQUE_RECTANGLE_TYPE_3")) return
+        val directory = requireNotNull(context.getExternalFilesDir("tutorial-preview"))
+        File(directory, "$id.png").outputStream().use { output ->
+            compose.onRoot().captureToImage().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, output)
+        }
+    }
+    private fun assertProgress(examples: Boolean, index: Int, count: Int = if (examples) 3 else 5) {
         compose.onNodeWithTag("tutorial_progress").assertTextEquals(context.getString(
             if (examples) R.string.tutorial_example_progress else R.string.tutorial_step_progress,
-            index, if (examples) 3 else 5,
+            index, count,
         ))
     }
     private fun boardCell(example: TutorialExample, index: Int) = compose.onNodeWithContentDescription(

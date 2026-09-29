@@ -22,3 +22,19 @@ Third-party libraries
 Third-party dependencies are declared in Gradle and retain their respective
 copyrights and licenses. Their license information is available from the
 in-app Settings > About > Open-source licenses screen.
+
+Tutorial references
+-------------------
+
+The tutorial taxonomy and solving rules follow Sudoku Coach:
+https://sudoku.coach/en/learn/technique-overview
+
+Advanced numeric example positions are adapted from the public lessons linked
+beside each snapshot in TutorialAdvancedExamples.kt. Candidate states and full
+deductions are independently checked by this application's solver and tests.
+Basic hidden/naked examples are generated locally. Tutorial prose is written
+for this application in English and Simplified Chinese; no article paragraphs,
+screenshots, or external board artwork are bundled.
+
+The grouped-link definition is also described by HoDoKu:
+https://hodoku.sourceforge.net/en/tech_chains.php
