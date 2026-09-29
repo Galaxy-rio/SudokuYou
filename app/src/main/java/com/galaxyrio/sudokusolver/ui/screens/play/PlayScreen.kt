@@ -944,6 +944,7 @@ fun SudokuThumbnail(
     color: Color = MaterialTheme.colorScheme.primary,
     cornerRadius: Dp = 4.dp,
     strokeWidth: Dp = 1.5.dp,
+    cellHighlights: Map<Int, List<Color>> = emptyMap(),
 ) {
     Canvas(modifier = modifier.clip(RoundedCornerShape(cornerRadius))) {
         val boardSize = size.minDimension
@@ -952,13 +953,17 @@ fun SudokuThumbnail(
         val halfStroke = strokeWidthPx / 2
 
         board.forEachIndexed { index, value ->
-            if (value != 0) {
+            val highlights = cellHighlights[index].orEmpty()
+            val fills = highlights.ifEmpty { if (value != 0) listOf(color) else emptyList() }
+            fills.forEachIndexed { stripe, fill ->
                 val row = index / SudokuGridSize
                 val col = index % SudokuGridSize
+                // Multiple teaching roles share a cell without losing either color.
+                val fillWidth = cellSize / fills.size
                 drawRect(
-                    color = color.copy(alpha = 0.5f),
-                    topLeft = Offset(col * cellSize, row * cellSize),
-                    size = Size(cellSize, cellSize),
+                    color = fill.copy(alpha = 0.5f),
+                    topLeft = Offset(col * cellSize + stripe * fillWidth, row * cellSize),
+                    size = Size(fillWidth, cellSize),
                 )
             }
         }

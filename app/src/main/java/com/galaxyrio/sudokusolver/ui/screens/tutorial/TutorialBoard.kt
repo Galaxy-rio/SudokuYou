@@ -1,7 +1,5 @@
 package com.galaxyrio.sudokusolver.ui.screens.tutorial
 
-import android.graphics.Paint
-import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -12,13 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteColor
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNotes
@@ -27,7 +20,7 @@ import com.galaxyrio.sudokusolver.domain.tutorial.TutorialStage
 import com.galaxyrio.sudokusolver.ui.components.BoardConfig
 import com.galaxyrio.sudokusolver.ui.components.BoardGeometry
 import com.galaxyrio.sudokusolver.ui.components.SudokuBoard
-import com.galaxyrio.sudokusolver.ui.components.toComposeColor
+import com.galaxyrio.sudokusolver.ui.screens.play.SudokuThumbnail
 
 @Composable
 internal fun TutorialBoard(
@@ -78,71 +71,23 @@ internal fun TutorialBoard(
     }
 }
 
-/** A miniature of the actual first example, including its candidates and teaching marks. */
+/** The first example rendered with the home page's grid and solid cell silhouettes. */
 @Composable
 internal fun TutorialThumbnail(example: TutorialExample, modifier: Modifier = Modifier) {
-    val colors = MaterialTheme.colorScheme
-    val board = example.before
-    val notes = remember(example) { example.annotations(TutorialStage.DEDUCTION) }
-    val paint = remember { Paint(Paint.ANTI_ALIAS_FLAG).apply { textAlign = Paint.Align.CENTER } }
-    Canvas(modifier = modifier.aspectRatio(1f).clip(RoundedCornerShape(4.dp))) {
-        drawRect(colors.surface)
-        val line = size.width / 81f
-        val cellSize = (size.width - line) / 9f
-        board.cells.forEachIndexed { index, cell ->
-            val left = line / 2 + index % 9 * cellSize
-            val top = line / 2 + index / 9 * cellSize
-            notes.cellColors[index]?.let {
-                drawRect(it.toComposeColor().copy(alpha = 0.30f), Offset(left, top), Size(cellSize, cellSize))
-            }
-            if (cell.value != 0) {
-                paint.color = colors.onSurface.toArgb()
-                paint.textSize = cellSize * 0.72f
-                paint.typeface = Typeface.DEFAULT_BOLD
-                drawContext.canvas.nativeCanvas.drawText(cell.value.toString(), left + cellSize / 2,
-                    top + cellSize / 2 - (paint.ascent() + paint.descent()) / 2, paint)
-            } else {
-                paint.textSize = cellSize * 0.27f
-                paint.typeface = Typeface.DEFAULT
-                cell.candidates.forEach { digit ->
-                    val candidateSize = cellSize / 3
-                    val x = left + (digit - 1) % 3 * candidateSize
-                    val y = top + (digit - 1) / 3 * candidateSize
-                    notes.candidateColor(index, digit)?.let {
-                        drawRect(it.toComposeColor().copy(alpha = 0.48f), Offset(x, y), Size(candidateSize, candidateSize))
-                    }
-                    paint.color = colors.onSurface.toArgb()
-                    drawContext.canvas.nativeCanvas.drawText(digit.toString(), x + candidateSize / 2,
-                        y + candidateSize / 2 - (paint.ascent() + paint.descent()) / 2, paint)
-                }
+    val board = remember(example) { example.before.cells.map { it.value } }
+    val highlights = remember(example) {
+        val patterns = example.patternCells.mapTo(mutableSetOf()) { it.index }
+        val exclusions = (example.excludedCells + example.blockingGivens)
+            .mapTo(mutableSetOf()) { it.index }
+        example.deduction.eliminations.forEach { exclusions += it.candidate.cell.index }
+        (patterns + exclusions).associateWith { index ->
+            buildList {
+                if (index in patterns) add(PatternColor)
+                if (index in exclusions) add(ExclusionColor)
             }
         }
-        example.patternCandidates.forEach { candidate ->
-            val candidateSize = cellSize / 3
-            val left = line / 2 + candidate.cell.col * cellSize + (candidate.digit - 1) % 3 * candidateSize
-            val top = line / 2 + candidate.cell.row * cellSize + (candidate.digit - 1) / 3 * candidateSize
-            drawRect(PatternColor, Offset(left, top), Size(candidateSize, candidateSize), style = Stroke(line * 0.35f))
-        }
-        example.deduction.eliminations.forEach { elimination ->
-            val candidate = elimination.candidate
-            val candidateSize = cellSize / 3
-            val left = line / 2 + candidate.cell.col * cellSize + (candidate.digit - 1) % 3 * candidateSize
-            val top = line / 2 + candidate.cell.row * cellSize + (candidate.digit - 1) / 3 * candidateSize
-            drawLine(ExclusionColor, Offset(left, top), Offset(left + candidateSize, top + candidateSize), line * 0.35f)
-            drawLine(ExclusionColor, Offset(left + candidateSize, top), Offset(left, top + candidateSize), line * 0.35f)
-        }
-        repeat(8) { index ->
-            val position = line / 2 + (index + 1) * cellSize
-            val major = (index + 1) % 3 == 0
-            val color = colors.primary.copy(alpha = if (major) 1f else 0.35f)
-            val width = if (major) line else line * 0.4f
-            drawLine(color, Offset(position, 0f), Offset(position, size.height), width)
-            drawLine(color, Offset(0f, position), Offset(size.width, position), width)
-        }
-        drawRoundRect(colors.primary, Offset(line / 2, line / 2),
-            Size(size.width - line, size.height - line),
-            CornerRadius(4.dp.toPx()), style = Stroke(line))
     }
+    SudokuThumbnail(board = board, modifier = modifier, cellHighlights = highlights)
 }
 
 private fun TutorialExample.annotations(stage: TutorialStage): AdvancedNotes {
