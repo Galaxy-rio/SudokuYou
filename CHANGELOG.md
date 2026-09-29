@@ -2,6 +2,20 @@
 
 All notable changes to Sudoku You are documented in this file.
 
+## [3.0.0] - 2026-09-29
+
+### English
+
+- Completed the tutorial design.
+- Tutorials include step-by-step lessons and multiple examples.
+- Made minor UI refinements and fixed bugs.
+
+### 简体中文
+
+- 完成教程设计。
+- 教程包含分步骤教学和多个示例。
+- 小幅调整界面并修复若干问题。
+
 ## [2.1.1] - 2026-09-21
 
 ### English

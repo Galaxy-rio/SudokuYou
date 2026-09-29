@@ -20,8 +20,8 @@ android {
         applicationId = "com.galaxyrio.sudokusolver"
         minSdk = 30
         targetSdk = 37
-        versionCode = 7
-        versionName = "2.1.1"
+        versionCode = 8
+        versionName = "3.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

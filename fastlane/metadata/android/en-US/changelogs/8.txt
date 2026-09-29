@@ -1,0 +1,3 @@
+• Completed the tutorial design
+• Tutorials include step-by-step lessons and multiple examples
+• Made minor UI refinements and fixed bugs
