@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tutorial_rule_last_digit">A row, column or box has exactly one empty cell. Find the digit missing from its eight filled cells.</string>
-    <string name="tutorial_reason_last_digit">Every region contains 1–9 exactly once, so its missing digit must occupy the only empty cell. For example, a row containing 1, 2, 3, 4, 6, 7, 8 and 9 must end with 5.</string>
+    <string name="tutorial_reason_last_digit">Every region contains 1–9 exactly once. The eight filled cells leave just one missing digit, which must go in the only empty cell.</string>
     <string name="tutorial_tip_last_digit">Count empty cells in one region. This is the simplest single; it does not require pencil marks.</string>
     <string name="tutorial_rule_locked_pair">Find two cells with exactly the same two candidates. The cells must share both a box and a row or column.</string>
-    <string name="tutorial_reason_locked_pair">If both cells contain only {2, 7}, one must be 2 and the other 7. Remove 2 and 7 from every other cell in their shared line and their shared box.</string>
+    <string name="tutorial_reason_locked_pair">The two cells must contain different digits, so they use the pair in either order. Remove both digits from the other cells in their shared line and box.</string>
     <string name="tutorial_tip_locked_pair">A Locked Pair is a Naked Pair that works in two regions. Pointing Pair instead tracks two positions of a single digit.</string>
     <string name="tutorial_rule_locked_triple">Find three cells in the intersection of a line and a box. Their combined candidates must contain exactly three different digits.</string>
-    <string name="tutorial_reason_locked_triple">For example, {2, 7}, {2, 9} and {7, 9} reserve 2, 7 and 9 for those three cells. Remove all three digits from the rest of both the line and the box.</string>
+    <string name="tutorial_reason_locked_triple">The three cells must contain three different digits. Together they use all three candidates, so those digits cannot appear elsewhere in their shared line or box.</string>
     <string name="tutorial_tip_locked_triple">Each cell can contain two or three of the digits. Count the combined candidates; this is a Naked Triple shared by two regions.</string>
     <string name="tutorial_rule_pointing_pair">Inside one box, a digit has exactly two possible cells, and both are in the same row or column.</string>
     <string name="tutorial_reason_pointing_pair">The box must place the digit in one of those two cells. That supplies the digit to their shared line, so remove it from the line outside the box.</string>
@@ -22,7 +22,7 @@
     <string name="tutorial_reason_claiming_triple">The line needs one copy of the digit and all its options are in this box. Remove the digit from every cell of the box outside that line.</string>
     <string name="tutorial_tip_claiming_triple">Three candidates in a box alone are not enough: they must be all remaining positions in the starting line.</string>
     <string name="tutorial_rule_remote_pair">Connect an even number of at least four cells that all have the same two candidates. Consecutive cells must see each other.</string>
-    <string name="tutorial_reason_remote_pair">Along a chain of {2, 7} cells, values alternate 2, 7, 2, 7, or 7, 2, 7, 2. The endpoints therefore contain different digits. A cell that sees both endpoints can contain neither 2 nor 7.</string>
+    <string name="tutorial_reason_remote_pair">Each link switches to the other digit of the pair. With an even number of cells, the endpoints must contain different digits. A cell that sees both endpoints can contain neither digit.</string>
     <string name="tutorial_tip_remote_pair">Use an even number of cells and keep exactly the same pair throughout. Only remove candidates from cells that see both endpoints.</string>
     <string name="tutorial_rule_chute_single">Find two nonseeing cells with the same pair {a, b} in two different boxes of one band or stack. In the third box, inspect the line not occupied by either endpoint. It allows a but no b.</string>
     <string name="tutorial_reason_chute_single">If both endpoints were b, they would block b in two lines of the third box. Its remaining line has no b either, which is impossible. At least one endpoint is a, so remove a from every cell that sees both endpoints.</string>

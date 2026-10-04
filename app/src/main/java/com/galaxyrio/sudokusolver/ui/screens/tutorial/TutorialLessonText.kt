@@ -66,7 +66,8 @@ internal fun TutorialExample.stepText(stage: TutorialStage, notation: Coordinate
     if (isAdvanced) {
         val copy = advancedLessonCopy(technique)
         return when (stage) {
-            TutorialStage.RULE -> stringResource(copy.rule) + "\n\n" + stringResource(R.string.tutorial_candidate_context)
+            TutorialStage.RULE -> stringResource(copy.rule) + if (technique == TechniqueId.LAST_DIGIT) "" else
+                "\n\n" + stringResource(R.string.tutorial_candidate_context)
             TutorialStage.PATTERN -> patternText(notation)
             TutorialStage.DEDUCTION -> stringResource(copy.reason) + "\n\n" + patternText(notation)
             TutorialStage.RESULT -> deduction.localizedAction(notation) + "\n\n" + stringResource(R.string.tutorial_result_advanced)

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tutorial_rule_last_digit">一行、一列或一宫只剩一个空格。查看其余八格，找出缺少的数字。</string>
-    <string name="tutorial_reason_last_digit">每个区域必须恰好包含 1–9，因此缺少的数字只能填入唯一的空格。例如，某行已有 1、2、3、4、6、7、8、9，空格就必须填 5。</string>
+    <string name="tutorial_reason_last_digit">每个区域必须恰好包含 1–9。其余八格已经填好，唯一缺少的数字只能填入剩下的空格。</string>
     <string name="tutorial_tip_last_digit">先找只剩一个空格的区域。这是最简单的单数技巧，无须先记候选数。</string>
     <string name="tutorial_rule_locked_pair">找两个候选数完全相同的双候选格，它们必须同时位于同一宫和同一行或列。</string>
-    <string name="tutorial_reason_locked_pair">例如两格都只有 {2, 7}，其中一格必须是 2，另一格必须是 7。因此，可以从它们共同所在的行列及宫的其他格中删除 2 和 7。</string>
+    <string name="tutorial_reason_locked_pair">这两格必须填入不同的数字，因此无论怎样排列，都会占用这两个候选数。可以从它们共同所在的行或列，以及同一宫的其他格中删除这两个数字。</string>
     <string name="tutorial_tip_locked_pair">这是能同时作用于两个区域的显性数对。指向数对则是在追踪同一个数字的两个位置，两者不同。</string>
     <string name="tutorial_rule_locked_triple">在一条行列与一个宫的交集中找三个格子，它们的候选数合并后必须恰好为三个不同数字。</string>
-    <string name="tutorial_reason_locked_triple">例如 {2, 7}、{2, 9}、{7, 9} 会把 2、7、9 留给这三格。因此可以从同一行列及同一宫的其他格中删除这三个数字。</string>
+    <string name="tutorial_reason_locked_triple">这三格必须填入三个不同的数字，恰好占用全部三个候选数。因此，这三个数字不能再出现在它们共同所在的行或列，以及同一宫的其他格中。</string>
     <string name="tutorial_tip_locked_triple">每格可以只有其中两个候选数。关键是合并后恰好三个数字；这是同时属于两个区域的显性三数组。</string>
     <string name="tutorial_rule_pointing_pair">某个数字在一个宫内只剩两个可能位置，而且这两个位置位于同一行或列。</string>
     <string name="tutorial_reason_pointing_pair">这个宫必须在两格之一填入该数字，所以它们所在的行列也会在这里得到该数字。可从这条行列位于宫外的格子中删除它。</string>
@@ -22,7 +22,7 @@
     <string name="tutorial_reason_claiming_triple">这条行列必须包含该数字，而所有可能位置都在这个宫中。因此可从宫内不属于该行列的格子中删除该数字。</string>
     <string name="tutorial_tip_claiming_triple">仅仅在宫内看到三个候选数还不够：它们必须是起始行列中该数字的全部剩余位置。</string>
     <string name="tutorial_rule_remote_pair">连接至少四个、数量为偶数的格子。每格必须恰好包含相同的两个候选数，相邻两格必须互相可见。</string>
-    <string name="tutorial_reason_remote_pair">例如 {2, 7} 格子组成的链，其值交替为 2、7、2、7，或 7、2、7、2。因此两端一定取不同数字；同时看到两端的其他格子不能是 2，也不能是 7。</string>
+    <string name="tutorial_reason_remote_pair">沿着链，每经过一格就换成数对中的另一个数字。格数为偶数时，两端必定取不同数字。因此，同时看到两端的其他格子不能填入这两个数字中的任何一个。</string>
     <string name="tutorial_tip_remote_pair">格子数必须为偶数，整条链都使用同一对候选数。只从同时看到两端的格子中删除这两个数字。</string>
     <string name="tutorial_rule_chute_single">在同一宫带的两个不同宫中，找两个互不可见、候选数均为 {a, b} 的格子。查看第三宫中未经过这两个端点的那条行列：其中允许 a，但没有 b。</string>
     <string name="tutorial_reason_chute_single">若两个端点都为 b，就会排除第三宫中两条行列的 b；剩下的那条也没有 b，形成矛盾。因此至少一个端点为 a，可从同时看到两端的格子中删除 a。</string>

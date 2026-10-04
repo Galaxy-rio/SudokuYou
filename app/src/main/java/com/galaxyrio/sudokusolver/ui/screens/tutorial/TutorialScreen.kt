@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -143,7 +142,7 @@ private fun TutorialTechniqueItem(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
-    val lesson = TutorialLessons.find(technique.id)
+    val lesson = requireNotNull(TutorialLessons.find(technique.id))
     val content: @Composable () -> Unit = {
         Text(stringResource(technique.titleResource))
     }
@@ -162,16 +161,10 @@ private fun TutorialTechniqueItem(
             verticalAlignment = Alignment.CenterVertically,
             shapes = shapes, colors = colors, content = content, supportingContent = supportingContent,
             leadingContent = {
-                val example = lesson?.examples?.firstOrNull()
-                if (example != null) {
-                    TutorialThumbnail(example, Modifier.size(64.dp).sharedBounds(
-                        rememberSharedContentState(tutorialBoardKey(technique.id)), animatedVisibilityScope,
-                        resizeMode = RemeasureToBounds,
-                    ))
-                } else {
-                    Icon(Icons.AutoMirrored.Outlined.MenuBook, contentDescription = null,
-                        modifier = Modifier.size(64.dp).padding(16.dp), tint = MaterialTheme.colorScheme.primary)
-                }
+                TutorialThumbnail(lesson.examples.first(), Modifier.size(64.dp).sharedBounds(
+                    rememberSharedContentState(tutorialBoardKey(technique.id)), animatedVisibilityScope,
+                    resizeMode = RemeasureToBounds,
+                ))
             },
             modifier = Modifier.sharedBounds(
                 rememberSharedContentState(tutorialContainerKey(technique.id)), animatedVisibilityScope,

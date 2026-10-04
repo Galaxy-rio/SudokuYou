@@ -26,6 +26,11 @@ internal data class TutorialLesson(
     val technique: TechniqueId,
     val examples: List<TutorialExample>,
 ) {
+    init {
+        require(examples.isNotEmpty()) { "Every tutorial needs a board example: $technique" }
+        require(examples.all { it.technique == technique })
+    }
+
     val id: String get() = technique.tutorialId
 }
 
@@ -42,7 +47,7 @@ internal data class TutorialExample(
     val recordedDeduction: SolveStep? = null,
 ) {
     val isHidden: Boolean get() = technique in HiddenTechniques
-    val isSingle: Boolean get() = technique == TechniqueId.HIDDEN_SINGLE || technique == TechniqueId.NAKED_SINGLE
+    val isSingle: Boolean get() = technique in setOf(TechniqueId.LAST_DIGIT, TechniqueId.HIDDEN_SINGLE, TechniqueId.NAKED_SINGLE)
     val isAdvanced: Boolean get() = recordedDeduction != null
     private val original by lazy {
         val board = Sudoku.fromGridString(givens)
@@ -159,6 +164,7 @@ internal data class TutorialExample(
     val excludedCells: Set<CellRef> by lazy {
         when {
             !isSingle -> emptySet()
+            technique == TechniqueId.LAST_DIGIT -> house.cells().toSet() - patternCells
             isHidden -> house.cells().toSet() - patternCells
             else -> commonHouses.flatMapTo(linkedSetOf()) { it.cells() }
                 .filterTo(linkedSetOf()) { initialState.valueAt(it) != 0 }
@@ -194,9 +200,9 @@ internal data class TutorialExample(
 
 internal object TutorialLessons {
     val all: List<TutorialLesson> by lazy {
-        val examplesByTechnique = (tutorialExamples + advancedTutorialExamples).groupBy { it.technique }
+        val examplesByTechnique = (tutorialExamples + advancedTutorialExamples + additionalTutorialExamples).groupBy { it.technique }
         TechniqueId.entries.map { technique ->
-            val examples = examplesByTechnique[technique].orEmpty()
+            val examples = examplesByTechnique.getValue(technique)
             TutorialLesson(technique, if (examples.firstOrNull()?.isAdvanced == true) examples else examples.sortedBy {
                 when (it.house.type) { HouseType.BOX -> 0; HouseType.ROW -> 1; HouseType.COLUMN -> 2 }
             })

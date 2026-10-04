@@ -145,10 +145,6 @@ fun TutorialDetailScreen(
             }
         },
     ) { padding ->
-        if (lesson != null && example == null) {
-            key(techniqueId) { TutorialArticle(lesson.technique, Modifier.fillMaxSize().padding(padding)) }
-            return@Scaffold
-        }
         if (example == null) {
             Text(stringResource(R.string.tutorial_unavailable), Modifier.padding(padding).padding(20.dp))
             return@Scaffold
@@ -298,27 +294,6 @@ private fun TutorialExplanation(
                 Text(stringResource(R.string.tutorial_proof_heading), style = MaterialTheme.typography.titleMedium)
                 Text(example.forcingProofText(notation), style = MaterialTheme.typography.bodyMedium)
             }
-        }
-    }
-}
-
-@Composable
-private fun TutorialArticle(
-    technique: TechniqueId,
-    modifier: Modifier = Modifier,
-) {
-    val copy = advancedLessonCopy(technique)
-    Column(modifier.verticalScroll(rememberScrollState()).padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        TutorialReference(technique)
-        listOf(
-            R.string.tutorial_stage_rule to copy.rule,
-            R.string.tutorial_stage_deduction to copy.reason,
-            R.string.tutorial_stage_takeaway to copy.tip,
-        ).forEach { (heading, body) ->
-            Text(stringResource(heading), style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.semantics { heading() })
-            Text(stringResource(body), style = MaterialTheme.typography.bodyLarge)
         }
     }
 }

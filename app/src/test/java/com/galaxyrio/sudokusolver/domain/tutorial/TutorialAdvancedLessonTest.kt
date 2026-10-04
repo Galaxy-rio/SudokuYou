@@ -9,16 +9,15 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class TutorialAdvancedLessonTest {
+    private val recordedExamples = advancedTutorialExamples + additionalTutorialExamples
+
     @Test fun everyCatalogEntryHasContentAndEveryExampleBelongsToItsEntry() {
         val entries = tutorialCategories.flatMap { it.techniques }
         assertEquals(TechniqueId.entries.toSet(), entries.flatMap { it.solverTechniques }.toSet())
         assertEquals(entries.map { it.id }.toSet(), TutorialLessons.all.map { it.id }.toSet())
         entries.forEach { entry ->
             val lesson = requireNotNull(TutorialLessons.find(entry.id))
-            if (lesson.examples.isEmpty()) {
-                val text = advancedLessonCopy(lesson.technique)
-                assertTrue(entry.id, text.rule != 0 && text.reason != 0 && text.tip != 0)
-            }
+            assertTrue("${entry.id} needs a board for its lesson and thumbnail", lesson.examples.isNotEmpty())
             lesson.examples.forEach { example ->
                 assertTrue(entry.id, example.technique in entry.solverTechniques)
                 if (example.isAdvanced) {
@@ -31,7 +30,7 @@ class TutorialAdvancedLessonTest {
 
     @Test fun allSnapshotsAreUniquelySolvableAndKeepTheSolutionInTheirCandidates() {
         val checker = UniqueSolutionChecker()
-        advancedTutorialExamples.forEach { example ->
+        recordedExamples.forEach { example ->
             val label = example.technique.name
             assertEquals(label, UniquenessResult.Unique, checker.check(example.givens.grid(), example.solution.grid()))
             assertTrue(label, example.initialState.isValid())
@@ -66,7 +65,7 @@ class TutorialAdvancedLessonTest {
     }
 
     @Test fun recordedProofsReproduceWithTheNamedDetectorAndChangeOnlyProvedTargets() {
-        advancedTutorialExamples.forEach { example ->
+        recordedExamples.forEach { example ->
             val step = example.deduction
             assertEquals(example.technique.name, step, detector(example.technique).find(example.initialState))
             step.placements.forEach { placement ->
@@ -89,7 +88,7 @@ class TutorialAdvancedLessonTest {
     }
 
     @Test fun forcingExamplesCoverAllAlternativesAndNetsActuallyJoinFacts() {
-        advancedTutorialExamples.forEach { example ->
+        recordedExamples.forEach { example ->
             val graph = example.deduction.evidence.inferenceGraph
             val premise = graph.premise ?: return@forEach
             val assumptions = graph.nodes.filter { it.isAssumption }
@@ -112,7 +111,20 @@ class TutorialAdvancedLessonTest {
                     assertEquals(premise.candidates.toSet(), assumptions.map { it.candidate }.toSet())
                     assertNull(graph.contradiction)
                 }
-                InferencePremiseType.DIGIT -> fail("No digit-forcing entry is in this catalog")
+                InferencePremiseType.DIGIT -> {
+                    assertEquals(1, premise.candidates.size)
+                    assertEquals(premise.candidates.toSet(), assumptions.map { it.candidate }.toSet())
+                    if (graph.contradiction == null) {
+                        assertEquals(2, assumptions.size)
+                        assertEquals(InferenceTruth.entries.toSet(), assumptions.map { it.truth }.toSet())
+                    } else {
+                        assertEquals(1, assumptions.size)
+                        assertEquals(InferenceTruth.FALSE, assumptions.single().truth)
+                        assertTrue(example.deduction.placements.any {
+                            it.cell == premise.candidates.single().cell && it.digit == premise.candidates.single().digit
+                        })
+                    }
+                }
             }
             val byId = graph.nodes.associateBy { it.id }
             graph.edges.forEach { edge ->
@@ -123,7 +135,7 @@ class TutorialAdvancedLessonTest {
     }
 
     @Test fun coloringAlternatesAcrossEveryConjugateLinkAndGroupsStayGrouped() {
-        advancedTutorialExamples.forEach { example ->
+        recordedExamples.forEach { example ->
             if (example.technique in setOf(TechniqueId.SIMPLE_COLORING_TYPE_1, TechniqueId.SIMPLE_COLORING_TYPE_2)) {
                 assertEquals(example.patternCandidates, example.coloring.keys)
                 example.deduction.evidence.links.forEach { link ->
@@ -140,25 +152,56 @@ class TutorialAdvancedLessonTest {
 
     @Test fun wingLessonsNameValidPivotAndWingGroupsForTheActualEliminations() {
         val wings = setOf(TechniqueId.XY_WING, TechniqueId.XYZ_WING, TechniqueId.WXYZ_WING,
-            TechniqueId.FIVE_Y_WING, TechniqueId.SIX_Y_WING, TechniqueId.SEVEN_Y_WING)
-        advancedTutorialExamples.filter { it.technique in wings }.forEach { example ->
+            TechniqueId.FIVE_Y_WING, TechniqueId.SIX_Y_WING, TechniqueId.SEVEN_Y_WING,
+            TechniqueId.EIGHT_Y_WING, TechniqueId.NINE_Y_WING)
+        recordedExamples.filter { it.technique in wings }.forEach { example ->
             val groups = requireNotNull(example.wingGroups) { example.technique.name }
             assertEquals(example.patternCells, groups.pivot + groups.firstWing + groups.secondWing)
             val z = example.deduction.eliminations.first().candidate.digit
             fun Set<CellRef>.digits() = flatMap(example.initialState::candidatesAt).toSet()
             assertEquals(setOf(z), groups.firstWing.digits().intersect(groups.secondWing.digits()))
             assertEquals(example.patternCells.size, example.patternCells.digits().size)
+            // Independently verify the counting argument after each proposed elimination:
+            // fewer digits remain than pattern cells, and no nonseeing cells can repeat one.
+            example.deduction.eliminations.forEach { elimination ->
+                val target = elimination.candidate
+                val remaining = example.patternCells.associateWith { cell ->
+                    example.initialState.candidatesAt(cell) - if (cell.sees(target.cell)) setOf(target.digit) else emptySet()
+                }
+                assertTrue(example.technique.name, remaining.values.flatten().toSet().size < example.patternCells.size)
+                example.patternCells.forEach { first ->
+                    example.patternCells.filter { it != first && !first.sees(it) }.forEach { second ->
+                        assertTrue(remaining.getValue(first).intersect(remaining.getValue(second)).isEmpty())
+                    }
+                }
+            }
+        }
+    }
+
+    @Test fun lastDigitExamplesHighlightExactlyTheEightFilledCellsInTheirHouse() {
+        val examples = TutorialLessons.find(TechniqueId.LAST_DIGIT.name)!!.examples
+        examples.forEach { example ->
+            assertTrue(example.isSingle)
+            assertEquals(8, example.excludedCells.size)
+            assertEquals(example.house.cells().toSet(), example.excludedCells + example.patternCells)
+            assertTrue(example.excludedCells.all { example.initialState.valueAt(it) != 0 })
         }
     }
 
     private fun String.grid() = Array(9) { row -> IntArray(9) { col -> this[row * 9 + col].digitToInt() } }
 
     private fun detector(technique: TechniqueId): TechniqueDetector = when (technique) {
+        TechniqueId.LAST_DIGIT -> LastDigitDetector()
+        TechniqueId.LOCKED_PAIR -> NakedSubsetDetector(2)
+        TechniqueId.LOCKED_TRIPLE -> NakedSubsetDetector(3)
         TechniqueId.POINTING_PAIR, TechniqueId.POINTING_TRIPLE -> PointingCandidatesDetector()
         TechniqueId.CLAIMING_PAIR, TechniqueId.CLAIMING_TRIPLE -> ClaimingCandidatesDetector()
         TechniqueId.X_WING -> BasicFishDetector(2)
         TechniqueId.SWORDFISH -> BasicFishDetector(3)
         TechniqueId.JELLYFISH -> BasicFishDetector(4)
+        TechniqueId.STARFISH -> BasicFishDetector(5)
+        TechniqueId.WHALE -> BasicFishDetector(6)
+        TechniqueId.LEVIATHAN -> BasicFishDetector(7)
         TechniqueId.FINNED_X_WING -> FinnedFishDetector(2)
         TechniqueId.FINNED_SWORDFISH -> FinnedFishDetector(3)
         TechniqueId.FINNED_JELLYFISH -> FinnedFishDetector(4)
@@ -172,18 +215,29 @@ class TutorialAdvancedLessonTest {
         TechniqueId.FIVE_Y_WING -> NYWingDetector(5)
         TechniqueId.SIX_Y_WING -> NYWingDetector(6)
         TechniqueId.SEVEN_Y_WING -> NYWingDetector(7)
+        TechniqueId.EIGHT_Y_WING -> NYWingDetector(8)
+        TechniqueId.NINE_Y_WING -> NYWingDetector(9)
         TechniqueId.W_WING -> WWingDetector()
+        TechniqueId.REMOTE_PAIR -> RemotePairDetector()
+        TechniqueId.CHUTE_REMOTE_PAIR_SINGLE, TechniqueId.CHUTE_REMOTE_PAIR_DOUBLE,
+        TechniqueId.CHUTE_REMOTE_PAIR_BONUS -> ChuteRemotePairDetector()
+        TechniqueId.SUE_DE_COQ_TYPE_1 -> SueDeCoqDetector(2)
+        TechniqueId.SUE_DE_COQ_TYPE_2 -> SueDeCoqDetector(3)
         TechniqueId.SIMPLE_COLORING_TYPE_1, TechniqueId.SIMPLE_COLORING_TYPE_2 -> SimpleColoringDetector()
         TechniqueId.X_CHAIN, TechniqueId.X_CHAIN_LOOP, TechniqueId.X_CHAIN_ONE_ENDPOINT -> XChainDetector()
         TechniqueId.GROUPED_X_CHAIN -> GroupedXChainDetector()
         TechniqueId.THREE_D_MEDUSA -> ThreeDMedusaDetector()
         TechniqueId.XY_CHAIN, TechniqueId.XY_CHAIN_LOOP -> XYChainDetector()
         TechniqueId.AIC -> AicDetector()
-        TechniqueId.NISHIO_FORCING_CHAIN -> ForcingChainDetector(setOf(InferencePremiseType.NISHIO))
+        TechniqueId.NISHIO_FORCING_CHAIN, TechniqueId.NISHIO_FORCING_NET -> ForcingChainDetector(setOf(InferencePremiseType.NISHIO))
+        TechniqueId.DIGIT_FORCING_CHAIN, TechniqueId.DIGIT_FORCING_NET -> ForcingChainDetector(setOf(InferencePremiseType.DIGIT))
         TechniqueId.CELL_FORCING_CHAIN, TechniqueId.CELL_FORCING_NET -> ForcingChainDetector(setOf(InferencePremiseType.CELL))
         TechniqueId.REGION_FORCING_CHAIN, TechniqueId.REGION_FORCING_NET -> ForcingChainDetector(setOf(InferencePremiseType.REGION))
         TechniqueId.UNIQUE_RECTANGLE_TYPE_1, TechniqueId.UNIQUE_RECTANGLE_TYPE_2, TechniqueId.UNIQUE_RECTANGLE_TYPE_3,
-        TechniqueId.UNIQUE_RECTANGLE_TYPE_4, TechniqueId.UNIQUE_RECTANGLE_TYPE_5 -> UniqueRectangleDetector()
+        TechniqueId.UNIQUE_RECTANGLE_TYPE_4, TechniqueId.UNIQUE_RECTANGLE_TYPE_5,
+        TechniqueId.UNIQUE_RECTANGLE_TYPE_1M, TechniqueId.UNIQUE_RECTANGLE_TYPE_4M,
+        TechniqueId.UNIQUE_RECTANGLE_TYPE_5P, TechniqueId.UNIQUE_RECTANGLE_TYPE_6,
+        TechniqueId.UNIQUE_RECTANGLE_TYPE_7 -> UniqueRectangleDetector()
         TechniqueId.BUG_PLUS_ONE -> BugPlusOneDetector()
         else -> error("Not an advanced catalog technique: $technique")
     }

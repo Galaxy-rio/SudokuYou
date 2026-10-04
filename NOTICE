@@ -30,8 +30,10 @@ The tutorial taxonomy and solving rules follow Sudoku Coach:
 https://sudoku.coach/en/learn/technique-overview
 
 Advanced numeric example positions are adapted from the public lessons linked
-beside each snapshot in TutorialAdvancedExamples.kt. Candidate states and full
-deductions are independently checked by this application's solver and tests.
+beside each snapshot in TutorialAdvancedExamples.kt and TutorialAdditionalExamples.kt.
+Additional examples marked as locally constructed are original positions.
+Candidate states and full deductions are independently checked by this
+application's solver and tests.
 Basic hidden/naked examples are generated locally. Tutorial prose is written
 for this application in English and Simplified Chinese; no article paragraphs,
 screenshots, or external board artwork are bundled.

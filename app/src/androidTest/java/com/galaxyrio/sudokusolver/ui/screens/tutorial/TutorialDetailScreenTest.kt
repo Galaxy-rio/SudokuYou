@@ -29,8 +29,6 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.galaxyrio.sudokusolver.R
@@ -74,7 +72,7 @@ class TutorialDetailScreenTest {
     }
 
     @Test
-    fun everyCatalogLessonHasContentAndExistingExamplesKeepCorrectBoundaries() {
+    fun everyCatalogLessonHasABoardAndExamplesKeepCorrectBoundaries() {
         showLesson()
         val requestedLesson = InstrumentationRegistry.getArguments().getString("tutorialLesson")
         val lessons = TutorialLessons.all.filter { requestedLesson == null || it.id == requestedLesson }
@@ -87,15 +85,8 @@ class TutorialDetailScreenTest {
                 compose.onNodeWithTag("tutorial_aliases")
                     .assertTextEquals(context.getString(R.string.tutorial_aliases, context.getString(aliases)))
             }
-            if (lesson.examples.isEmpty()) {
-                captureForVisualReview(lesson.id)
-                val copy = advancedLessonCopy(lesson.technique)
-                listOf(copy.rule, copy.reason, copy.tip).forEach { text ->
-                    compose.onNodeWithText(context.getString(text)).performScrollTo().assertIsDisplayed()
-                }
-                compose.onAllNodesWithContentDescription(context.getString(R.string.tutorial_show_examples)).assertCountEquals(0)
-                return@forEach
-            }
+            check(lesson.examples.isNotEmpty()) { "${lesson.id} is missing its board example" }
+            compose.onNodeWithTag("tutorial_board").assertIsDisplayed()
             assertProgress(examples = false, index = 1)
             action(R.string.tutorial_previous_step).assertIsNotEnabled()
             repeat(4) { index ->
@@ -165,7 +156,9 @@ class TutorialDetailScreenTest {
         if (InstrumentationRegistry.getArguments().getString("captureTutorials") != "true") return
         if (id !in setOf("FINNED_JELLYFISH", "FIVE_Y_WING", "GROUPED_X_CHAIN", "THREE_D_MEDUSA",
                 "SIMPLE_COLORING_TYPE_1", "CELL_FORCING_NET", "UNIQUE_RECTANGLE_TYPE_3",
-                "LAST_DIGIT", "SUE_DE_COQ_TYPE_2", "LOCKED_PAIR")) return
+                "LAST_DIGIT", "SUE_DE_COQ_TYPE_2", "LOCKED_PAIR", "LOCKED_TRIPLE", "POINTING_TRIPLE",
+                "EIGHT_Y_WING", "NINE_Y_WING", "CHUTE_REMOTE_PAIR_BONUS", "LEVIATHAN",
+                "UNIQUE_RECTANGLE_TYPE_4M", "DIGIT_FORCING_CHAIN", "DIGIT_FORCING_NET")) return
         val directory = requireNotNull(context.getExternalFilesDir("tutorial-preview"))
         val language = InstrumentationRegistry.getArguments().getString("tutorialLocale") ?: "en"
         File(directory, "$id-$language.png").outputStream().use { output ->
