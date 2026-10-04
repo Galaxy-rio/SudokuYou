@@ -6,6 +6,7 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.PlaceholderSize.Companion.AnimatedSize
 import androidx.compose.animation.SharedTransitionScope.ResizeMode.Companion.RemeasureToBounds
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,9 +37,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.galaxyrio.sudokusolver.R
-import com.galaxyrio.sudokusolver.domain.model.Sudoku
 import com.galaxyrio.sudokusolver.domain.tutorial.TutorialLessons
-import com.galaxyrio.sudokusolver.ui.screens.play.SudokuThumbnail
 import com.galaxyrio.sudokusolver.ui.util.label
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -145,39 +145,38 @@ private fun TutorialTechniqueItem(
 ) {
     val lesson = TutorialLessons.find(technique.id)
     val content: @Composable () -> Unit = {
-        Text(stringResource(technique.titleResource), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(stringResource(technique.titleResource))
     }
     val supportingContent: @Composable () -> Unit = {
-        Text(technique.level?.label().orEmpty(), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            technique.aliasesResource?.let { Text(stringResource(R.string.tutorial_aliases, stringResource(it))) }
+            Text(technique.level.label())
+        }
     }
     val colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceBright)
     val shapes = ListItemDefaults.segmentedShapes(index = index, count = count)
     with(sharedTransitionScope) {
-        if (lesson == null) {
-            SegmentedListItem(
-                verticalAlignment = Alignment.CenterVertically,
-                shapes = shapes, colors = colors, content = content, supportingContent = supportingContent,
-                leadingContent = { SudokuThumbnail(EmptyTutorialBoard, modifier = Modifier.size(64.dp)) },
-            )
-        } else {
-            SegmentedListItem(
-                selected = false,
-                onClick = onClick,
-                verticalAlignment = Alignment.CenterVertically,
-                shapes = shapes, colors = colors, content = content, supportingContent = supportingContent,
-                leadingContent = {
-                    TutorialThumbnail(lesson.examples.first(), Modifier.size(64.dp).sharedBounds(
+        SegmentedListItem(
+            selected = false,
+            onClick = onClick,
+            verticalAlignment = Alignment.CenterVertically,
+            shapes = shapes, colors = colors, content = content, supportingContent = supportingContent,
+            leadingContent = {
+                val example = lesson?.examples?.firstOrNull()
+                if (example != null) {
+                    TutorialThumbnail(example, Modifier.size(64.dp).sharedBounds(
                         rememberSharedContentState(tutorialBoardKey(technique.id)), animatedVisibilityScope,
                         resizeMode = RemeasureToBounds,
                     ))
-                },
-                modifier = Modifier.sharedBounds(
-                    rememberSharedContentState(tutorialContainerKey(technique.id)), animatedVisibilityScope,
-                    resizeMode = RemeasureToBounds, placeholderSize = AnimatedSize,
-                ),
-            )
-        }
+                } else {
+                    Icon(Icons.AutoMirrored.Outlined.MenuBook, contentDescription = null,
+                        modifier = Modifier.size(64.dp).padding(16.dp), tint = MaterialTheme.colorScheme.primary)
+                }
+            },
+            modifier = Modifier.sharedBounds(
+                rememberSharedContentState(tutorialContainerKey(technique.id)), animatedVisibilityScope,
+                resizeMode = RemeasureToBounds, placeholderSize = AnimatedSize,
+            ),
+        )
     }
 }
-
-private val EmptyTutorialBoard = List(Sudoku.CELL_COUNT) { 0 }

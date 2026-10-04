@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="tutorial_category_hidden">隐性技巧</string>
-    <string name="tutorial_category_naked">显性技巧</string>
-    <string name="tutorial_category_locked_candidates">区块排除</string>
-    <string name="tutorial_category_fish">鱼形技巧（X-Wing 等）</string>
+    <string name="tutorial_category_hidden">隐性数组</string>
+    <string name="tutorial_category_naked">显性数组</string>
+    <string name="tutorial_category_locked_candidates">锁定候选数（区块排除）</string>
+    <string name="tutorial_category_fish">鱼形技巧</string>
     <string name="tutorial_category_single_digit">单数字技巧</string>
-    <string name="tutorial_category_y_wings">Y-Wing 类技巧</string>
-    <string name="tutorial_category_w_wing">W-Wing 技巧</string>
     <string name="tutorial_category_chains">链式技巧</string>
     <string name="tutorial_category_uniqueness">唯一性技巧</string>
 
-    <string name="tutorial_technique_locked_candidate">区块排除</string>
-    <string name="tutorial_technique_simple_coloring">简单着色</string>
-    <string name="tutorial_technique_cell_region_forcing_chain">单元格／区域强制链</string>
-    <string name="tutorial_technique_cell_region_forcing_net">单元格／区域强制网</string>
 </resources>

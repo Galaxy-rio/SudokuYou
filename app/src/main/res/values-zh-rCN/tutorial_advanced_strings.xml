@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="tutorial_rule_locked">一宫与一行或一列共有三个格。如果某数字在其中一个区域的所有位置都落在交集中，它就被锁定在这里。从宫出发是指向型，从行或列出发是认领型。</string>
-    <string name="tutorial_reason_locked">起始区域必须有一个这个数字，因此交集也为另一个区域提供了这个数字。另一个区域中交集以外的位置便不能再填它。</string>
-    <string name="tutorial_tip_locked">检查起始区域中这个数字的全部候选位置。两三个候选排成一线还不够，区域内不能有交集以外的其他位置。</string>
     <string name="tutorial_rule_x_wing">只看一个数字，找出 2 行，使它在这些行中的全部候选只落在同样的 2 列中。这些行是基础区域，这些列是覆盖区域。X 翼也可以把行列对调。</string>
     <string name="tutorial_reason_x_wing">2 个基础区域各需要一个这个数字。这 2 个数字必须占据不同的覆盖区域，因此恰好占满它们。覆盖区域中，基础区域以外的同一候选均可删除。</string>
-    <string name="tutorial_tip_x_wing">数的是区域数量，不是矩形顶点。X 翼不要求每个交点都有候选，但必须确认基础区域的候选没有落在这 2 个覆盖区域之外。</string>
+    <string name="tutorial_tip_x_wing">每条基础行列中，该数字都必须恰好有两个位置，构成四个角。检查完整的基础行列；若有额外位置，可能需要使用带鳍／缺角 X 翼，其删数范围更受限制。</string>
     <string name="tutorial_rule_finned_x_wing">从 2×2 的X 翼结构出发，允许基础区域中有额外的同数字候选，这些额外位置称为鳍。所有鳍必须在同一宫。删数目标必须位于覆盖区域内、基础区域外，并看得到所有鳍。</string>
     <string name="tutorial_reason_finned_x_wing">分两种情况：若某个鳍成立，它会直接排除目标；若所有鳍都不成立，剩下的X 翼会排除同一个目标。只有两种情况下都能排除的候选才可以删除。</string>
     <string name="tutorial_tip_finned_x_wing">不能直接删除整条覆盖线上的候选，只能删除看得到所有鳍的目标。鳍旁缺少一个鱼身候选时称为退化型，仍须验证同样的两种情况。</string>
@@ -54,9 +51,6 @@
     <string name="tutorial_rule_w_wing">找两个不互相可见、候选同为 {x,y} 的双候选格。再找一个区域，使其中 x 的所有候选都至少被这两个格之一看见。最简单的桥梁是共轭对，也可以是候选组。</string>
     <string name="tutorial_reason_w_wing">两个双候选格不能同时为 x，否则桥梁区域中的所有 x 都会被排除。因此至少一个格为 y，可以从同时看见这两个格的位置删除 y。</string>
     <string name="tutorial_tip_w_wing">仅有两组相同候选还不够，必须验证桥梁及两端的可见关系。桥梁可以使用任一数字，删去的是另一数字。</string>
-    <string name="tutorial_rule_simple_coloring">只看一个数字，从一组共轭对开始，沿相连的共轭对扩展，每经过一条连接便在蓝、橙之间交替。在这个连通部分中，一整组颜色成立，另一整组不成立。</string>
-    <string name="tutorial_reason_simple_coloring">若某候选同时看见两种颜色，无论哪组成立，它都不成立，这称为颜色陷阱。若同一种颜色的两个候选互相可见，该整组颜色不成立，另一组成立，这称为颜色矛盾。</string>
-    <string name="tutorial_tip_simple_coloring">每次只为一个连通部分着色。互不相连的两组中，同样的颜色没有共同含义。颜色标记的是两种假设，不是预先给出的答案。</string>
     <string name="tutorial_rule_x_chain">用同一个数字构建链。强连接把“不成立”推到“成立”，弱连接把“成立”推到“不成立”。两类连接交替使用，并以强连接开始和结束。</string>
     <string name="tutorial_reason_x_chain">假设第一个端点不成立，沿链推理会使最后一个端点成立。因此至少一个端点成立，能排除同时看见两端的候选。链闭合时，也可能通过重复端点或环上的弱连接得到填数或删数结论。</string>
     <string name="tutorial_tip_x_chain">共轭对可以按链的需要提供强连接或弱连接，但不能把同一区域内任意两个同数字候选都当作强连接。每道例题都要检查实际证明的端点。</string>
@@ -75,12 +69,6 @@
     <string name="tutorial_rule_nishio">先假设一个候选成立，然后只传播必然结论：成立的候选排除与它冲突的候选；某格或某数字在某区域只剩一个候选时，它便成立。</string>
     <string name="tutorial_reason_nishio">若这个假设使一个候选同时成立与不成立、使某格或某区域中的某数字无处可填，或产生重复数字，就说明假设不可能。删除最初假设的候选，图中箭头记录的就是这个反证过程。</string>
     <string name="tutorial_tip_nishio">每个后续结论都依赖最初的假设。没有推到矛盾，只表示这条链暂时没有结论，不能因此认定假设的候选正确。</string>
-    <string name="tutorial_rule_forcing_chain">穷尽同一处的全部可能：某格中的所有候选，或某数字在一个区域中的所有位置。分别假设每个可能成立，建立一个分支，其中至少一个分支必然符合真实答案。</string>
-    <string name="tutorial_reason_forcing_chain">在每个分支中传播必然结论。若所有可行分支都使同一个候选成立，就填入它；若都使它不成立，就删除它。出现矛盾的分支可排除，其余分支仍须覆盖全部可能。</string>
-    <string name="tutorial_tip_forcing_chain">不能跳过不方便推演的候选。分支颜色代表不同假设，不能把不同假设下的结论拼在一起，作为同一步推理的前提。</string>
-    <string name="tutorial_rule_forcing_net">强制网从某格的所有候选，或某数字在某区域中的所有位置出发。在同一个假设下，推理可以分叉后再汇合；汇合处可能需要同时使用多个已经得到的排除结论。</string>
-    <string name="tutorial_reason_forcing_net">例如，两条路径分别排除 {x,y,z} 格中的 x 与 y，两者合起来才能确定 z，仅一条路径并不足够。逐一完成每个初始假设下的网络，所有可行假设共有的结论才不依赖假设。</string>
-    <string name="tutorial_tip_forcing_net">在每个汇合点核对所有前提，而且这些前提必须来自同一个假设分支。棋盘上两条线相交不代表逻辑汇合，下面的证明会明确列出需要合用的前提。</string>
     <string name="tutorial_rule_ur1">仅用于已知有唯一解的标准数独。同两行、同两列且恰好分布在两宫的四个未填格，不能全部只剩同一对 {a,b}，否则交换 a、b 会产生第二个解。三个角恰好只有 {a,b}，第四个角有额外候选。</string>
     <string name="tutorial_reason_ur1">若第四角也填 a 或 b，四角就形成可交换的结构。因此第四角必须填额外数字，可从该格删除 a 与 b。</string>
     <string name="tutorial_tip_ur1">四角都必须尚未填数，已知数字不能参与交换。必须恰好跨两宫，不能是一宫或四宫。</string>

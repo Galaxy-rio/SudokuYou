@@ -28,6 +28,7 @@ import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material.icons.filled.FirstPage
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalButton
@@ -49,6 +50,7 @@ import com.galaxyrio.sudokusolver.data.settings.CoordinateNotation
 import com.galaxyrio.sudokusolver.domain.game.HintIssue
 import com.galaxyrio.sudokusolver.domain.solver.SolveTrace
 import com.galaxyrio.sudokusolver.domain.solver.SolveTraceStatus
+import com.galaxyrio.sudokusolver.domain.solver.TechniqueId
 import com.galaxyrio.sudokusolver.ui.motion.materialQuickCrossfade
 import com.galaxyrio.sudokusolver.ui.motion.materialQuickFadeIn
 import com.galaxyrio.sudokusolver.ui.motion.materialQuickFadeOut
@@ -70,6 +72,7 @@ fun GameHintPanel(
     onStepSelected: (Int) -> Unit,
     onRevealDetails: () -> Unit,
     onApplyNext: () -> Unit,
+    onOpenTutorial: (TechniqueId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -96,6 +99,7 @@ fun GameHintPanel(
                 onStepSelected = onStepSelected,
                 onRevealDetails = onRevealDetails,
                 onApplyNext = onApplyNext,
+                onOpenTutorial = onOpenTutorial,
             )
         }
     }
@@ -252,6 +256,7 @@ private fun TraceBrowser(
     onStepSelected: (Int) -> Unit,
     onRevealDetails: () -> Unit,
     onApplyNext: () -> Unit,
+    onOpenTutorial: (TechniqueId) -> Unit,
 ) {
     val lastIndex = trace.steps.lastIndex
     val index = selectedStepIndex.coerceIn(0, lastIndex)
@@ -261,6 +266,7 @@ private fun TraceBrowser(
         techniqueName = step.technique.localizedName(),
         stepNumber = if (areHintDetailsVisible) index + 1 else null,
         totalSteps = trace.steps.size,
+        onOpenTutorial = { onOpenTutorial(step.technique) },
     )
 
     if (areHintDetailsVisible) {
@@ -427,24 +433,37 @@ private fun HintStepHeader(
     techniqueName: String,
     stepNumber: Int?,
     totalSteps: Int,
+    onOpenTutorial: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AnimatedContent(
-            targetState = techniqueName,
-            transitionSpec = { materialQuickCrossfade() },
-            contentAlignment = Alignment.CenterStart,
+        Row(
             modifier = Modifier.weight(1f),
-            label = "hint_technique_title",
-        ) { targetTechniqueName ->
-            Text(
-                text = targetTechniqueName,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AnimatedContent(
+                targetState = techniqueName,
+                transitionSpec = { materialQuickCrossfade() },
+                contentAlignment = Alignment.CenterStart,
+                modifier = Modifier.weight(1f, fill = false),
+                label = "hint_technique_title",
+            ) { targetTechniqueName ->
+                Text(
+                    text = targetTechniqueName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            IconButton(onClick = onOpenTutorial) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                    contentDescription = stringResource(R.string.game_hint_open_tutorial, techniqueName),
+                    modifier = Modifier.size(20.dp),
+                )
+            }
         }
         if (stepNumber != null) {
             AnimatedContent(

@@ -22,11 +22,11 @@
     <string name="tutorial_rule_hidden_single">Every row, column and box must contain each digit once. If a digit can go in only one cell of a region, it is a hidden single—even when that cell has other candidates.</string>
     <string name="tutorial_rule_hidden_pair">A hidden pair is two digits whose only possible positions in one row, column or box are the same two cells. Other candidates may hide the pair inside those cells.</string>
     <string name="tutorial_rule_hidden_triple">A hidden triple is three digits confined to three cells in one row, column or box. The cells may contain extra candidates, and each cell does not need to contain all three digits.</string>
-    <string name="tutorial_rule_hidden_quad">A hidden quadruple is four digits confined to four cells in one row, column or box. Count the combined positions of the four digits; they must occupy exactly four cells.</string>
+    <string name="tutorial_rule_hidden_quad">A hidden quad is four digits confined to four cells in one row, column or box. Count the combined positions of the four digits; they must occupy exactly four cells.</string>
     <string name="tutorial_rule_naked_single">A naked single is an empty cell with just one candidate left. Check its row, column and box together: every other digit is already ruled out by a placed number.</string>
     <string name="tutorial_rule_naked_pair">A naked pair is two cells in one row, column or box with exactly the same two candidates and no others. Those two digits must be reserved for the pair.</string>
     <string name="tutorial_rule_naked_triple">A naked triple is three cells in one row, column or box whose candidates, combined, are exactly three digits. Each cell can have two or three of them; identical candidate lists are not required.</string>
-    <string name="tutorial_rule_naked_quad">A naked quadruple is four cells in one row, column or box whose candidates, combined, are exactly four digits. Individual cells can have fewer than four candidates.</string>
+    <string name="tutorial_rule_naked_quad">A naked quad is four cells in one row, column or box whose candidates, combined, are exactly four digits. Individual cells can have fewer than four candidates.</string>
     <string name="tutorial_find_hidden_single">Look for %1$s in %2$s. Red cells in this region are excluded; red givens outside it block other positions. Only %3$s remains, with the hidden single marked in green.</string>
     <string name="tutorial_find_naked_single">Inspect %3$s in %2$s. Its row, column and box already contain all digits except %1$s. Only that candidate remains in the green cell.</string>
     <!-- Group sizes are always 2, 3 or 4; singles use separate explanations. -->

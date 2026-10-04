@@ -11,11 +11,14 @@ import org.junit.Test
 class TutorialAdvancedLessonTest {
     @Test fun everyCatalogEntryHasContentAndEveryExampleBelongsToItsEntry() {
         val entries = tutorialCategories.flatMap { it.techniques }
-        assertEquals(41, entries.size)
+        assertEquals(TechniqueId.entries.toSet(), entries.flatMap { it.solverTechniques }.toSet())
         assertEquals(entries.map { it.id }.toSet(), TutorialLessons.all.map { it.id }.toSet())
         entries.forEach { entry ->
             val lesson = requireNotNull(TutorialLessons.find(entry.id))
-            assertTrue(entry.id, lesson.examples.isNotEmpty())
+            if (lesson.examples.isEmpty()) {
+                val text = advancedLessonCopy(lesson.technique)
+                assertTrue(entry.id, text.rule != 0 && text.reason != 0 && text.tip != 0)
+            }
             lesson.examples.forEach { example ->
                 assertTrue(entry.id, example.technique in entry.solverTechniques)
                 if (example.isAdvanced) {

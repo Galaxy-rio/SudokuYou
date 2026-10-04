@@ -337,7 +337,7 @@
     <string name="technique_x_wing">X-Wing（X 翼）</string>
     <string name="technique_skyscraper">摩天楼</string>
     <string name="technique_two_string_kite">双线风筝</string>
-    <string name="technique_turbot_crane">Turbot Crane（鹤）</string>
+    <string name="technique_turbot_crane">Crane（鹤）</string>
     <string name="technique_xy_wing">XY-Wing（XY 翼）</string>
     <string name="technique_xyz_wing">XYZ-Wing（XYZ 翼）</string>
     <string name="technique_w_wing">W-Wing（W 翼）</string>
@@ -345,7 +345,7 @@
     <string name="technique_finned_swordfish">带鳍／缺角剑鱼</string>
     <string name="technique_finned_jellyfish">带鳍／缺角水母</string>
     <string name="technique_grouped_x_chain">分组 X 链</string>
-    <string name="technique_three_d_medusa">3D Medusa（三维着色法）</string>
+    <string name="technique_three_d_medusa">3D-Medusa（三维着色法）</string>
     <string name="technique_five_y_wing">5-Y-Wing（五阶 Y 翼）</string>
     <string name="technique_six_y_wing">6-Y-Wing（六阶 Y 翼）</string>
     <string name="technique_seven_y_wing">7-Y-Wing（七阶 Y 翼）</string>
@@ -378,7 +378,7 @@
     <string name="technique_unique_rectangle_type_6">唯一矩形类型 6</string>
     <string name="technique_unique_rectangle_type_7">唯一矩形类型 7</string>
     <string name="technique_jellyfish">Jellyfish（水母）</string>
-    <string name="technique_wxyz_wing">4-Y-Wing（WXYZ-Wing）</string>
+    <string name="technique_wxyz_wing">4-Y-Wing（四阶 Y 翼）</string>
     <string name="technique_starfish">Starfish（海星）</string>
     <string name="technique_whale">Whale（鲸鱼）</string>
     <string name="technique_leviathan">Leviathan（利维坦）</string>

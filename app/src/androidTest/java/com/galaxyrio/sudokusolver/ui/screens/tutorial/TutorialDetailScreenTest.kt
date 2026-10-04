@@ -2,10 +2,14 @@ package com.galaxyrio.sudokusolver.ui.screens.tutorial
 
 import androidx.activity.ComponentActivity
 import android.graphics.Bitmap
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
@@ -25,6 +29,8 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.galaxyrio.sudokusolver.R
@@ -32,6 +38,7 @@ import com.galaxyrio.sudokusolver.domain.tutorial.TutorialExample
 import com.galaxyrio.sudokusolver.domain.tutorial.TutorialLessons
 import com.galaxyrio.sudokusolver.ui.theme.SudokuYouTheme
 import java.io.File
+import java.util.Locale
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -40,12 +47,19 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class TutorialDetailScreenTest {
     @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
-    private val context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val context by lazy {
+        val base = InstrumentationRegistry.getInstrumentation().targetContext
+        val language = InstrumentationRegistry.getArguments().getString("tutorialLocale")
+        if (language == null) base else base.createConfigurationContext(Configuration(base.resources.configuration).apply {
+            setLocale(Locale.forLanguageTag(language))
+        })
+    }
     private val techniqueId = mutableStateOf("HIDDEN_SINGLE")
 
     private fun showLesson(): StateRestorationTester {
         val restoration = StateRestorationTester(compose)
         restoration.setContent {
+            CompositionLocalProvider(LocalContext provides context, LocalConfiguration provides context.resources.configuration) {
             SudokuYouTheme(dynamicColor = false) {
                 SharedTransitionLayout {
                     val sharedScope = this
@@ -54,12 +68,13 @@ class TutorialDetailScreenTest {
                     }
                 }
             }
+            }
         }
         return restoration
     }
 
     @Test
-    fun everyCatalogLessonHasFiveStepsAndNavigableExamplesWithCorrectBoundaries() {
+    fun everyCatalogLessonHasContentAndExistingExamplesKeepCorrectBoundaries() {
         showLesson()
         val requestedLesson = InstrumentationRegistry.getArguments().getString("tutorialLesson")
         val lessons = TutorialLessons.all.filter { requestedLesson == null || it.id == requestedLesson }
@@ -68,6 +83,19 @@ class TutorialDetailScreenTest {
             compose.runOnIdle { techniqueId.value = lesson.id }
             val entry = tutorialCategories.flatMap { it.techniques }.first { it.id == lesson.id }
             compose.onNodeWithTag("tutorial_technique_title").assertTextEquals(context.getString(entry.titleResource)).assertIsDisplayed()
+            entry.aliasesResource?.let { aliases ->
+                compose.onNodeWithTag("tutorial_aliases")
+                    .assertTextEquals(context.getString(R.string.tutorial_aliases, context.getString(aliases)))
+            }
+            if (lesson.examples.isEmpty()) {
+                captureForVisualReview(lesson.id)
+                val copy = advancedLessonCopy(lesson.technique)
+                listOf(copy.rule, copy.reason, copy.tip).forEach { text ->
+                    compose.onNodeWithText(context.getString(text)).performScrollTo().assertIsDisplayed()
+                }
+                compose.onAllNodesWithContentDescription(context.getString(R.string.tutorial_show_examples)).assertCountEquals(0)
+                return@forEach
+            }
             assertProgress(examples = false, index = 1)
             action(R.string.tutorial_previous_step).assertIsNotEnabled()
             repeat(4) { index ->
@@ -136,9 +164,11 @@ class TutorialDetailScreenTest {
     private fun captureForVisualReview(id: String) {
         if (InstrumentationRegistry.getArguments().getString("captureTutorials") != "true") return
         if (id !in setOf("FINNED_JELLYFISH", "FIVE_Y_WING", "GROUPED_X_CHAIN", "THREE_D_MEDUSA",
-                "simple_coloring", "cell_region_forcing_net", "UNIQUE_RECTANGLE_TYPE_3")) return
+                "SIMPLE_COLORING_TYPE_1", "CELL_FORCING_NET", "UNIQUE_RECTANGLE_TYPE_3",
+                "LAST_DIGIT", "SUE_DE_COQ_TYPE_2", "LOCKED_PAIR")) return
         val directory = requireNotNull(context.getExternalFilesDir("tutorial-preview"))
-        File(directory, "$id.png").outputStream().use { output ->
+        val language = InstrumentationRegistry.getArguments().getString("tutorialLocale") ?: "en"
+        File(directory, "$id-$language.png").outputStream().use { output ->
             compose.onRoot().captureToImage().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, output)
         }
     }

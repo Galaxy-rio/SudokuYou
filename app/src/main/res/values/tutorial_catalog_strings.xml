@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="game_hint_open_tutorial">Open %1$s tutorial</string>
+    <string name="tutorial_category_singles">Singles</string>
+    <string name="tutorial_category_wings">Wings</string>
+    <string name="tutorial_category_remote_pairs">Remote pairs</string>
+    <string name="tutorial_category_coloring">Coloring</string>
+    <string name="tutorial_category_forcing">Forcing chains and nets</string>
+    <string name="tutorial_category_sue_de_coq">Sue de Coq</string>
+    <string name="tutorial_aliases">Also called: %1$s</string>
+    <string name="tutorial_family">Family: %1$s</string>
+    <string name="tutorial_alias_last_digit">Full House · Last Number</string>
+    <string name="tutorial_alias_naked_quad">Naked Quadruple</string>
+    <string name="tutorial_alias_hidden_quad">Hidden Quadruple</string>
+    <string name="tutorial_alias_xy_wing">Y-Wing</string>
+    <string name="tutorial_alias_wxyz_wing">WXYZ-Wing</string>
+    <string name="tutorial_alias_crane">Turbot Crane</string>
+    <string name="tutorial_alias_finned_x_wing">Almost X-Wing (Finned form)</string>
+    <string name="tutorial_alias_aic">Alternating Inference Chain</string>
+    <string name="tutorial_alias_region_chain">Unit Forcing Chain</string>
+    <string name="tutorial_alias_region_net">Unit Forcing Net</string>
+    <string name="tutorial_relation_last_digit">A single with just one empty cell left in a row, column or box.</string>
+    <string name="tutorial_relation_hidden_single">Includes Hidden Single (Box) and Hidden Single (Line). Crosshatching is one way to spot it.</string>
+    <string name="tutorial_relation_locked_pair">A Naked Pair shared by a line and a box. This is different from a Pointing Pair, which concerns one digit.</string>
+    <string name="tutorial_relation_locked_triple">A Naked Triple shared by a line and a box. This is different from a Pointing Triple, which concerns one digit.</string>
+    <string name="tutorial_relation_pointing">Locked Candidates: box to line. Pair and Triple count positions of one digit, not different digits.</string>
+    <string name="tutorial_relation_claiming">Locked Candidates: line to box. Pair and Triple count positions of one digit, not different digits.</string>
+    <string name="tutorial_relation_coloring_1">Simple Coloring: color trap. An outside candidate sees both colors.</string>
+    <string name="tutorial_relation_coloring_2">Simple Coloring: color wrap. Two candidates of the same color conflict.</string>
+    <string name="tutorial_relation_medusa">An extension of Simple Coloring that also links the two candidates inside a bivalue cell.</string>
+    <string name="tutorial_relation_xy_wing">A restricted 3-Y-Wing and a short XY-Chain.</string>
+    <string name="tutorial_relation_xyz_wing">An unrestricted 3-Y-Wing: the shared elimination digit is also in the pivot.</string>
+    <string name="tutorial_relation_higher_wing">Uses the Sudoku Coach n-Y-Wing definition. From size 5 onward, the common letter-named wings and ALS-XZ have different scopes; they are not aliases.</string>
+    <string name="tutorial_relation_x_chain">A separately named form of X-Chain, using only one digit.</string>
+    <string name="tutorial_relation_xy_chain">A closed form of XY-Chain, using bivalue cells.</string>
+    <string name="tutorial_relation_grouped_x_chain">Extends X-Chain by treating several positions for one digit as a single logical group.</string>
+    <string name="tutorial_relation_bug">A specific BUG-family deduction. BUG means Binary Universal Grave; BUG+1 has one extra candidate.</string>
+</resources>
+

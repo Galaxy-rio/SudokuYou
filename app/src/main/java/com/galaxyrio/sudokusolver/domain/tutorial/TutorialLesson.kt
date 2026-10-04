@@ -100,7 +100,8 @@ internal data class TutorialExample(
     /** Identify the three roles in the already recorded wing; never search the whole board. */
     val wingGroups: TutorialWingGroups? by lazy {
         if (technique !in setOf(TechniqueId.XY_WING, TechniqueId.XYZ_WING, TechniqueId.WXYZ_WING,
-                TechniqueId.FIVE_Y_WING, TechniqueId.SIX_Y_WING, TechniqueId.SEVEN_Y_WING)) return@lazy null
+                TechniqueId.FIVE_Y_WING, TechniqueId.SIX_Y_WING, TechniqueId.SEVEN_Y_WING,
+                TechniqueId.EIGHT_Y_WING, TechniqueId.NINE_Y_WING)) return@lazy null
         val cells = patternCells.toList()
         val z = deduction.eliminations.first().candidate.digit
         fun Set<CellRef>.digits() = flatMap(initialState::candidatesAt).toSet()
@@ -193,27 +194,30 @@ internal data class TutorialExample(
 
 internal object TutorialLessons {
     val all: List<TutorialLesson> by lazy {
-        (tutorialExamples + advancedTutorialExamples).groupBy { it.technique.tutorialId }.map { (_, examples) ->
-            TutorialLesson(examples.first().technique, if (examples.first().isAdvanced) examples else examples.sortedBy {
+        val examplesByTechnique = (tutorialExamples + advancedTutorialExamples).groupBy { it.technique }
+        TechniqueId.entries.map { technique ->
+            val examples = examplesByTechnique[technique].orEmpty()
+            TutorialLesson(technique, if (examples.firstOrNull()?.isAdvanced == true) examples else examples.sortedBy {
                 when (it.house.type) { HouseType.BOX -> 0; HouseType.ROW -> 1; HouseType.COLUMN -> 2 }
             })
         }
     }
 
-    fun find(id: String): TutorialLesson? = all.firstOrNull { it.id == id }
+    fun find(id: String): TutorialLesson? {
+        // Navigation state saved before the catalog split may still contain a family route.
+        val resolved = when (id) {
+            "locked_candidate" -> TechniqueId.POINTING_PAIR.name
+            "simple_coloring" -> TechniqueId.SIMPLE_COLORING_TYPE_1.name
+            "cell_region_forcing_chain" -> TechniqueId.CELL_FORCING_CHAIN.name
+            "cell_region_forcing_net" -> TechniqueId.CELL_FORCING_NET.name
+            else -> id
+        }
+        return all.firstOrNull { it.id == resolved }
+    }
 }
 
-/** Catalog entries that teach several variants share one route and one lesson. */
-internal val TechniqueId.tutorialId: String get() = when (this) {
-    TechniqueId.POINTING_PAIR, TechniqueId.POINTING_TRIPLE,
-    TechniqueId.CLAIMING_PAIR, TechniqueId.CLAIMING_TRIPLE -> "locked_candidate"
-    TechniqueId.SIMPLE_COLORING_TYPE_1, TechniqueId.SIMPLE_COLORING_TYPE_2 -> "simple_coloring"
-    TechniqueId.X_CHAIN_LOOP, TechniqueId.X_CHAIN_ONE_ENDPOINT -> TechniqueId.X_CHAIN.name
-    TechniqueId.XY_CHAIN_LOOP -> TechniqueId.XY_CHAIN.name
-    TechniqueId.CELL_FORCING_CHAIN, TechniqueId.REGION_FORCING_CHAIN -> "cell_region_forcing_chain"
-    TechniqueId.CELL_FORCING_NET, TechniqueId.REGION_FORCING_NET -> "cell_region_forcing_net"
-    else -> name
-}
+/** Stable IDs, independent of display names, aliases, language and category. */
+internal val TechniqueId.tutorialId: String get() = name
 
 private val HiddenTechniques = setOf(
     TechniqueId.HIDDEN_SINGLE, TechniqueId.HIDDEN_PAIR,

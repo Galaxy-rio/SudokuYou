@@ -23,6 +23,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.galaxyrio.sudokusolver.data.AppContainer
 import com.galaxyrio.sudokusolver.domain.model.Difficulty
+import com.galaxyrio.sudokusolver.domain.solver.TechniqueId
+import com.galaxyrio.sudokusolver.domain.tutorial.tutorialId
 import com.galaxyrio.sudokusolver.ui.components.BoardConfig
 import com.galaxyrio.sudokusolver.ui.guide.LocalUsageGuide
 import com.galaxyrio.sudokusolver.ui.screens.game.GameRoute
@@ -190,6 +192,7 @@ fun AppNavHost(
                     GameDestinationContent(
                         appContainer = appContainer,
                         newGameDifficulty = destination.difficulty,
+                        onOpenTutorial = { technique -> navController.openTutorialFrom(backStackEntry, technique) },
                         savedGameId = null,
                         useContainerTransform = false,
                         settingsUiState = settingsUiState,
@@ -233,6 +236,7 @@ fun AppNavHost(
                     GameDestinationContent(
                         appContainer = appContainer,
                         newGameDifficulty = null,
+                        onOpenTutorial = { technique -> navController.openTutorialFrom(backStackEntry, technique) },
                         savedGameId = destination.gameId,
                         useContainerTransform = destination.useContainerTransform,
                         settingsUiState = settingsUiState,
@@ -395,6 +399,7 @@ private fun GameDestinationContent(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     onBack: () -> Unit,
+    onOpenTutorial: (TechniqueId) -> Unit,
 ) {
     val gameViewModel: GameViewModel = viewModel(
         factory = GameViewModel.factory(
@@ -416,8 +421,15 @@ private fun GameDestinationContent(
         sharedTransitionScope = sharedTransitionScope,
         animatedVisibilityScope = animatedVisibilityScope,
         onBack = onBack,
+        onOpenTutorial = onOpenTutorial,
         modifier = Modifier.fillMaxSize(),
     )
+}
+
+private fun NavHostController.openTutorialFrom(source: NavBackStackEntry, technique: TechniqueId) {
+    if (currentBackStackEntry === source && source.lifecycle.currentState == Lifecycle.State.RESUMED) {
+        navigate(TutorialTechniqueDestination(technique.tutorialId)) { launchSingleTop = true }
+    }
 }
 
 private fun NavHostController.popBackStackFrom(source: NavBackStackEntry): Boolean {

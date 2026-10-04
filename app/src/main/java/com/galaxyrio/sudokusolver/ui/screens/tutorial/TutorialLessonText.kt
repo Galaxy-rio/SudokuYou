@@ -133,7 +133,7 @@ internal fun TutorialExample.forcingProofText(notation: CoordinateNotation): Str
 // Original explanations of the rules described at sudoku.coach/en/learn/:
 // hidden-single, hidden-pair, hidden-groups, naked-single, naked-pair, disjoint-groups.
 // Example boards are generated locally; no article text or external images are bundled.
-private fun lessonCopy(technique: TechniqueId): Pair<Int, Int> = when (technique) {
+internal fun lessonCopy(technique: TechniqueId): Pair<Int, Int> = when (technique) {
     TechniqueId.HIDDEN_SINGLE -> R.string.tutorial_rule_hidden_single to R.string.tutorial_tip_hidden_single
     TechniqueId.HIDDEN_PAIR -> R.string.tutorial_rule_hidden_pair to R.string.tutorial_tip_hidden_pair
     TechniqueId.HIDDEN_TRIPLE -> R.string.tutorial_rule_hidden_triple to R.string.tutorial_tip_hidden_triple

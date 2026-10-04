@@ -24,6 +24,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.assertTextEquals
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.galaxyrio.sudokusolver.R
@@ -37,6 +40,7 @@ import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsCategory
 import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsUiState
 import com.galaxyrio.sudokusolver.ui.screens.settings.SettingsViewModel
 import com.galaxyrio.sudokusolver.ui.theme.SudokuYouTheme
+import com.galaxyrio.sudokusolver.ui.util.nameResourceId
 import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -151,6 +155,50 @@ class BackNavigationTest {
         assertDestination<TutorialTechniqueDestination>()
         compose.onNodeWithContentDescription(backLabel).performClick()
         assertHomeAfterTransition()
+    }
+
+    @Test
+    fun hintTutorialReturnsToSameGameAndSelectedHintWithoutApplyingIt() {
+        val puzzle = "530070000600195000098000060800060003400803001700020006060000280000419005000080079"
+        val answer = "534678912672195348198342567859761423426853791713924856961537284287419635345286179"
+        val id = runBlocking {
+            container.gameRepository.saveGame(SavedGame(
+                difficulty = Difficulty.EASY, sudoku = Sudoku.fromGridString(puzzle),
+                solution = SudokuSolution(answer.map(Char::digitToInt)),
+            ))
+        }
+        createdGameIds += id
+        compose.runOnIdle { controller.navigate(SavedGameDestination(id, false)) }
+        awaitGame()
+        lateinit var game: GameViewModel
+        compose.runOnIdle { game = ViewModelProvider(controller.currentBackStackEntry!!)[GameViewModel::class.java] }
+        compose.onNodeWithContentDescription(context.getString(R.string.game_hint)).performClick()
+        compose.waitUntil(30_000) { game.uiState.value.hintTrace?.steps?.size?.let { it > 1 } == true }
+        compose.runOnIdle { game.revealHintDetails(); game.selectHintStep(1) }
+        val before = game.uiState.value
+        val technique = before.hintTrace!!.steps[1].technique
+        val name = context.getString(technique.nameResourceId())
+        val link = context.getString(R.string.game_hint_open_tutorial, name)
+        compose.onNodeWithContentDescription(link).assertIsDisplayed().performClick()
+        compose.waitForIdle()
+        compose.runOnIdle {
+            assertEquals(technique.name, controller.currentBackStackEntry!!.toRoute<TutorialTechniqueDestination>().techniqueId)
+            assertTrue(controller.previousBackStackEntry!!.destination.hasRoute<SavedGameDestination>())
+        }
+        compose.onNodeWithTag("tutorial_technique_title").assertTextEquals(name)
+        compose.onNodeWithContentDescription(backLabel).performClick()
+        compose.waitForIdle()
+        assertDestination<SavedGameDestination>()
+        compose.onNodeWithContentDescription(link).assertIsDisplayed()
+        compose.runOnIdle {
+            val after = game.uiState.value
+            assertEquals(before.sudoku, after.sudoku)
+            assertEquals(before.advancedNotes, after.advancedNotes)
+            assertEquals(before.hintTrace, after.hintTrace)
+            assertEquals(before.selectedHintStepIndex, after.selectedHintStepIndex)
+            assertEquals(before.areHintDetailsVisible, after.areHintDetailsVisible)
+            assertEquals(before.canUndo, after.canUndo)
+        }
     }
 
     @Test

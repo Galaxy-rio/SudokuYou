@@ -131,6 +131,7 @@ import com.galaxyrio.sudokusolver.ui.guide.LocalUsageGuide
 import com.galaxyrio.sudokusolver.ui.guide.guideTarget
 import com.galaxyrio.sudokusolver.ui.screens.play.gameContainerKey
 import com.galaxyrio.sudokusolver.ui.screens.play.thumbnailKey
+import com.galaxyrio.sudokusolver.domain.solver.TechniqueId
 import com.galaxyrio.sudokusolver.ui.util.formatElapsedTime
 import com.galaxyrio.sudokusolver.ui.util.label
 import java.util.concurrent.TimeUnit
@@ -151,6 +152,7 @@ fun GameRoute(
     animatedVisibilityScope: AnimatedVisibilityScope,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenTutorial: (TechniqueId) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val usageGuide = LocalUsageGuide.current
@@ -400,6 +402,7 @@ fun GameRoute(
                     coordinateNotation = uiState.coordinateNotation,
                     onStepSelected = viewModel::selectHintStep,
                     onRevealDetails = viewModel::revealHintDetails,
+                    onOpenTutorial = onOpenTutorial,
                     onApplyNext = {
                         if (viewModel.applyHintAction()) {
                             dismissHint()

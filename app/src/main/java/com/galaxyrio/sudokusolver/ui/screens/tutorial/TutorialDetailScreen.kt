@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.data.settings.CoordinateNotation
+import com.galaxyrio.sudokusolver.domain.solver.TechniqueId
 import com.galaxyrio.sudokusolver.domain.tutorial.TutorialExample
 import com.galaxyrio.sudokusolver.domain.tutorial.TutorialLessons
 import com.galaxyrio.sudokusolver.domain.tutorial.TutorialStage
@@ -75,14 +76,14 @@ fun TutorialDetailScreen(
     coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
 ) {
     val lesson = TutorialLessons.find(techniqueId)
-    val catalogEntry = tutorialCategories.flatMap { it.techniques }.firstOrNull { it.id == techniqueId }
+    val catalogEntry = lesson?.let { tutorialEntry(it.id) }
     var showingExamples by rememberSaveable(techniqueId) { mutableStateOf(false) }
     var stepIndex by rememberSaveable(techniqueId) { mutableIntStateOf(0) }
     var exampleIndex by rememberSaveable(techniqueId) { mutableIntStateOf(0) }
     var selectedCell by rememberSaveable(techniqueId) { mutableIntStateOf(-1) }
     val clearSelection = { selectedCell = -1 }
     val stage = if (showingExamples) TutorialStage.DEDUCTION else TutorialStage.entries[stepIndex]
-    val example = lesson?.examples?.get(if (showingExamples) exampleIndex else 0)
+    val example = lesson?.examples?.getOrNull(if (showingExamples) exampleIndex else 0)
     val index = if (showingExamples) exampleIndex else stepIndex
     val count = if (showingExamples) lesson?.examples?.size ?: 0 else TutorialStage.entries.size
 
@@ -113,7 +114,7 @@ fun TutorialDetailScreen(
             }
         },
         bottomBar = {
-            if (lesson != null) BottomAppBar {
+            if (example != null) BottomAppBar {
                 TutorialToolbarAction(
                     Icons.AutoMirrored.Filled.ArrowBack,
                     stringResource(if (showingExamples) R.string.tutorial_previous_example else R.string.tutorial_previous_step),
@@ -144,6 +145,10 @@ fun TutorialDetailScreen(
             }
         },
     ) { padding ->
+        if (lesson != null && example == null) {
+            key(techniqueId) { TutorialArticle(lesson.technique, Modifier.fillMaxSize().padding(padding)) }
+            return@Scaffold
+        }
         if (example == null) {
             Text(stringResource(R.string.tutorial_unavailable), Modifier.padding(padding).padding(20.dp))
             return@Scaffold
@@ -229,6 +234,7 @@ private fun TutorialExplanation(
         modifier = modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        if (stage == TutorialStage.RULE && !showingExamples) TutorialReference(example.technique)
         Text(
             text = stringResource(
                 if (showingExamples) R.string.tutorial_example_progress else R.string.tutorial_step_progress,
@@ -293,6 +299,43 @@ private fun TutorialExplanation(
                 Text(example.forcingProofText(notation), style = MaterialTheme.typography.bodyMedium)
             }
         }
+    }
+}
+
+@Composable
+private fun TutorialArticle(
+    technique: TechniqueId,
+    modifier: Modifier = Modifier,
+) {
+    val copy = advancedLessonCopy(technique)
+    Column(modifier.verticalScroll(rememberScrollState()).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        TutorialReference(technique)
+        listOf(
+            R.string.tutorial_stage_rule to copy.rule,
+            R.string.tutorial_stage_deduction to copy.reason,
+            R.string.tutorial_stage_takeaway to copy.tip,
+        ).forEach { (heading, body) ->
+            Text(stringResource(heading), style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.semantics { heading() })
+            Text(stringResource(body), style = MaterialTheme.typography.bodyLarge)
+        }
+    }
+}
+
+@Composable
+private fun TutorialReference(technique: TechniqueId) {
+    val entry = tutorialEntry(technique.name) ?: return
+    val category = tutorialCategories.first { entry in it.techniques }
+    Text(stringResource(R.string.tutorial_family, stringResource(category.titleResource)),
+        style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+    entry.aliasesResource?.let {
+        Text(stringResource(R.string.tutorial_aliases, stringResource(it)),
+            style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("tutorial_aliases"))
+    }
+    entry.relationshipResource?.let {
+        Text(stringResource(it), style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

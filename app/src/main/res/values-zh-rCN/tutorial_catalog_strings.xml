@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="game_hint_open_tutorial">打开%1$s教程</string>
+    <string name="tutorial_category_singles">单数</string>
+    <string name="tutorial_category_wings">翼</string>
+    <string name="tutorial_category_remote_pairs">远程数对</string>
+    <string name="tutorial_category_coloring">着色法</string>
+    <string name="tutorial_category_forcing">强制链与强制网</string>
+    <string name="tutorial_category_sue_de_coq">Sue de Coq（融合待定数组）</string>
+    <string name="tutorial_aliases">别名：%1$s</string>
+    <string name="tutorial_family">所属技巧族：%1$s</string>
+    <string name="tutorial_alias_last_digit">Full House · Last Number（末位数）</string>
+    <string name="tutorial_alias_naked_quad">Naked Quadruple（显性四数组）</string>
+    <string name="tutorial_alias_hidden_quad">Hidden Quadruple（隐性四数组）</string>
+    <string name="tutorial_alias_xy_wing">Y-Wing（Y 翼）</string>
+    <string name="tutorial_alias_wxyz_wing">WXYZ-Wing</string>
+    <string name="tutorial_alias_crane">Turbot Crane</string>
+    <string name="tutorial_alias_finned_x_wing">Almost X-Wing（带鳍形态）</string>
+    <string name="tutorial_alias_aic">Alternating Inference Chain（交替推理链）</string>
+    <string name="tutorial_alias_region_chain">Unit Forcing Chain（区域强制链）</string>
+    <string name="tutorial_alias_region_net">Unit Forcing Net（区域强制网）</string>
+    <string name="tutorial_relation_last_digit">单数的一种特殊情况：一行、一列或一宫只剩一个空格。</string>
+    <string name="tutorial_relation_hidden_single">包括宫隐性单数和行列隐性单数；交叉排除法是寻找它的一种方法。</string>
+    <string name="tutorial_relation_locked_pair">显性数对同时位于一条行列与一个宫内。它与只涉及一个数字的指向数对不同。</string>
+    <string name="tutorial_relation_locked_triple">显性三数组同时位于一条行列与一个宫内。它与只涉及一个数字的指向三数组不同。</string>
+    <string name="tutorial_relation_pointing">锁定候选数的指向型：由宫到行列。“数对”和“三数组”在这里表示同一个数字的两个或三个位置。</string>
+    <string name="tutorial_relation_claiming">锁定候选数的认领型：由行列到宫。“数对”和“三数组”在这里表示同一个数字的两个或三个位置。</string>
+    <string name="tutorial_relation_coloring_1">简单着色法：双色排除。结构外的候选数同时看到两种颜色。</string>
+    <string name="tutorial_relation_coloring_2">简单着色法：同色矛盾。同一种颜色的两个候选数互相冲突。</string>
+    <string name="tutorial_relation_medusa">简单着色法的扩展，还会连接双候选格内的两个不同候选数。</string>
+    <string name="tutorial_relation_xy_wing">受限的三阶 Y 翼，也可视为较短的 XY 链。</string>
+    <string name="tutorial_relation_xyz_wing">非受限的三阶 Y 翼：要删除的共同候选数也出现在枢纽格中。</string>
+    <string name="tutorial_relation_higher_wing">采用 Sudoku Coach 的 n-Y-Wing 定义。从五阶开始，它与常见的字母命名翼及 ALS-XZ 范围不同，不能互作别名。</string>
+    <string name="tutorial_relation_x_chain">X 链的一种独立命名形态，整条链只涉及一个数字。</string>
+    <string name="tutorial_relation_xy_chain">XY 链的闭合形态，使用双候选格。</string>
+    <string name="tutorial_relation_grouped_x_chain">X 链的扩展：把同一个数字的多个位置作为一个逻辑分组。</string>
+    <string name="tutorial_relation_bug">BUG 技巧族中的具体情况。BUG 是 Binary Universal Grave 的缩写；BUG+1 比 BUG 结构多一个候选数。</string>
+</resources>
+
