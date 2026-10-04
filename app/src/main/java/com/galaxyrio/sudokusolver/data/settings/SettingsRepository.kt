@@ -44,6 +44,7 @@ data class AppSettings(
     val alternativeErrorColor: Boolean = false,
     val showHintDetails: Boolean = true,
     val showErrorDetails: Boolean = true,
+    val highlightConflictingNumbers: Boolean = true,
     val showErrorsImmediately: Boolean = false,
     val coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
     val exportFormat: SudokuExportFormat = SudokuExportFormat.SUSSER,
@@ -71,6 +72,7 @@ interface SettingsRepository {
     fun setAlternativeErrorColor(enabled: Boolean)
     fun setShowHintDetails(enabled: Boolean)
     fun setShowErrorDetails(enabled: Boolean)
+    fun setHighlightConflictingNumbers(enabled: Boolean)
     fun setShowErrorsImmediately(enabled: Boolean)
     fun setCoordinateNotation(notation: CoordinateNotation)
     fun setExportFormat(format: SudokuExportFormat)
@@ -163,6 +165,11 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         update { copy(showErrorsImmediately = enabled) }
     }
 
+    override fun setHighlightConflictingNumbers(enabled: Boolean) {
+        preferences.edit { putBoolean(KEY_HIGHLIGHT_CONFLICTING_NUMBERS, enabled) }
+        update { copy(highlightConflictingNumbers = enabled) }
+    }
+
     override fun setCoordinateNotation(notation: CoordinateNotation) {
         preferences.edit { putInt(KEY_COORDINATE_NOTATION, notation.ordinal) }
         update { copy(coordinateNotation = notation) }
@@ -208,6 +215,7 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         alternativeErrorColor = preferences.getBoolean(KEY_ALTERNATIVE_ERROR_COLOR, false),
         showHintDetails = preferences.getBoolean(KEY_SHOW_HINT_DETAILS, true),
         showErrorDetails = preferences.getBoolean(KEY_SHOW_ERROR_DETAILS, true),
+        highlightConflictingNumbers = preferences.getBoolean(KEY_HIGHLIGHT_CONFLICTING_NUMBERS, true),
         showErrorsImmediately = preferences.getBoolean(KEY_SHOW_ERRORS_IMMEDIATELY, false),
         coordinateNotation = enumValueAtOrDefault(
             values = CoordinateNotation.entries,
@@ -253,6 +261,7 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         const val KEY_ALTERNATIVE_ERROR_COLOR = "alternative_error_color"
         const val KEY_SHOW_HINT_DETAILS = "show_hint_details"
         const val KEY_SHOW_ERROR_DETAILS = "show_error_details"
+        const val KEY_HIGHLIGHT_CONFLICTING_NUMBERS = "highlight_conflicting_numbers"
         const val KEY_SHOW_ERRORS_IMMEDIATELY = "show_errors_immediately"
         const val KEY_COORDINATE_NOTATION = "coordinate_notation"
         const val KEY_EXPORT_FORMAT = "export_format"

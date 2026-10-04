@@ -54,6 +54,7 @@ data class BoardConfig(
     val highlightCross: Boolean = true,
     val highlightBlock: Boolean = true,
     val useAltErrorColor: Boolean = false,
+    val highlightConflictingNumbers: Boolean = true,
 )
 
 @Composable
@@ -80,23 +81,29 @@ fun SudokuBoard(
     val colorScheme = MaterialTheme.colorScheme
     val boardColor = colorScheme.onSurface
     val lineColor = lerp(boardColor, colorScheme.surface, 0.5f)
-    val conflictingCells = remember(sudoku) {
+    val conflictingCells = remember(sudoku, config.highlightConflictingNumbers) {
         buildSet {
-            repeat(Sudoku.GRID_SIZE) { row ->
-                repeat(Sudoku.GRID_SIZE) { col ->
-                    if (SudokuValidator.hasConflict(sudoku, row, col)) {
-                        add(row * Sudoku.GRID_SIZE + col)
+            if (config.highlightConflictingNumbers) {
+                repeat(Sudoku.GRID_SIZE) { row ->
+                    repeat(Sudoku.GRID_SIZE) { col ->
+                        if (SudokuValidator.hasConflict(sudoku, row, col)) {
+                            add(row * Sudoku.GRID_SIZE + col)
+                        }
                     }
                 }
             }
         }
     }
-    val invalidCandidates = remember(sudoku) {
+    val invalidCandidates = remember(sudoku, config.highlightConflictingNumbers) {
         List(Sudoku.CELL_COUNT) { index ->
-            val row = index / Sudoku.GRID_SIZE
-            val col = index % Sudoku.GRID_SIZE
-            sudoku.cells[index].candidates.filterTo(mutableSetOf()) { candidate ->
-                SudokuValidator.hasConflict(sudoku, row, col, candidate)
+            if (config.highlightConflictingNumbers) {
+                val row = index / Sudoku.GRID_SIZE
+                val col = index % Sudoku.GRID_SIZE
+                sudoku.cells[index].candidates.filterTo(mutableSetOf()) { candidate ->
+                    SudokuValidator.hasConflict(sudoku, row, col, candidate)
+                }
+            } else {
+                emptySet<Int>()
             }
         }
     }

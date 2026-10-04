@@ -131,6 +131,8 @@
     <string name="game_settings_show_hint_details_summary">Show full explanations and board markings</string>
     <string name="game_settings_show_error_details">Show error details</string>
     <string name="game_settings_show_error_details_summary">Identify incorrect values and removed candidates</string>
+    <string name="game_settings_highlight_conflicting_numbers">Highlight conflicting numbers</string>
+    <string name="game_settings_highlight_conflicting_numbers_summary">Highlight entered digits and notes that conflict with a digit in the same row, column, or box</string>
     <string name="game_settings_show_errors_immediately">Show errors immediately</string>
     <string name="game_settings_show_errors_immediately_summary">Show a hint as soon as an entry or candidate is wrong</string>
     <string name="game_settings_hints_section">Hints</string>

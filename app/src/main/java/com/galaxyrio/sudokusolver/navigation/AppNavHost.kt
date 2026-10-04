@@ -279,6 +279,8 @@ fun AppNavHost(
                             uiState = settingsUiState,
                             onShowHintDetailsChange = settingsViewModel::setShowHintDetails,
                             onShowErrorDetailsChange = settingsViewModel::setShowErrorDetails,
+                            onHighlightConflictingNumbersChange =
+                                settingsViewModel::setHighlightConflictingNumbers,
                             onShowErrorsImmediatelyChange =
                                 settingsViewModel::setShowErrorsImmediately,
                             onCoordinateNotationChange =
@@ -420,6 +422,7 @@ private fun GameDestinationContent(
             highlightCross = settingsUiState.positionLines,
             highlightBlock = settingsUiState.positionBlock,
             useAltErrorColor = settingsUiState.alternativeErrorColor,
+            highlightConflictingNumbers = settingsUiState.highlightConflictingNumbers,
         ),
         originGameId = savedGameId.takeIf { useContainerTransform },
         sharedTransitionScope = sharedTransitionScope,

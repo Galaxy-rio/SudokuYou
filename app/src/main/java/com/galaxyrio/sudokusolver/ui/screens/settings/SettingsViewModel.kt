@@ -33,6 +33,7 @@ data class SettingsUiState(
     val alternativeErrorColor: Boolean = false,
     val showHintDetails: Boolean = true,
     val showErrorDetails: Boolean = true,
+    val highlightConflictingNumbers: Boolean = true,
     val showErrorsImmediately: Boolean = false,
     val coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
     val exportFormat: SudokuExportFormat = SudokuExportFormat.SUSSER,
@@ -79,6 +80,9 @@ class SettingsViewModel(
 
     fun setShowErrorDetails(enabled: Boolean) = repository.setShowErrorDetails(enabled)
 
+    fun setHighlightConflictingNumbers(enabled: Boolean) =
+        repository.setHighlightConflictingNumbers(enabled)
+
     fun setShowErrorsImmediately(enabled: Boolean) =
         repository.setShowErrorsImmediately(enabled)
 
@@ -113,6 +117,7 @@ private fun AppSettings.asUiState(): SettingsUiState = SettingsUiState(
     alternativeErrorColor = alternativeErrorColor,
     showHintDetails = showHintDetails,
     showErrorDetails = showErrorDetails,
+    highlightConflictingNumbers = highlightConflictingNumbers,
     showErrorsImmediately = showErrorsImmediately,
     coordinateNotation = coordinateNotation,
     exportFormat = exportFormat,

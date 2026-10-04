@@ -129,6 +129,8 @@
     <string name="game_settings_show_hint_details_summary">直接显示完整说明与棋盘标记</string>
     <string name="game_settings_show_error_details">显示错误详情</string>
     <string name="game_settings_show_error_details_summary">显示填错的数字与误删的候选数</string>
+    <string name="game_settings_highlight_conflicting_numbers">高亮显示矛盾数字</string>
+    <string name="game_settings_highlight_conflicting_numbers_summary">高亮显示与所在行、列或宫内数字冲突的已填数字和笔记</string>
     <string name="game_settings_show_errors_immediately">立即显示错误</string>
     <string name="game_settings_show_errors_immediately_summary">输入或候选数出错时立即提示</string>
     <string name="game_settings_hints_section">提示</string>

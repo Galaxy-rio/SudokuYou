@@ -41,6 +41,7 @@ fun GameSettingsScreen(
     uiState: SettingsUiState,
     onShowHintDetailsChange: (Boolean) -> Unit,
     onShowErrorDetailsChange: (Boolean) -> Unit,
+    onHighlightConflictingNumbersChange: (Boolean) -> Unit,
     onShowErrorsImmediatelyChange: (Boolean) -> Unit,
     onCoordinateNotationChange: (CoordinateNotation) -> Unit,
     onBack: () -> Unit,
@@ -70,7 +71,7 @@ fun GameSettingsScreen(
                     summaryResource = R.string.game_settings_show_hint_details_summary,
                     checked = uiState.showHintDetails,
                     index = 0,
-                    count = 3,
+                    count = 4,
                     onCheckedChange = onShowHintDetailsChange,
                 )
             }
@@ -81,8 +82,19 @@ fun GameSettingsScreen(
                     summaryResource = R.string.game_settings_show_error_details_summary,
                     checked = uiState.showErrorDetails,
                     index = 1,
-                    count = 3,
+                    count = 4,
                     onCheckedChange = onShowErrorDetailsChange,
+                )
+            }
+
+            item(key = "highlight_conflicting_numbers") {
+                GameSettingsSwitchItem(
+                    titleResource = R.string.game_settings_highlight_conflicting_numbers,
+                    summaryResource = R.string.game_settings_highlight_conflicting_numbers_summary,
+                    checked = uiState.highlightConflictingNumbers,
+                    index = 2,
+                    count = 4,
+                    onCheckedChange = onHighlightConflictingNumbersChange,
                 )
             }
 
@@ -91,8 +103,8 @@ fun GameSettingsScreen(
                     titleResource = R.string.game_settings_show_errors_immediately,
                     summaryResource = R.string.game_settings_show_errors_immediately_summary,
                     checked = uiState.showErrorsImmediately,
-                    index = 2,
-                    count = 3,
+                    index = 3,
+                    count = 4,
                     onCheckedChange = onShowErrorsImmediatelyChange,
                 )
             }
