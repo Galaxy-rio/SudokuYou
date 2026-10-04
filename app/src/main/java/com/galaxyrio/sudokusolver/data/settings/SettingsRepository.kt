@@ -36,7 +36,9 @@ data class AppSettings(
     val paletteStyle: PaletteStyleOption = PaletteStyleOption.TONAL_SPOT,
     val useDynamicColors: Boolean = true,
     val isAmoled: Boolean = false,
-    val highContrastBoard: Boolean = false,
+    val highContrastColors: Boolean = false,
+    val highContrastFont: Boolean = false,
+    val colorfulNumbers: Boolean = false,
     val positionLines: Boolean = true,
     val positionBlock: Boolean = true,
     val alternativeErrorColor: Boolean = false,
@@ -61,7 +63,9 @@ interface SettingsRepository {
     fun setPaletteStyle(style: PaletteStyleOption)
     fun setUseDynamicColors(enabled: Boolean)
     fun setIsAmoled(enabled: Boolean)
-    fun setHighContrastBoard(enabled: Boolean)
+    fun setHighContrastColors(enabled: Boolean)
+    fun setHighContrastFont(enabled: Boolean)
+    fun setColorfulNumbers(enabled: Boolean)
     fun setPositionLines(enabled: Boolean)
     fun setPositionBlock(enabled: Boolean)
     fun setAlternativeErrorColor(enabled: Boolean)
@@ -114,9 +118,19 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         update { copy(isAmoled = enabled) }
     }
 
-    override fun setHighContrastBoard(enabled: Boolean) {
-        preferences.edit { putBoolean(KEY_HIGH_CONTRAST_BOARD, enabled) }
-        update { copy(highContrastBoard = enabled) }
+    override fun setHighContrastColors(enabled: Boolean) {
+        preferences.edit { putBoolean(KEY_HIGH_CONTRAST_COLORS, enabled) }
+        update { copy(highContrastColors = enabled) }
+    }
+
+    override fun setHighContrastFont(enabled: Boolean) {
+        preferences.edit { putBoolean(KEY_HIGH_CONTRAST_FONT, enabled) }
+        update { copy(highContrastFont = enabled) }
+    }
+
+    override fun setColorfulNumbers(enabled: Boolean) {
+        preferences.edit { putBoolean(KEY_COLORFUL_NUMBERS, enabled) }
+        update { copy(colorfulNumbers = enabled) }
     }
 
     override fun setPositionLines(enabled: Boolean) {
@@ -186,7 +200,9 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         ),
         useDynamicColors = preferences.getBoolean(KEY_USE_DYNAMIC_COLORS, true),
         isAmoled = preferences.getBoolean(KEY_IS_AMOLED, false),
-        highContrastBoard = preferences.getBoolean(KEY_HIGH_CONTRAST_BOARD, false),
+        highContrastColors = preferences.getBoolean(KEY_HIGH_CONTRAST_COLORS, false),
+        highContrastFont = preferences.getBoolean(KEY_HIGH_CONTRAST_FONT, false),
+        colorfulNumbers = preferences.getBoolean(KEY_COLORFUL_NUMBERS, false),
         positionLines = preferences.getBoolean(KEY_POSITION_LINES, true),
         positionBlock = preferences.getBoolean(KEY_POSITION_BLOCK, true),
         alternativeErrorColor = preferences.getBoolean(KEY_ALTERNATIVE_ERROR_COLOR, false),
@@ -228,7 +244,10 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         const val KEY_PALETTE_STYLE = "palette_style"
         const val KEY_USE_DYNAMIC_COLORS = "use_dynamic_colors"
         const val KEY_IS_AMOLED = "is_amoled"
-        const val KEY_HIGH_CONTRAST_BOARD = "high_contrast_board"
+        // Reuse the original key to preserve the existing color contrast preference.
+        const val KEY_HIGH_CONTRAST_COLORS = "high_contrast_board"
+        const val KEY_HIGH_CONTRAST_FONT = "high_contrast_font"
+        const val KEY_COLORFUL_NUMBERS = "colorful_numbers"
         const val KEY_POSITION_LINES = "position_lines"
         const val KEY_POSITION_BLOCK = "position_block"
         const val KEY_ALTERNATIVE_ERROR_COLOR = "alternative_error_color"

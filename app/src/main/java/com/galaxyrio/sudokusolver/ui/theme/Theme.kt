@@ -9,6 +9,8 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.materialkolor.PaletteStyle
@@ -23,6 +25,7 @@ fun SudokuYouTheme(
     amoled: Boolean = false,
     colorSeed: Color = Color(0xFF6750A4),
     paletteStyle: PaletteStyle = PaletteStyle.TonalSpot,
+    colorfulNumbers: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -49,10 +52,19 @@ fun SudokuYouTheme(
         )
     }
 
-    ExpressiveTheme(
-        colorScheme = colorScheme,
-        content = content,
-    )
+    val numberColorSchemes = remember(colorfulNumbers, darkTheme, amoled) {
+        if (colorfulNumbers) {
+            createNumberColorSchemes(isDark = darkTheme, isAmoled = amoled)
+        } else {
+            emptyList()
+        }
+    }
+    CompositionLocalProvider(LocalNumberColorSchemes provides numberColorSchemes) {
+        ExpressiveTheme(
+            colorScheme = colorScheme,
+            content = content,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)

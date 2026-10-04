@@ -45,9 +45,12 @@ import com.galaxyrio.sudokusolver.domain.model.Sudoku
 import com.galaxyrio.sudokusolver.domain.solver.CandidateRef
 import com.galaxyrio.sudokusolver.domain.solver.CellRef
 import com.galaxyrio.sudokusolver.domain.solver.SolveStep
+import com.galaxyrio.sudokusolver.ui.theme.LocalNumberColorSchemes
+import com.galaxyrio.sudokusolver.ui.theme.numberColorScheme
 
 data class BoardConfig(
-    val useHighContrast: Boolean = false,
+    val useHighContrastColors: Boolean = false,
+    val useHighContrastFont: Boolean = false,
     val highlightCross: Boolean = true,
     val highlightBlock: Boolean = true,
     val useAltErrorColor: Boolean = false,
@@ -250,55 +253,22 @@ private fun SudokuCell(
     config: BoardConfig,
     modifier: Modifier = Modifier,
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    val errorColor = if (config.useAltErrorColor) colorScheme.tertiary else colorScheme.error
-    val errorContainerColor =
-        if (config.useAltErrorColor) colorScheme.tertiaryContainer else colorScheme.errorContainer
-    val onErrorColor =
-        if (config.useAltErrorColor) colorScheme.onTertiary else colorScheme.onError
-    val onErrorContainerColor =
-        if (config.useAltErrorColor) colorScheme.onTertiaryContainer else colorScheme.onErrorContainer
-
-    val backgroundColor = when {
-        isError && isSelected -> errorColor
-        isError -> errorContainerColor
-        isSelected && (isFixed || config.useHighContrast) -> colorScheme.primary
-        isSelected -> colorScheme.primaryContainer
-        config.highlightCross && isSelectedCross -> colorScheme.surfaceContainerHighest
-        config.highlightBlock && isSelectedBlock -> colorScheme.surfaceContainer
-        isValueHighlighted -> if (config.useHighContrast) {
-            colorScheme.primary
-        } else {
-            colorScheme.secondaryContainer
-        }
-        else -> colorScheme.surface
-    }
-    val textColor = if (config.useHighContrast) {
-        // Match the background priority, including overlapping position and value highlights.
-        when {
-            isError && isSelected -> onErrorColor
-            isError -> onErrorContainerColor
-            isSelected -> colorScheme.onPrimary
-            config.highlightCross && isSelectedCross -> colorScheme.onSurface
-            config.highlightBlock && isSelectedBlock -> colorScheme.onSurface
-            isValueHighlighted -> colorScheme.onPrimary
-            else -> colorScheme.onSurface
-        }
-    } else {
-        when {
-            isError && isSelected -> onErrorColor
-            isError -> onErrorContainerColor
-            isSelected && isFixed -> colorScheme.onPrimary
-            isSelected -> colorScheme.onPrimaryContainer
-            isFixed -> colorScheme.onSurface
-            isValueHighlighted -> colorScheme.onSecondaryContainer
-            else -> colorScheme.primary
-        }
-    }
+    val colors = resolveCellColors(
+        theme = MaterialTheme.colorScheme,
+        digit = numberColorScheme(value),
+        config = config,
+        isFixed = isFixed,
+        isSelected = isSelected,
+        isError = isError,
+        isValueHighlighted = isValueHighlighted,
+        isSelectedCross = isSelectedCross,
+        isSelectedBlock = isSelectedBlock,
+        useColorfulNumbers = LocalNumberColorSchemes.current.isNotEmpty(),
+    )
 
     Box(
         modifier = modifier
-            .background(backgroundColor)
+            .background(colors.background)
             .semantics {
                 this.contentDescription = contentDescription
                 this.selected = isSelected
@@ -318,8 +288,12 @@ private fun SudokuCell(
             Text(
                 text = value.toString(),
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = if (isFixed) FontWeight.Bold else FontWeight.Medium,
-                color = textColor,
+                fontWeight = when {
+                    isFixed -> FontWeight.Bold
+                    config.useHighContrastFont -> FontWeight.Light
+                    else -> FontWeight.Medium
+                },
+                color = colors.text,
                 maxLines = 1,
                 overflow = TextOverflow.Clip,
             )
@@ -331,11 +305,8 @@ private fun SudokuCell(
                 highlightAllCandidates = highlightAllCandidates,
                 annotationColors = candidateAnnotationColors,
                 isSelected = isSelected,
-                useHighContrast = config.useHighContrast,
-                cellTextColor = textColor,
-                errorColor = errorColor,
-                errorContainerColor = errorContainerColor,
-                onErrorContainerColor = onErrorContainerColor,
+                config = config,
+                cellTextColor = colors.text,
             )
         }
     }
@@ -349,11 +320,8 @@ private fun CandidateGrid(
     highlightAllCandidates: Boolean,
     annotationColors: Map<Int, AdvancedNoteColor>,
     isSelected: Boolean,
-    useHighContrast: Boolean,
+    config: BoardConfig,
     cellTextColor: Color,
-    errorColor: Color,
-    errorContainerColor: Color,
-    onErrorContainerColor: Color,
 ) {
     Column(
         modifier = Modifier
@@ -373,29 +341,22 @@ private fun CandidateGrid(
                     val candidate = row * 3 + col + 1
                     val isHighlighted = candidate in candidates &&
                         (candidate in highlightNumbers || highlightAllCandidates)
-                    val isError = candidate in errorCandidates
+                    val colors = resolveCandidateColors(
+                        theme = MaterialTheme.colorScheme,
+                        digit = numberColorScheme(candidate),
+                        config = config,
+                        cellTextColor = cellTextColor,
+                        isSelected = isSelected,
+                        isError = candidate in errorCandidates,
+                        isHighlighted = isHighlighted,
+                    )
                     val annotationColor = annotationColors[candidate]
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .weight(1f)
                             .aspectRatio(1f)
-                            .then(
-                                if (isHighlighted || (useHighContrast && isError)) {
-                                    Modifier.background(
-                                        color = if (isError) {
-                                            errorContainerColor
-                                        } else if (useHighContrast) {
-                                            MaterialTheme.colorScheme.primary
-                                        } else {
-                                            MaterialTheme.colorScheme.secondaryContainer
-                                        },
-                                        shape = CircleShape,
-                                    )
-                                } else {
-                                    Modifier
-                                }
-                            )
+                            .background(colors.background, CircleShape)
                             .then(
                                 if (annotationColor != null) {
                                     Modifier.background(
@@ -418,15 +379,7 @@ private fun CandidateGrid(
                                     lineHeight = 10.sp,
                                     fontWeight = FontWeight.Normal,
                                 ),
-                                color = when {
-                                    isError && useHighContrast -> onErrorContainerColor
-                                    isError -> errorColor
-                                    isHighlighted && useHighContrast -> MaterialTheme.colorScheme.onPrimary
-                                    isHighlighted -> MaterialTheme.colorScheme.onSecondaryContainer
-                                    useHighContrast -> cellTextColor
-                                    isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
-                                    else -> MaterialTheme.colorScheme.secondary
-                                },
+                                color = colors.text,
                                 maxLines = 1,
                             )
                         }

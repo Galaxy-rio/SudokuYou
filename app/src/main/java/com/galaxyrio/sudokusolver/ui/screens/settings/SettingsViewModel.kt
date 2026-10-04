@@ -25,7 +25,9 @@ data class SettingsUiState(
     val paletteStyle: PaletteStyle = PaletteStyle.TonalSpot,
     val useDynamicColors: Boolean = true,
     val isAmoled: Boolean = false,
-    val highContrastBoard: Boolean = false,
+    val highContrastColors: Boolean = false,
+    val highContrastFont: Boolean = false,
+    val colorfulNumbers: Boolean = false,
     val positionLines: Boolean = true,
     val positionBlock: Boolean = true,
     val alternativeErrorColor: Boolean = false,
@@ -60,7 +62,11 @@ class SettingsViewModel(
 
     fun setIsAmoled(enabled: Boolean) = repository.setIsAmoled(enabled)
 
-    fun setHighContrastBoard(enabled: Boolean) = repository.setHighContrastBoard(enabled)
+    fun setHighContrastColors(enabled: Boolean) = repository.setHighContrastColors(enabled)
+
+    fun setHighContrastFont(enabled: Boolean) = repository.setHighContrastFont(enabled)
+
+    fun setColorfulNumbers(enabled: Boolean) = repository.setColorfulNumbers(enabled)
 
     fun setPositionLines(enabled: Boolean) = repository.setPositionLines(enabled)
 
@@ -99,7 +105,9 @@ private fun AppSettings.asUiState(): SettingsUiState = SettingsUiState(
     paletteStyle = paletteStyle.asUiStyle(),
     useDynamicColors = useDynamicColors,
     isAmoled = isAmoled,
-    highContrastBoard = highContrastBoard,
+    highContrastColors = highContrastColors,
+    highContrastFont = highContrastFont,
+    colorfulNumbers = colorfulNumbers,
     positionLines = positionLines,
     positionBlock = positionBlock,
     alternativeErrorColor = alternativeErrorColor,

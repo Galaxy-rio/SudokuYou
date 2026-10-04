@@ -65,7 +65,9 @@ fun AppearanceSettingsScreen(
     onPaletteStyleChange: (PaletteStyle) -> Unit,
     onDynamicColorsChange: (Boolean) -> Unit,
     onAmoledChange: (Boolean) -> Unit,
-    onHighContrastBoardChange: (Boolean) -> Unit,
+    onHighContrastColorsChange: (Boolean) -> Unit,
+    onHighContrastFontChange: (Boolean) -> Unit,
+    onColorfulNumbersChange: (Boolean) -> Unit,
     onPositionLinesChange: (Boolean) -> Unit,
     onPositionBlockChange: (Boolean) -> Unit,
     onAlternativeErrorColorChange: (Boolean) -> Unit,
@@ -175,14 +177,36 @@ fun AppearanceSettingsScreen(
                 SettingsSectionHeading(R.string.appearance_board_section)
             }
 
-            item(key = "high_contrast_board") {
+            item(key = "high_contrast_colors") {
                 SettingsSwitchItem(
-                    titleResource = R.string.appearance_high_contrast_board,
-                    summaryResource = R.string.appearance_high_contrast_board_summary,
-                    checked = uiState.highContrastBoard,
+                    titleResource = R.string.appearance_high_contrast_colors,
+                    summaryResource = R.string.appearance_high_contrast_colors_summary,
+                    checked = uiState.highContrastColors,
                     index = 0,
-                    count = 4,
-                    onCheckedChange = onHighContrastBoardChange,
+                    count = 6,
+                    onCheckedChange = onHighContrastColorsChange,
+                )
+            }
+
+            item(key = "high_contrast_font") {
+                SettingsSwitchItem(
+                    titleResource = R.string.appearance_high_contrast_font,
+                    summaryResource = R.string.appearance_high_contrast_font_summary,
+                    checked = uiState.highContrastFont,
+                    index = 1,
+                    count = 6,
+                    onCheckedChange = onHighContrastFontChange,
+                )
+            }
+
+            item(key = "colorful_numbers") {
+                SettingsSwitchItem(
+                    titleResource = R.string.appearance_colorful_numbers,
+                    summaryResource = R.string.appearance_colorful_numbers_summary,
+                    checked = uiState.colorfulNumbers,
+                    index = 2,
+                    count = 6,
+                    onCheckedChange = onColorfulNumbersChange,
                 )
             }
 
@@ -191,8 +215,8 @@ fun AppearanceSettingsScreen(
                     titleResource = R.string.appearance_position_lines,
                     summaryResource = R.string.appearance_position_lines_summary,
                     checked = uiState.positionLines,
-                    index = 1,
-                    count = 4,
+                    index = 3,
+                    count = 6,
                     onCheckedChange = onPositionLinesChange,
                 )
             }
@@ -202,8 +226,8 @@ fun AppearanceSettingsScreen(
                     titleResource = R.string.appearance_position_block,
                     summaryResource = R.string.appearance_position_block_summary,
                     checked = uiState.positionBlock,
-                    index = 2,
-                    count = 4,
+                    index = 4,
+                    count = 6,
                     onCheckedChange = onPositionBlockChange,
                 )
             }
@@ -213,8 +237,8 @@ fun AppearanceSettingsScreen(
                     titleResource = R.string.appearance_alternative_error_color,
                     summaryResource = R.string.appearance_alternative_error_color_summary,
                     checked = uiState.alternativeErrorColor,
-                    index = 3,
-                    count = 4,
+                    index = 5,
+                    count = 6,
                     onCheckedChange = onAlternativeErrorColorChange,
                 )
             }

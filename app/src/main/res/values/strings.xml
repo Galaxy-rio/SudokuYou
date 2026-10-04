@@ -86,8 +86,12 @@
     <string name="appearance_theme_mode">Theme mode</string>
     <string name="appearance_amoled_mode">AMOLED mode</string>
     <string name="appearance_amoled_mode_summary">Use true black in the dark theme</string>
-    <string name="appearance_high_contrast_board">High contrast</string>
-    <string name="appearance_high_contrast_board_summary">Use stronger cell highlights and contrasting text</string>
+    <string name="appearance_high_contrast_colors">High contrast colors</string>
+    <string name="appearance_high_contrast_colors_summary">Use stronger cell highlights and contrasting text colors</string>
+    <string name="appearance_high_contrast_font">High contrast font</string>
+    <string name="appearance_high_contrast_font_summary">Use lighter entered digits to distinguish them from fixed digits</string>
+    <string name="appearance_colorful_numbers">Colorful numbers</string>
+    <string name="appearance_colorful_numbers_summary">Give each digit its own colors on the board and number pad</string>
     <string name="appearance_position_lines">Position lines</string>
     <string name="appearance_position_lines_summary">Highlight the selected cell’s row and column</string>
     <string name="appearance_position_block">Position block</string>

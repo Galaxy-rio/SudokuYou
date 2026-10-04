@@ -84,8 +84,12 @@
     <string name="appearance_theme_mode">主题模式</string>
     <string name="appearance_amoled_mode">AMOLED 模式</string>
     <string name="appearance_amoled_mode_summary">深色主题使用纯黑背景</string>
-    <string name="appearance_high_contrast_board">高对比度</string>
-    <string name="appearance_high_contrast_board_summary">增强单元格高亮与文字的对比度</string>
+    <string name="appearance_high_contrast_colors">高对比度颜色</string>
+    <string name="appearance_high_contrast_colors_summary">增强单元格高亮与文字颜色的对比度</string>
+    <string name="appearance_high_contrast_font">高对比度字体</string>
+    <string name="appearance_high_contrast_font_summary">使用更细的填写数字，与固定数字形成更明显的粗细对比</string>
+    <string name="appearance_colorful_numbers">彩色数字</string>
+    <string name="appearance_colorful_numbers_summary">为棋盘与数字键盘中的每个数字使用独立配色</string>
     <string name="appearance_position_lines">行列高亮</string>
     <string name="appearance_position_lines_summary">高亮所选单元格所在的行和列</string>
     <string name="appearance_position_block">宫格高亮</string>

@@ -156,7 +156,8 @@ fun AppNavHost(
                         sharedTransitionScope = sharedTransitionScope,
                         animatedVisibilityScope = this,
                         boardConfig = BoardConfig(
-                            useHighContrast = settingsUiState.highContrastBoard,
+                            useHighContrastColors = settingsUiState.highContrastColors,
+                            useHighContrastFont = settingsUiState.highContrastFont,
                             highlightCross = settingsUiState.positionLines,
                             highlightBlock = settingsUiState.positionBlock,
                             useAltErrorColor = settingsUiState.alternativeErrorColor,
@@ -263,7 +264,9 @@ fun AppNavHost(
                             onPaletteStyleChange = settingsViewModel::setPaletteStyle,
                             onDynamicColorsChange = settingsViewModel::setUseDynamicColors,
                             onAmoledChange = settingsViewModel::setIsAmoled,
-                            onHighContrastBoardChange = settingsViewModel::setHighContrastBoard,
+                            onHighContrastColorsChange = settingsViewModel::setHighContrastColors,
+                            onHighContrastFontChange = settingsViewModel::setHighContrastFont,
+                            onColorfulNumbersChange = settingsViewModel::setColorfulNumbers,
                             onPositionLinesChange = settingsViewModel::setPositionLines,
                             onPositionBlockChange = settingsViewModel::setPositionBlock,
                             onAlternativeErrorColorChange =
@@ -412,7 +415,8 @@ private fun GameDestinationContent(
     GameRoute(
         viewModel = gameViewModel,
         boardConfig = BoardConfig(
-            useHighContrast = settingsUiState.highContrastBoard,
+            useHighContrastColors = settingsUiState.highContrastColors,
+            useHighContrastFont = settingsUiState.highContrastFont,
             highlightCross = settingsUiState.positionLines,
             highlightBlock = settingsUiState.positionBlock,
             useAltErrorColor = settingsUiState.alternativeErrorColor,

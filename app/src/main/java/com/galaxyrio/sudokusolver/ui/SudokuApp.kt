@@ -47,6 +47,7 @@ fun SudokuApp(
         amoled = settingsUiState.isAmoled,
         colorSeed = settingsUiState.themeColor,
         paletteStyle = settingsUiState.paletteStyle,
+        colorfulNumbers = settingsUiState.colorfulNumbers,
     ) {
         UsageGuideHost(repository = appContainer.settingsRepository) {
             AppNavHost(

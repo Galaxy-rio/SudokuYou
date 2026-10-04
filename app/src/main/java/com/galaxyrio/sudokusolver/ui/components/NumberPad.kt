@@ -48,6 +48,7 @@ import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteLineStyle
 import com.galaxyrio.sudokusolver.ui.guide.GuideTarget
 import com.galaxyrio.sudokusolver.ui.guide.guideTarget
+import com.galaxyrio.sudokusolver.ui.theme.numberColorScheme
 
 @Composable
 fun NumberPad(
@@ -141,7 +142,9 @@ private fun NumberButtonGroup(
                 },
                 menuContent = { menuState ->
                     DropdownMenuItem(
-                        text = { Text(number.toString()) },
+                        text = {
+                            Text(number.toString(), color = numberColorScheme(number).onSurface)
+                        },
                         onClick = {
                             onNumberClick(number)
                             menuState.dismiss()
@@ -217,6 +220,7 @@ fun AdvancedNumberPad(
             ) {
                 (1..5).forEach { number ->
                     advancedPadItem(
+                        number = number,
                         isSelected = number in digitSelection,
                         contentDescription = number.toString(),
                         onClick = { onNumberClick(number) },
@@ -230,6 +234,7 @@ fun AdvancedNumberPad(
             ) {
                 (6..9).forEach { number ->
                     advancedPadItem(
+                        number = number,
                         isSelected = number in digitSelection,
                         contentDescription = number.toString(),
                         onClick = { onNumberClick(number) },
@@ -317,12 +322,14 @@ private fun ButtonGroupScope.advancedPadItem(
     contentDescription: String,
     onClick: () -> Unit,
     guideTarget: GuideTarget? = null,
+    number: Int? = null,
     content: @Composable () -> Unit,
 ) {
     customItem(
         buttonGroupContent = {
             val interactionSource = remember { MutableInteractionSource() }
             AdvancedPadButton(
+                number = number,
                 isSelected = isSelected,
                 contentDescription = contentDescription,
                 onClick = onClick,
@@ -340,7 +347,9 @@ private fun ButtonGroupScope.advancedPadItem(
         },
         menuContent = { menuState ->
             DropdownMenuItem(
-                text = { Text(contentDescription) },
+                text = {
+                    Text(contentDescription, color = numberColorScheme(number).onSurface)
+                },
                 onClick = {
                     onClick()
                     menuState.dismiss()
@@ -352,6 +361,7 @@ private fun ButtonGroupScope.advancedPadItem(
 
 @Composable
 private fun AdvancedPadButton(
+    number: Int?,
     isSelected: Boolean,
     contentDescription: String,
     onClick: () -> Unit,
@@ -359,6 +369,7 @@ private fun AdvancedPadButton(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    val colors = resolveNumberButtonColors(numberColorScheme(number), isSelected)
     val cornerPercent by animateIntAsState(
         targetValue = if (isSelected) 24 else 50,
         animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
@@ -375,16 +386,8 @@ private fun AdvancedPadButton(
             },
         shape = RoundedCornerShape(percent = cornerPercent),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.secondaryContainer
-            },
-            contentColor = if (isSelected) {
-                MaterialTheme.colorScheme.onPrimary
-            } else {
-                MaterialTheme.colorScheme.onSecondaryContainer
-            },
+            containerColor = colors.background,
+            contentColor = colors.text,
         ),
         interactionSource = interactionSource,
         contentPadding = PaddingValues(horizontal = AdvancedPadButtonCompressionLimit),
@@ -444,6 +447,7 @@ private fun NumberButton(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
+    val colors = resolveNumberButtonColors(numberColorScheme(number), isSelected)
     val motionScheme = MaterialTheme.motionScheme
     val cornerPercent by animateIntAsState(
         targetValue = if (isSelected) 24 else 50,
@@ -457,16 +461,8 @@ private fun NumberButton(
             .semantics { selected = isSelected },
         shape = RoundedCornerShape(percent = cornerPercent),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.secondaryContainer
-            },
-            contentColor = if (isSelected) {
-                MaterialTheme.colorScheme.onPrimary
-            } else {
-                MaterialTheme.colorScheme.onSecondaryContainer
-            },
+            containerColor = colors.background,
+            contentColor = colors.text,
         ),
         interactionSource = interactionSource,
         contentPadding = contentPadding,
