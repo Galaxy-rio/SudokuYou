@@ -1,0 +1,4 @@
+• Fixed incorrect text colors in high-contrast mode
+• Added a high-contrast font mode
+• Added a separate toggle for highlighting conflicting numbers
+• Made minor UI refinements and fixed bugs

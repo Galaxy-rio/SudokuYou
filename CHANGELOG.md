@@ -2,6 +2,22 @@
 
 All notable changes to Sudoku You are documented in this file.
 
+## [3.0.1] - 2026-10-04
+
+### English
+
+- Fixed incorrect text colors in high-contrast mode.
+- Added a high-contrast font mode.
+- Added a separate toggle for highlighting conflicting numbers.
+- Made minor UI refinements and fixed bugs.
+
+### 简体中文
+
+- 修复高对比度模式下的字体颜色错误。
+- 新增高对比度字体模式。
+- 为“高亮显示矛盾数字”添加独立开关。
+- 小幅调整界面并修复若干问题。
+
 ## [3.0.0] - 2026-09-29
 
 ### English
