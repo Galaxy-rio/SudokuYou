@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.galaxyrio.sudokusolver.R
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteLineStyle
@@ -72,18 +73,20 @@ fun NumberPad(
             ),
         contentAlignment = Alignment.Center,
     ) {
-        // The game content gives the number pad all space left after the board and bottom bar.
-        // Fit one square into that area so the 3 x 3 grid can never extend behind the bar.
-        val padSize = minOf(maxWidth, maxHeight).coerceAtMost(360.dp)
+        // Match the button group's spacing so a square pad has circular resting buttons.
+        // Shorter windows keep room for the digits and press animation horizontally.
+        val padHeight = minOf(maxWidth, maxHeight, 360.dp)
+        val padWidth = padHeight.coerceAtLeast(264.dp).coerceAtMost(maxWidth)
+        val padSpacing = ButtonGroupDefaults.HorizontalArrangement.spacing
 
         Column(
             modifier = Modifier
-                .size(padSize)
+                .size(width = padWidth, height = padHeight)
                 .guideTarget(GuideTarget.NUMBERS)
                 .onGloballyPositioned { coordinates ->
                     onPadBoundsChanged?.invoke(coordinates.boundsInWindow())
                 },
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(padSpacing),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             (1..9).chunked(3).forEach { rowNumbers ->
@@ -110,9 +113,10 @@ private fun NumberButtonGroup(
     val interactionSources = remember(numbers) {
         List(numbers.size) { MutableInteractionSource() }
     }
-    val contentPadding = ButtonDefaults.ContentPadding
     val layoutDirection = LocalLayoutDirection.current
-    val compressionLimit = contentPadding.calculateEndPadding(layoutDirection)
+    val compressionLimit = ButtonDefaults.ContentPadding.calculateEndPadding(layoutDirection)
+    // Retain horizontal padding for the group's compression without squeezing the digit vertically.
+    val contentPadding = PaddingValues(horizontal = compressionLimit)
 
     ButtonGroup(
         overflowIndicator = { menuState ->
@@ -470,6 +474,9 @@ private fun NumberButton(
         Text(
             text = number.toString(),
             style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            softWrap = false,
         )
     }
 }
