@@ -22,6 +22,7 @@
   <p>
     <a href="https://github.com/Galaxy-rio/SudokuYou/releases"><img width="153" align="middle" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Github/github2.svg" alt="GitHub Releases"></a>
     <a href="https://f-droid.org/packages/com.galaxyrio.sudokusolver"><img height="60" align="middle" src="https://f-droid.org/badge/get-it-on.svg" alt="F-Droid Releases"></a>
+    <a href="https://www.openapk.net/sudoku-you/com.galaxyrio.sudokusolver"><img src="https://www.openapk.net/images/openapk-badge.png" height="60" alt="OpenAPK.net"></a>
   </p>
 
 A free and open-source Sudoku app with human-style logical hints, advanced board tools, flexible import and export, and no tracking.

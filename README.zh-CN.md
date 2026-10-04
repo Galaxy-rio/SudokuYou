@@ -22,6 +22,7 @@
   <p>
     <a href="https://github.com/Galaxy-rio/SudokuYou/releases"><img width="153" align="middle" src="https://ziadoua.github.io/m3-Markdown-Badges/badges/Github/github2.svg" alt="GitHub 发布版本"></a>
     <a href="https://f-droid.org/packages/com.galaxyrio.sudokusolver"><img height="60" align="middle" src="https://f-droid.org/badge/get-it-on.svg" alt="F-Droid 发布版本"></a>
+    <a href="https://www.openapk.net/sudoku-you/com.galaxyrio.sudokusolver"><img src="https://www.openapk.net/images/openapk-badge.png" height="60" alt="OpenAPK.net"></a>
   </p>
 
 一款自由开源的数独应用，提供拟人化逻辑提示、高级盘面工具和灵活的导入导出功能，且无追踪。
