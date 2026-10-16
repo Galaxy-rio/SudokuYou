@@ -44,6 +44,7 @@ import com.galaxyrio.sudokusolver.ui.screens.settings.details.CrashDetailsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.CrashHistoryScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.FilesSettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.GameSettingsScreen
+import com.galaxyrio.sudokusolver.ui.screens.settings.details.ToolbarSettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.LanguageSettingsScreen
 import com.galaxyrio.sudokusolver.ui.screens.settings.details.LicensesScreen
 import com.galaxyrio.sudokusolver.ui.screens.statistics.StatisticsViewModel
@@ -285,6 +286,7 @@ fun AppNavHost(
                                 settingsViewModel::setShowErrorsImmediately,
                             onCoordinateNotationChange =
                                 settingsViewModel::setCoordinateNotation,
+                            onOpenToolbar = { navController.navigate(ToolbarSettingsDestination) },
                             onBack = onBack,
                             modifier = Modifier.fillMaxSize(),
                         )
@@ -331,6 +333,21 @@ fun AppNavHost(
                             modifier = Modifier.fillMaxSize(),
                         )
                     }
+                }
+
+                composable<ToolbarSettingsDestination>(
+                    enterTransition = { materialForwardEnter(hierarchyTravelPx) },
+                    exitTransition = { materialForwardExit(hierarchyTravelPx) },
+                    popEnterTransition = { materialBackwardEnter(hierarchyTravelPx) },
+                    popExitTransition = { materialBackwardExit(hierarchyTravelPx) },
+                ) { backStackEntry ->
+                    ToolbarSettingsScreen(
+                        configuration = settingsUiState.toolbar,
+                        onToolCountChange = settingsViewModel::setToolbarToolCount,
+                        onToolOrderChange = settingsViewModel::setToolbarToolOrder,
+                        onBack = { navController.popBackStackFrom(backStackEntry) },
+                        modifier = Modifier.fillMaxSize(),
+                    )
                 }
 
                 composable<ChangelogsDestination>(

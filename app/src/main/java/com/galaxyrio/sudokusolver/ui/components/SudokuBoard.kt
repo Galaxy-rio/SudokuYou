@@ -67,6 +67,8 @@ fun SudokuBoard(
     highlightNumbers: Set<Int> = emptySet(),
     advancedNotes: AdvancedNotes? = null,
     showAdvancedHighlights: Boolean = false,
+    showBivalueHighlights: Boolean = showAdvancedHighlights &&
+        advancedNotes?.highlightBivalueCandidates == true,
     pendingLineStart: AdvancedNoteEndpoint? = null,
     overlayStep: SolveStep? = null,
     correctionCells: Set<CellRef> = emptySet(),
@@ -156,8 +158,7 @@ fun SudokuBoard(
                                             row / 3 == selectedRow / 3 &&
                                             col / 3 == selectedCol / 3
                                         val isValueHighlighted = cell.value in highlightNumbers
-                                        val highlightAllCandidates = showAdvancedHighlights &&
-                                            advancedNotes?.highlightBivalueCandidates == true &&
+                                        val highlightAllCandidates = showBivalueHighlights &&
                                             !cell.isSolved() && cell.candidates.size == 2
                                         val cellDescription = if (cell.isSolved()) {
                                             stringResource(

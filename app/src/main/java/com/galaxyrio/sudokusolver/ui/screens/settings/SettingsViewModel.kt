@@ -12,6 +12,8 @@ import com.galaxyrio.sudokusolver.data.settings.CoordinateNotation
 import com.galaxyrio.sudokusolver.data.settings.PaletteStyleOption
 import com.galaxyrio.sudokusolver.data.settings.SettingsRepository
 import com.galaxyrio.sudokusolver.data.settings.ThemeMode
+import com.galaxyrio.sudokusolver.data.settings.ToolbarConfiguration
+import com.galaxyrio.sudokusolver.data.settings.ToolbarTool
 import com.galaxyrio.sudokusolver.domain.model.SudokuExportFormat
 import com.materialkolor.PaletteStyle
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,6 +38,7 @@ data class SettingsUiState(
     val highlightConflictingNumbers: Boolean = true,
     val showErrorsImmediately: Boolean = false,
     val coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
+    val toolbar: ToolbarConfiguration = ToolbarConfiguration(),
     val exportFormat: SudokuExportFormat = SudokuExportFormat.SUSSER,
     val includeCandidatesInCurrentExport: Boolean = true,
 )
@@ -89,6 +92,10 @@ class SettingsViewModel(
     fun setCoordinateNotation(notation: CoordinateNotation) =
         repository.setCoordinateNotation(notation)
 
+    fun setToolbarToolCount(count: Int) = repository.setToolbarToolCount(count)
+
+    fun setToolbarToolOrder(order: List<ToolbarTool>) = repository.setToolbarToolOrder(order)
+
     fun setExportFormat(format: SudokuExportFormat) = repository.setExportFormat(format)
 
     fun setIncludeCandidatesInCurrentExport(enabled: Boolean) =
@@ -120,6 +127,7 @@ private fun AppSettings.asUiState(): SettingsUiState = SettingsUiState(
     highlightConflictingNumbers = highlightConflictingNumbers,
     showErrorsImmediately = showErrorsImmediately,
     coordinateNotation = coordinateNotation,
+    toolbar = toolbar,
     exportFormat = exportFormat,
     includeCandidatesInCurrentExport = includeCandidatesInCurrentExport,
 )

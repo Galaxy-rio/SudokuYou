@@ -133,6 +133,23 @@
     <string name="game_settings_highlight_conflicting_numbers_summary">高亮显示与所在行、列或宫内数字冲突的已填数字和笔记</string>
     <string name="game_settings_show_errors_immediately">立即显示错误</string>
     <string name="game_settings_show_errors_immediately_summary">输入或候选数出错时立即提示</string>
+    <string name="game_settings_interaction_section">交互</string>
+    <string name="toolbar_settings_title">工具栏</string>
+    <plurals name="toolbar_tool_count_summary">
+        <item quantity="other">%d 个工具</item>
+    </plurals>
+    <string name="toolbar_tool_count">工具栏里的工具数量</string>
+    <string name="toolbar_all_tools">所有工具</string>
+    <string name="toolbar_order_summary">拖动调整顺序，前 %1$d 项工具会显示在工具栏中。</string>
+    <string name="toolbar_tool_visible">第 %1$d 位 · 显示在工具栏</string>
+    <string name="toolbar_tool_hidden">第 %1$d 位 · 不显示在工具栏</string>
+    <string name="toolbar_reorder_tool">调整%1$s的顺序</string>
+    <string name="toolbar_move_up">上移</string>
+    <string name="toolbar_move_down">下移</string>
+    <string name="toolbar_tool_undo">撤回</string>
+    <string name="toolbar_tool_notes">切换笔记模式</string>
+    <string name="toolbar_tool_bivalue">显示双值（双候选数）单元格</string>
+    <string name="toolbar_tool_deselect">取消选择全部</string>
     <string name="game_settings_hints_section">提示</string>
     <string name="game_settings_coordinate_notation">坐标表示</string>
     <string name="game_settings_coordinate_notation_summary">%1$s · %2$s</string>

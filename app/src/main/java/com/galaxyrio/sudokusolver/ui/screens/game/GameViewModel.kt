@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.galaxyrio.sudokusolver.data.GameRepository
 import com.galaxyrio.sudokusolver.data.settings.AppSettings
 import com.galaxyrio.sudokusolver.data.settings.CoordinateNotation
+import com.galaxyrio.sudokusolver.data.settings.ToolbarConfiguration
 import com.galaxyrio.sudokusolver.domain.game.CandidateCalculator
 import com.galaxyrio.sudokusolver.domain.game.HintIssue
 import com.galaxyrio.sudokusolver.domain.game.HintIssueDetector
@@ -81,6 +82,7 @@ data class GameUiState(
     val showErrorDetails: Boolean = true,
     val showErrorsImmediately: Boolean = false,
     val coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
+    val toolbar: ToolbarConfiguration = ToolbarConfiguration(),
     val isHintDetailsRevealed: Boolean = false,
     val immediateHintRequestId: Long = 0,
     val hasPersistenceError: Boolean = false,
@@ -304,9 +306,14 @@ class GameViewModel(
     }
 
     fun toggleBivalueHighlights() {
-        updateAdvancedFeature { notes ->
-            notes.copy(highlightBivalueCandidates = !notes.highlightBivalueCandidates)
+        val state = mutableUiState.value
+        if (state.isLoading || state.hasLoadError || state.isComplete) return
+        mutableUiState.update {
+            it.copy(advancedNotes = it.advancedNotes.copy(
+                highlightBivalueCandidates = !it.advancedNotes.highlightBivalueCandidates,
+            ))
         }
+        persistCurrentGame()
     }
 
     fun toggleFrameHighlights() {
@@ -352,6 +359,20 @@ class GameViewModel(
 
     fun clearSelection() {
         mutableUiState.update { it.copy(selectedCell = null) }
+    }
+
+    fun clearAllSelections() {
+        val hadHighlightedDigits = mutableUiState.value.advancedNotes.highlightedDigits.isNotEmpty()
+        mutableUiState.update {
+            it.copy(
+                selectedCell = null,
+                selectedNumber = null,
+                advancedNotes = it.advancedNotes.copy(highlightedDigits = emptySet()),
+                lastAdvancedDigit = null,
+                pendingLineStart = null,
+            )
+        }
+        if (hadHighlightedDigits) persistCurrentGame()
     }
 
     fun toggleNoteMode() {
@@ -1039,4 +1060,5 @@ private fun GameUiState.withGameSettings(settings: AppSettings): GameUiState = c
     showErrorDetails = settings.showErrorDetails,
     showErrorsImmediately = settings.showErrorsImmediately,
     coordinateNotation = settings.coordinateNotation,
+    toolbar = settings.toolbar,
 )

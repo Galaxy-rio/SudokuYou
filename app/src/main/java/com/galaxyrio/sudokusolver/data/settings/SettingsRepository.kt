@@ -47,6 +47,7 @@ data class AppSettings(
     val highlightConflictingNumbers: Boolean = true,
     val showErrorsImmediately: Boolean = false,
     val coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
+    val toolbar: ToolbarConfiguration = ToolbarConfiguration(),
     val exportFormat: SudokuExportFormat = SudokuExportFormat.SUSSER,
     val includeCandidatesInCurrentExport: Boolean = true,
     val hasSeenUsageGuide: Boolean = false,
@@ -75,6 +76,8 @@ interface SettingsRepository {
     fun setHighlightConflictingNumbers(enabled: Boolean)
     fun setShowErrorsImmediately(enabled: Boolean)
     fun setCoordinateNotation(notation: CoordinateNotation)
+    fun setToolbarToolCount(count: Int)
+    fun setToolbarToolOrder(order: List<ToolbarTool>)
     fun setExportFormat(format: SudokuExportFormat)
     fun setIncludeCandidatesInCurrentExport(enabled: Boolean)
     fun markUsageGuideSeen()
@@ -175,6 +178,23 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         update { copy(coordinateNotation = notation) }
     }
 
+    override fun setToolbarToolCount(count: Int) {
+        val toolCount = count.coerceIn(
+            ToolbarConfiguration.MIN_TOOL_COUNT,
+            ToolbarConfiguration.MAX_TOOL_COUNT,
+        )
+        preferences.edit { putInt(KEY_TOOLBAR_TOOL_COUNT, toolCount) }
+        update { copy(toolbar = toolbar.copy(toolCount = toolCount)) }
+    }
+
+    override fun setToolbarToolOrder(order: List<ToolbarTool>) {
+        val toolOrder = normalizeToolbarToolOrder(order)
+        preferences.edit {
+            putString(KEY_TOOLBAR_TOOL_ORDER, toolOrder.joinToString(",") { it.id })
+        }
+        update { copy(toolbar = toolbar.copy(toolOrder = toolOrder)) }
+    }
+
     override fun setExportFormat(format: SudokuExportFormat) {
         preferences.edit { putInt(KEY_EXPORT_FORMAT, format.ordinal) }
         update { copy(exportFormat = format) }
@@ -225,6 +245,13 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
             ),
             default = CoordinateNotation.LOCALIZED,
         ),
+        toolbar = ToolbarConfiguration(
+            toolCount = preferences.getInt(
+                KEY_TOOLBAR_TOOL_COUNT,
+                ToolbarConfiguration.DEFAULT_TOOL_COUNT,
+            ).coerceIn(ToolbarConfiguration.MIN_TOOL_COUNT, ToolbarConfiguration.MAX_TOOL_COUNT),
+            toolOrder = decodeToolbarToolOrder(preferences.getString(KEY_TOOLBAR_TOOL_ORDER, null)),
+        ),
         exportFormat = enumValueAtOrDefault(
             values = SudokuExportFormat.entries,
             index = preferences.getInt(
@@ -264,6 +291,8 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         const val KEY_HIGHLIGHT_CONFLICTING_NUMBERS = "highlight_conflicting_numbers"
         const val KEY_SHOW_ERRORS_IMMEDIATELY = "show_errors_immediately"
         const val KEY_COORDINATE_NOTATION = "coordinate_notation"
+        const val KEY_TOOLBAR_TOOL_COUNT = "toolbar_tool_count"
+        const val KEY_TOOLBAR_TOOL_ORDER = "toolbar_tool_order"
         const val KEY_EXPORT_FORMAT = "export_format"
         const val KEY_INCLUDE_CANDIDATES_IN_CURRENT_EXPORT =
             "include_candidates_in_current_export"

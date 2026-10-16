@@ -30,6 +30,9 @@ data class SettingsDestination(
 )
 
 @Serializable
+data object ToolbarSettingsDestination
+
+@Serializable
 data object ChangelogsDestination
 
 @Serializable

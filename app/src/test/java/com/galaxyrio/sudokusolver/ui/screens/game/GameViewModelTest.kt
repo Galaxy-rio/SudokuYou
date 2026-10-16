@@ -3,6 +3,8 @@ package com.galaxyrio.sudokusolver.ui.screens.game
 import com.galaxyrio.sudokusolver.data.GameRepository
 import com.galaxyrio.sudokusolver.data.settings.AppSettings
 import com.galaxyrio.sudokusolver.data.settings.CoordinateNotation
+import com.galaxyrio.sudokusolver.data.settings.ToolbarConfiguration
+import com.galaxyrio.sudokusolver.data.settings.ToolbarTool
 import com.galaxyrio.sudokusolver.domain.game.CandidateCalculator
 import com.galaxyrio.sudokusolver.domain.game.HintIssue
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteColor
@@ -45,6 +47,115 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GameViewModelTest {
+
+    @Test
+    fun toolbarConfigurationUpdatesWithoutResettingAnOpenGame() = runViewModelTest {
+        val settings = MutableStateFlow(AppSettings())
+        val viewModel = GameViewModel(
+            gameRepository = FakeGameRepository(),
+            newGameDifficulty = Difficulty.EASY,
+            savedGameId = null,
+            settings = settings,
+        )
+        advanceUntilIdle()
+        viewModel.onNumberSelected(4)
+        viewModel.onCellSelected(0, 0)
+        val before = viewModel.uiState.value
+        assertEquals(ToolbarTool.entries.take(5), before.toolbar.visibleTools)
+
+        val configured = ToolbarConfiguration(3, ToolbarTool.entries.reversed())
+        settings.value = settings.value.copy(toolbar = configured)
+        advanceUntilIdle()
+
+        val after = viewModel.uiState.value
+        assertEquals(listOf(ToolbarTool.DESELECT, ToolbarTool.BIVALUE, ToolbarTool.HINT),
+            after.toolbar.visibleTools)
+        assertEquals(before.sudoku, after.sudoku)
+        assertEquals(before.selectedCell, after.selectedCell)
+        assertEquals(before.selectedNumber, after.selectedNumber)
+        assertEquals(before.canUndo, after.canUndo)
+    }
+
+    @Test
+    fun bivalueHighlightingWorksAndPersistsWithoutChangingInputMode() = runViewModelTest {
+        val repository = FakeGameRepository()
+        val viewModel = GameViewModel(repository, Difficulty.EASY, null)
+        advanceUntilIdle()
+        viewModel.toggleNoteMode()
+        viewModel.onNumberSelected(3)
+        val before = viewModel.uiState.value
+
+        viewModel.toggleBivalueHighlights()
+        advanceUntilIdle()
+
+        val after = viewModel.uiState.value
+        assertFalse(after.isAdvancedMode)
+        assertFalse(after.isAdvancedNoteMode)
+        assertTrue(after.isNoteMode)
+        assertEquals(before.selectedNumber, after.selectedNumber)
+        assertEquals(before.sudoku, after.sudoku)
+        assertTrue(after.advancedNotes.highlightBivalueCandidates)
+        assertTrue(repository.savedGamesHistory.last().advancedNotes.highlightBivalueCandidates)
+
+        viewModel.setAdvancedMode(true)
+        viewModel.toggleBivalueHighlights()
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.advancedNotes.highlightBivalueCandidates)
+        assertFalse(viewModel.uiState.value.isAdvancedNoteMode)
+        assertTrue(viewModel.uiState.value.isNoteMode)
+    }
+
+    @Test
+    fun deselectAllClearsDigitAndCellWithoutEditingTheBoard() = runViewModelTest {
+        val viewModel = GameViewModel(FakeGameRepository(), Difficulty.EASY, null)
+        advanceUntilIdle()
+        viewModel.onNumberSelected(3)
+        viewModel.onCellSelected(0, 0)
+        val before = viewModel.uiState.value
+        assertEquals(3, before.selectedNumber)
+        assertEquals(CellPosition(0, 0), before.selectedCell)
+
+        viewModel.clearAllSelections()
+
+        val after = viewModel.uiState.value
+        assertNull(after.selectedNumber)
+        assertNull(after.selectedCell)
+        assertEquals(before.sudoku, after.sudoku)
+        assertEquals(before.canUndo, after.canUndo)
+        assertEquals(before.canRedo, after.canRedo)
+    }
+
+    @Test
+    fun deselectAllClearsAdvancedDigitSelectionsAndPendingLineButKeepsAnnotations() = runViewModelTest {
+        val annotations = AdvancedNotes(
+            cellColors = mapOf(10 to AdvancedNoteColor.ORANGE),
+            highlightBivalueCandidates = true,
+        )
+        val saved = SavedGame(id = 250, difficulty = Difficulty.EASY, sudoku = Sudoku(),
+            advancedNotes = annotations)
+        val repository = FakeGameRepository(saved)
+        val viewModel = GameViewModel(repository, null, saved.id)
+        advanceUntilIdle()
+        viewModel.setAdvancedMode(true)
+        viewModel.toggleAdvancedNoteMode()
+        viewModel.onAdvancedNumberSelected(2)
+        viewModel.onAdvancedNumberSelected(7)
+        viewModel.toggleLineTool(AdvancedNoteLineStyle.SOLID)
+        viewModel.onCellSelected(0, 0)
+        assertTrue(viewModel.uiState.value.pendingLineStart != null)
+
+        viewModel.clearAllSelections()
+        advanceUntilIdle()
+
+        val after = viewModel.uiState.value
+        assertNull(after.selectedNumber)
+        assertNull(after.selectedCell)
+        assertNull(after.lastAdvancedDigit)
+        assertNull(after.pendingLineStart)
+        assertEquals(annotations, after.advancedNotes)
+        assertEquals(annotations, repository.savedGamesHistory.last().advancedNotes)
+        assertEquals(saved.sudoku, after.sudoku)
+    }
 
     @Test
     fun newGameUsesRequestedDifficulty() = runViewModelTest {

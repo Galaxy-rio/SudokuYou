@@ -135,6 +135,24 @@
     <string name="game_settings_highlight_conflicting_numbers_summary">Highlight entered digits and notes that conflict with a digit in the same row, column, or box</string>
     <string name="game_settings_show_errors_immediately">Show errors immediately</string>
     <string name="game_settings_show_errors_immediately_summary">Show a hint as soon as an entry or candidate is wrong</string>
+    <string name="game_settings_interaction_section">Interaction</string>
+    <string name="toolbar_settings_title">Toolbar</string>
+    <plurals name="toolbar_tool_count_summary">
+        <item quantity="one">%d tool</item>
+        <item quantity="other">%d tools</item>
+    </plurals>
+    <string name="toolbar_tool_count">Number of tools in toolbar</string>
+    <string name="toolbar_all_tools">All tools</string>
+    <string name="toolbar_order_summary">Drag to reorder. The first %1$d tools appear in the toolbar.</string>
+    <string name="toolbar_tool_visible">Position %1$d · In toolbar</string>
+    <string name="toolbar_tool_hidden">Position %1$d · Not in toolbar</string>
+    <string name="toolbar_reorder_tool">Reorder %1$s</string>
+    <string name="toolbar_move_up">Move up</string>
+    <string name="toolbar_move_down">Move down</string>
+    <string name="toolbar_tool_undo">Undo</string>
+    <string name="toolbar_tool_notes">Toggle notes mode</string>
+    <string name="toolbar_tool_bivalue">Show bivalue (two-candidate) cells</string>
+    <string name="toolbar_tool_deselect">Deselect all</string>
     <string name="game_settings_hints_section">Hints</string>
     <string name="game_settings_coordinate_notation">Coordinate notation</string>
     <string name="game_settings_coordinate_notation_summary">%1$s · %2$s</string>

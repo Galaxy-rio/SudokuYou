@@ -30,6 +30,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.galaxyrio.sudokusolver.R
@@ -45,6 +46,7 @@ fun GameSettingsScreen(
     onShowErrorsImmediatelyChange: (Boolean) -> Unit,
     onCoordinateNotationChange: (CoordinateNotation) -> Unit,
     onBack: () -> Unit,
+    onOpenToolbar: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showCoordinateNotationDialog by rememberSaveable { mutableStateOf(false) }
@@ -133,6 +135,28 @@ fun GameSettingsScreen(
                 )
             }
 
+            item(key = "interaction_heading") {
+                GameSettingsSectionHeading(R.string.game_settings_interaction_section)
+            }
+
+            item(key = "toolbar") {
+                SegmentedListItem(
+                    onClick = onOpenToolbar,
+                    shapes = ListItemDefaults.segmentedShapes(index = 0, count = 1),
+                    colors = gameSettingsItemColors(),
+                    content = { Text(stringResource(R.string.toolbar_settings_title)) },
+                    supportingContent = {
+                        Text(
+                            pluralStringResource(
+                                R.plurals.toolbar_tool_count_summary,
+                                uiState.toolbar.toolCount,
+                                uiState.toolbar.toolCount,
+                            )
+                        )
+                    },
+                )
+            }
+
             item(key = "bottom_spacing") {
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -152,7 +176,7 @@ fun GameSettingsScreen(
 }
 
 @Composable
-private fun GameSettingsSectionHeading(@StringRes textResource: Int) {
+internal fun GameSettingsSectionHeading(@StringRes textResource: Int) {
     Text(
         text = stringResource(textResource),
         style = MaterialTheme.typography.labelLarge,
@@ -237,7 +261,7 @@ private fun CoordinateNotationDialog(
 }
 
 @Composable
-private fun gameSettingsItemColors() = ListItemDefaults.segmentedColors(
+internal fun gameSettingsItemColors() = ListItemDefaults.segmentedColors(
     containerColor = MaterialTheme.colorScheme.surfaceBright,
 )
 

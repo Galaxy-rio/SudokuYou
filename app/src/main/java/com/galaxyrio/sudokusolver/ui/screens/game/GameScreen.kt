@@ -45,9 +45,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Backspace
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.AlertDialog
@@ -76,6 +73,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -91,13 +89,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -108,6 +104,10 @@ import androidx.compose.ui.unit.Density
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.galaxyrio.sudokusolver.R
+import com.galaxyrio.sudokusolver.data.settings.ToolbarConfiguration
+import com.galaxyrio.sudokusolver.data.settings.ToolbarTool
+import com.galaxyrio.sudokusolver.ui.components.ToolbarToolIcon
+import com.galaxyrio.sudokusolver.ui.components.actionDescriptionResource
 import com.galaxyrio.sudokusolver.domain.game.HintIssue
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteColor
 import com.galaxyrio.sudokusolver.domain.model.AdvancedNoteLineStyle
@@ -164,6 +164,8 @@ fun GameRoute(
             isAdvancedMode = guideStep?.previewsAdvancedMode == true,
             isAdvancedNoteMode = guideStep?.previewsAdvancedMode == true,
             advancedInputTool = AdvancedInputTool.NONE,
+            // The guide introduces all five original tools, regardless of a custom layout.
+            toolbar = ToolbarConfiguration(),
         )
     } else uiState
     // ModalBottomSheet reserves space outside its content for the drag handle and its internal
@@ -290,6 +292,7 @@ fun GameRoute(
             onNumberSelected = viewModel::onNumberSelected,
             onAdvancedNumberSelected = viewModel::onAdvancedNumberSelected,
             onClearSelection = viewModel::clearSelection,
+            onDeselectAll = viewModel::clearAllSelections,
             onUndo = viewModel::undo,
             onRedo = viewModel::redo,
             onErase = viewModel::eraseSelectedCell,
@@ -437,6 +440,7 @@ fun GameScreen(
     onNumberSelected: (Int) -> Unit,
     onAdvancedNumberSelected: (Int) -> Unit,
     onClearSelection: () -> Unit,
+    onDeselectAll: () -> Unit,
     onUndo: () -> Unit,
     onRedo: () -> Unit,
     onErase: () -> Unit,
@@ -487,6 +491,7 @@ fun GameScreen(
                 onNumberSelected = onNumberSelected,
                 onAdvancedNumberSelected = onAdvancedNumberSelected,
                 onClearSelection = onClearSelection,
+                onDeselectAll = onDeselectAll,
                 onUndo = onUndo,
                 onRedo = onRedo,
                 onErase = onErase,
@@ -591,6 +596,7 @@ private fun GameScaffold(
     onNumberSelected: (Int) -> Unit,
     onAdvancedNumberSelected: (Int) -> Unit,
     onClearSelection: () -> Unit,
+    onDeselectAll: () -> Unit,
     onUndo: () -> Unit,
     onRedo: () -> Unit,
     onErase: () -> Unit,
@@ -650,7 +656,9 @@ private fun GameScaffold(
         },
         bottomBar = {
             GameBottomBar(
+                tools = uiState.toolbar.visibleTools,
                 isNoteMode = uiState.isNoteMode,
+                showBivalueHighlights = uiState.advancedNotes.highlightBivalueCandidates,
                 isAdvancedColorToolActive = uiState.isAdvancedColorToolActive,
                 selectedAdvancedColorIndex = uiState.selectedAdvancedColorIndex,
                 canUndo = uiState.canUndo && !uiState.isComplete,
@@ -661,6 +669,8 @@ private fun GameScaffold(
                 onErase = onErase,
                 onToggleNoteMode = onToggleNoteMode,
                 onShowHint = onShowHint,
+                onToggleBivalueHighlights = onToggleBivalueHighlights,
+                onDeselectAll = onDeselectAll,
                 onAdvancedColorSelected = onAdvancedColorSelected,
             )
         },
@@ -884,7 +894,9 @@ private fun GameTopBar(
 
 @Composable
 private fun GameBottomBar(
+    tools: List<ToolbarTool>,
     isNoteMode: Boolean,
+    showBivalueHighlights: Boolean,
     isAdvancedColorToolActive: Boolean,
     selectedAdvancedColorIndex: Int,
     canUndo: Boolean,
@@ -895,6 +907,8 @@ private fun GameBottomBar(
     onErase: () -> Unit,
     onToggleNoteMode: () -> Unit,
     onShowHint: () -> Unit,
+    onToggleBivalueHighlights: () -> Unit,
+    onDeselectAll: () -> Unit,
     onAdvancedColorSelected: (Int) -> Unit,
 ) {
     if (isAdvancedColorToolActive) {
@@ -906,42 +920,44 @@ private fun GameBottomBar(
     }
 
     BottomAppBar {
-        ToolbarAction(
-            icon = ImageVector.vectorResource(R.drawable.ic_material_symbol_undo),
-            contentDescription = stringResource(R.string.game_undo),
-            enabled = canUndo,
-            onClick = onUndo,
-            modifier = Modifier.weight(1f).guideTarget(GuideTarget.UNDO),
-        )
-        ToolbarAction(
-            icon = ImageVector.vectorResource(R.drawable.ic_material_symbol_redo),
-            contentDescription = stringResource(R.string.game_redo),
-            enabled = canRedo,
-            onClick = onRedo,
-            modifier = Modifier.weight(1f).guideTarget(GuideTarget.REDO),
-        )
-        ToolbarAction(
-            icon = Icons.AutoMirrored.Filled.Backspace,
-            contentDescription = stringResource(R.string.game_erase),
-            enabled = enabled,
-            onClick = onErase,
-            modifier = Modifier.weight(1f).guideTarget(GuideTarget.ERASE),
-        )
-        ToolbarToggleAction(
-            icon = Icons.Default.Edit,
-            contentDescription = stringResource(R.string.game_note_mode),
-            checked = isNoteMode,
-            enabled = enabled,
-            onCheckedChange = { onToggleNoteMode() },
-            modifier = Modifier.weight(1f).guideTarget(GuideTarget.NOTES),
-        )
-        ToolbarAction(
-            icon = Icons.Default.Lightbulb,
-            contentDescription = stringResource(R.string.game_hint),
-            enabled = enabled,
-            onClick = onShowHint,
-            modifier = Modifier.weight(1f).guideTarget(GuideTarget.HINT),
-        )
+        tools.forEach { tool ->
+            key(tool) {
+                val guideTarget = when (tool) {
+                    ToolbarTool.UNDO -> GuideTarget.UNDO
+                    ToolbarTool.REDO -> GuideTarget.REDO
+                    ToolbarTool.ERASE -> GuideTarget.ERASE
+                    ToolbarTool.NOTES -> GuideTarget.NOTES
+                    ToolbarTool.HINT -> GuideTarget.HINT
+                    else -> null
+                }
+                ExpressiveToolbarButton(
+                    tool = tool,
+                    contentDescription = stringResource(tool.actionDescriptionResource()),
+                    enabled = enabled && when (tool) {
+                        ToolbarTool.UNDO -> canUndo
+                        ToolbarTool.REDO -> canRedo
+                        else -> true
+                    },
+                    checked = when (tool) {
+                        ToolbarTool.NOTES -> isNoteMode
+                        ToolbarTool.BIVALUE -> showBivalueHighlights
+                        else -> null
+                    },
+                    onClick = when (tool) {
+                        ToolbarTool.UNDO -> onUndo
+                        ToolbarTool.REDO -> onRedo
+                        ToolbarTool.ERASE -> onErase
+                        ToolbarTool.NOTES -> onToggleNoteMode
+                        ToolbarTool.HINT -> onShowHint
+                        ToolbarTool.BIVALUE -> onToggleBivalueHighlights
+                        ToolbarTool.DESELECT -> onDeselectAll
+                    },
+                    modifier = Modifier.weight(1f).then(
+                        if (guideTarget != null) Modifier.guideTarget(guideTarget) else Modifier
+                    ),
+                )
+            }
+        }
     }
 }
 
@@ -1014,44 +1030,8 @@ private fun AdvancedColorSwatch(
 }
 
 @Composable
-private fun ToolbarAction(
-    icon: ImageVector,
-    contentDescription: String,
-    enabled: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    ExpressiveToolbarButton(
-        icon = icon,
-        contentDescription = contentDescription,
-        enabled = enabled,
-        onClick = onClick,
-        modifier = modifier,
-    )
-}
-
-@Composable
-private fun ToolbarToggleAction(
-    icon: ImageVector,
-    contentDescription: String,
-    checked: Boolean,
-    enabled: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    ExpressiveToolbarButton(
-        icon = icon,
-        contentDescription = contentDescription,
-        enabled = enabled,
-        checked = checked,
-        onClick = { onCheckedChange(!checked) },
-        modifier = modifier,
-    )
-}
-
-@Composable
 private fun ExpressiveToolbarButton(
-    icon: ImageVector,
+    tool: ToolbarTool,
     contentDescription: String,
     enabled: Boolean,
     onClick: () -> Unit,
@@ -1102,7 +1082,8 @@ private fun ExpressiveToolbarButton(
     Box(
         modifier = modifier
             .fillMaxHeight()
-            .then(interactionModifier),
+            .then(interactionModifier)
+            .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center,
     ) {
         Box(
@@ -1115,9 +1096,8 @@ private fun ExpressiveToolbarButton(
                 .background(containerColor, CircleShape),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = contentDescription,
+            ToolbarToolIcon(
+                tool = tool,
                 tint = contentColor,
                 modifier = Modifier.size(24.dp),
             )
@@ -1313,6 +1293,7 @@ private fun GameBoard(
         highlightNumbers = highlightedNumbers,
         advancedNotes = uiState.advancedNotes.takeIf { showAdvancedAnnotations },
         showAdvancedHighlights = showAdvancedHighlights,
+        showBivalueHighlights = !isHintVisible && uiState.advancedNotes.highlightBivalueCandidates,
         pendingLineStart = uiState.pendingLineStart.takeIf { showAdvancedHighlights },
         overlayStep = overlayStep,
         correctionCells = correctionCells,

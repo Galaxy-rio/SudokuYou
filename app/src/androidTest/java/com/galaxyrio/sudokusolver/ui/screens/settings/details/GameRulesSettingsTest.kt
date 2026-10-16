@@ -97,6 +97,7 @@ class GameRulesSettingsTest {
                     onShowErrorsImmediatelyChange = model::setShowErrorsImmediately,
                     onCoordinateNotationChange = model::setCoordinateNotation,
                     onBack = {},
+                    onOpenToolbar = {},
                 )
             }
         }
