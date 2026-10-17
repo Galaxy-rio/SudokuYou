@@ -83,6 +83,10 @@ data class GameUiState(
     val showErrorsImmediately: Boolean = false,
     val coordinateNotation: CoordinateNotation = CoordinateNotation.LOCALIZED,
     val toolbar: ToolbarConfiguration = ToolbarConfiguration(),
+    val showT9CandidateDots: Boolean = false,
+    val t9ShapeHighlight: Boolean = true,
+    val t9OutlineHighlight: Boolean = false,
+    val longPressSwapsNoteMode: Boolean = true,
     val isHintDetailsRevealed: Boolean = false,
     val immediateHintRequestId: Long = 0,
     val hasPersistenceError: Boolean = false,
@@ -91,6 +95,16 @@ data class GameUiState(
         get() = selectedNumber ?: selectedCell
             ?.let { sudoku.getCell(it.row, it.col).value }
             ?.takeIf { it != 0 }
+
+    val t9CandidateNumbers: Set<Int>
+        get() {
+            if (!showT9CandidateDots || isLoading || hasLoadError || isComplete) {
+                return emptySet()
+            }
+            val position = selectedCell ?: return emptySet()
+            val cell = sudoku.getCell(position.row, position.col)
+            return if (!cell.isFixed && !cell.isSolved()) cell.candidates else emptySet()
+        }
 
     val areHintDetailsVisible: Boolean
         get() = showHintDetails || isHintDetailsRevealed
@@ -116,6 +130,10 @@ class GameViewModel(
 ) : ViewModel() {
     private val solutionResolver = PuzzleSolutionResolver()
     private var latestSettings = settings.value
+    private var inputNoteModeOverride: Boolean? = null
+
+    private val inputNoteMode: Boolean
+        get() = inputNoteModeOverride ?: mutableUiState.value.isNoteMode
 
     private val mutableUiState = MutableStateFlow(
         GameUiState(difficulty = newGameDifficulty ?: Difficulty.MEDIUM)
@@ -175,6 +193,19 @@ class GameViewModel(
         }
     }
 
+    fun withAlternateNoteMode(action: () -> Unit) {
+        val previousOverride = inputNoteModeOverride
+        if (mutableUiState.value.longPressSwapsNoteMode) {
+            inputNoteModeOverride = !inputNoteMode
+        }
+        try {
+            // Only this synchronous input uses the override; the user's selected mode stays intact.
+            action()
+        } finally {
+            inputNoteModeOverride = previousOverride
+        }
+    }
+
     fun onCellSelected(row: Int, col: Int) {
         val state = mutableUiState.value
         if (state.isLoading || state.hasLoadError || state.isComplete) return
@@ -206,7 +237,7 @@ class GameViewModel(
             return
         }
 
-        applyNumber(row, col, selectedNumber, state.isNoteMode)
+        applyNumber(row, col, selectedNumber, inputNoteMode)
     }
 
     fun onNumberSelected(number: Int) {
@@ -229,7 +260,7 @@ class GameViewModel(
                 row = selectedCell.row,
                 col = selectedCell.col,
                 number = number,
-                noteMode = state.isNoteMode,
+                noteMode = inputNoteMode,
             )
         }
         mutableUiState.update { it.copy(selectedNumber = null) }
@@ -265,7 +296,7 @@ class GameViewModel(
 
         val selectedCell = state.selectedCell
         if (state.advancedInputTool == AdvancedInputTool.NONE &&
-            state.isNoteMode &&
+            inputNoteMode &&
             selectedCell != null
         ) {
             val cell = state.sudoku.getCell(selectedCell.row, selectedCell.col)
@@ -1061,4 +1092,8 @@ private fun GameUiState.withGameSettings(settings: AppSettings): GameUiState = c
     showErrorsImmediately = settings.showErrorsImmediately,
     coordinateNotation = settings.coordinateNotation,
     toolbar = settings.toolbar,
+    showT9CandidateDots = settings.showT9CandidateDots,
+    t9ShapeHighlight = settings.t9ShapeHighlight,
+    t9OutlineHighlight = settings.t9OutlineHighlight,
+    longPressSwapsNoteMode = settings.longPressSwapsNoteMode,
 )

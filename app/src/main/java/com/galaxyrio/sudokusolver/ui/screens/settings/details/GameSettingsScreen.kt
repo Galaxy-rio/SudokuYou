@@ -47,6 +47,7 @@ fun GameSettingsScreen(
     onCoordinateNotationChange: (CoordinateNotation) -> Unit,
     onBack: () -> Unit,
     onOpenToolbar: () -> Unit,
+    onLongPressSwapsNoteModeChange: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var showCoordinateNotationDialog by rememberSaveable { mutableStateOf(false) }
@@ -142,7 +143,7 @@ fun GameSettingsScreen(
             item(key = "toolbar") {
                 SegmentedListItem(
                     onClick = onOpenToolbar,
-                    shapes = ListItemDefaults.segmentedShapes(index = 0, count = 1),
+                    shapes = ListItemDefaults.segmentedShapes(index = 0, count = 2),
                     colors = gameSettingsItemColors(),
                     content = { Text(stringResource(R.string.toolbar_settings_title)) },
                     supportingContent = {
@@ -154,6 +155,17 @@ fun GameSettingsScreen(
                             )
                         )
                     },
+                )
+            }
+
+            item(key = "long_press_swaps_note_mode") {
+                GameSettingsSwitchItem(
+                    titleResource = R.string.game_settings_long_press_swaps_note_mode,
+                    summaryResource = R.string.game_settings_long_press_swaps_note_mode_summary,
+                    checked = uiState.longPressSwapsNoteMode,
+                    index = 1,
+                    count = 2,
+                    onCheckedChange = onLongPressSwapsNoteModeChange,
                 )
             }
 

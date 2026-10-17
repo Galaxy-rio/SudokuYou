@@ -76,6 +76,7 @@ fun SudokuBoard(
     onBoardBoundsChanged: ((Rect) -> Unit)? = null,
     config: BoardConfig = BoardConfig(),
     readOnly: Boolean = false,
+    onCellLongClick: ((row: Int, col: Int) -> Unit)? = null,
 ) {
     val thickLine = 2.dp
     val thinLine = 0.6.dp
@@ -201,6 +202,8 @@ fun SudokuBoard(
                                             isSelectedBlock = isSelectedBlock,
                                             contentDescription = cellDescription,
                                             onClick = { onCellClick(row, col) },
+                                            onLongClick = onCellLongClick?.takeUnless { readOnly }
+                                                ?.let { action -> { action(row, col) } },
                                             config = config,
                                             modifier = Modifier
                                                 .weight(1f)
@@ -258,6 +261,7 @@ private fun SudokuCell(
     isSelectedBlock: Boolean,
     contentDescription: String,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)?,
     config: BoardConfig,
     modifier: Modifier = Modifier,
 ) {
@@ -282,6 +286,7 @@ private fun SudokuCell(
                 this.selected = isSelected
                 role = Role.Button
             }
+            .onLongPressAction(onLongClick)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {

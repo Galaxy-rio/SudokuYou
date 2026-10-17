@@ -98,6 +98,13 @@
     <string name="appearance_position_block_summary">Highlight the selected cell’s 3 × 3 block</string>
     <string name="appearance_alternative_error_color">Alternative error color</string>
     <string name="appearance_alternative_error_color_summary">Use a green error color for red themes</string>
+    <string name="appearance_t9_section">T9</string>
+    <string name="appearance_t9_candidate_dots">Show candidate dots</string>
+    <string name="appearance_t9_candidate_dots_summary">Show a dot above each keypad digit already marked as a candidate in the selected cell</string>
+    <string name="appearance_t9_shape_highlight">Shape change</string>
+    <string name="appearance_t9_shape_highlight_summary">Change the shape of selected keypad buttons</string>
+    <string name="appearance_t9_outline_highlight">Outline</string>
+    <string name="appearance_t9_outline_highlight_summary">Show a focus ring around selected keypad buttons</string>
     <string name="appearance_dynamic_color">Dynamic color</string>
     <string name="appearance_dynamic_color_summary">Automatically use colors from the device wallpaper</string>
     <string name="appearance_color_option">Theme color %1$s</string>
@@ -136,6 +143,8 @@
     <string name="game_settings_show_errors_immediately">Show errors immediately</string>
     <string name="game_settings_show_errors_immediately_summary">Show a hint as soon as an entry or candidate is wrong</string>
     <string name="game_settings_interaction_section">Interaction</string>
+    <string name="game_settings_long_press_swaps_note_mode">Swap note mode on long press</string>
+    <string name="game_settings_long_press_swaps_note_mode_summary">Long-press a cell or button to use the opposite note mode for that action only</string>
     <string name="toolbar_settings_title">Toolbar</string>
     <plurals name="toolbar_tool_count_summary">
         <item quantity="one">%d tool</item>
@@ -260,6 +269,8 @@
     <string name="game_note_mode">Candidate mode</string>
     <string name="game_auto_candidates">Fill all candidates</string>
     <string name="game_clear_selection">Clear selection</string>
+    <string name="game_candidate_present">Candidate present</string>
+    <string name="game_alternate_note_mode_action">Use opposite note mode</string>
     <string name="game_hint">Hint</string>
     <string name="game_more_options">More options</string>
     <string name="game_advanced_mode">Advanced mode</string>

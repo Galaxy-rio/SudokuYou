@@ -96,6 +96,13 @@
     <string name="appearance_position_block_summary">高亮所选单元格所在的 3 × 3 宫格</string>
     <string name="appearance_alternative_error_color">替代错误颜色</string>
     <string name="appearance_alternative_error_color_summary">红色主题下改用绿色标记错误</string>
+    <string name="appearance_t9_section">T9</string>
+    <string name="appearance_t9_candidate_dots">显示候选数圆点</string>
+    <string name="appearance_t9_candidate_dots_summary">在当前单元格已有候选数对应的小键盘数字上方显示圆点</string>
+    <string name="appearance_t9_shape_highlight">形状变化</string>
+    <string name="appearance_t9_shape_highlight_summary">选中小键盘按钮时改变形状</string>
+    <string name="appearance_t9_outline_highlight">轮廓</string>
+    <string name="appearance_t9_outline_highlight_summary">为选中的小键盘按钮显示外侧焦点环</string>
     <string name="appearance_dynamic_color">动态配色</string>
     <string name="appearance_dynamic_color_summary">自动使用设备壁纸中的颜色</string>
     <string name="appearance_color_option">主题颜色 %1$s</string>
@@ -134,6 +141,8 @@
     <string name="game_settings_show_errors_immediately">立即显示错误</string>
     <string name="game_settings_show_errors_immediately_summary">输入或候选数出错时立即提示</string>
     <string name="game_settings_interaction_section">交互</string>
+    <string name="game_settings_long_press_swaps_note_mode">长按交换笔记状态</string>
+    <string name="game_settings_long_press_swaps_note_mode_summary">长按格子或按钮时，仅本次操作使用相反的笔记状态</string>
     <string name="toolbar_settings_title">工具栏</string>
     <plurals name="toolbar_tool_count_summary">
         <item quantity="other">%d 个工具</item>
@@ -255,6 +264,8 @@
     <string name="game_note_mode">候选数模式</string>
     <string name="game_auto_candidates">填入所有候选数</string>
     <string name="game_clear_selection">清除选择</string>
+    <string name="game_candidate_present">已有候选数</string>
+    <string name="game_alternate_note_mode_action">使用相反的笔记状态</string>
     <string name="game_hint">提示</string>
     <string name="game_more_options">更多选项</string>
     <string name="game_advanced_mode">高级模式</string>

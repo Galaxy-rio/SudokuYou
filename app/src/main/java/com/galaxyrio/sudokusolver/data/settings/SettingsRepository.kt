@@ -42,6 +42,10 @@ data class AppSettings(
     val positionLines: Boolean = true,
     val positionBlock: Boolean = true,
     val alternativeErrorColor: Boolean = false,
+    val showT9CandidateDots: Boolean = false,
+    val t9ShapeHighlight: Boolean = true,
+    val t9OutlineHighlight: Boolean = false,
+    val longPressSwapsNoteMode: Boolean = true,
     val showHintDetails: Boolean = true,
     val showErrorDetails: Boolean = true,
     val highlightConflictingNumbers: Boolean = true,
@@ -71,6 +75,10 @@ interface SettingsRepository {
     fun setPositionLines(enabled: Boolean)
     fun setPositionBlock(enabled: Boolean)
     fun setAlternativeErrorColor(enabled: Boolean)
+    fun setShowT9CandidateDots(enabled: Boolean)
+    fun setT9ShapeHighlight(enabled: Boolean)
+    fun setT9OutlineHighlight(enabled: Boolean)
+    fun setLongPressSwapsNoteMode(enabled: Boolean)
     fun setShowHintDetails(enabled: Boolean)
     fun setShowErrorDetails(enabled: Boolean)
     fun setHighlightConflictingNumbers(enabled: Boolean)
@@ -153,6 +161,26 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         update { copy(alternativeErrorColor = enabled) }
     }
 
+    override fun setShowT9CandidateDots(enabled: Boolean) {
+        preferences.edit { putBoolean(KEY_SHOW_T9_CANDIDATE_DOTS, enabled) }
+        update { copy(showT9CandidateDots = enabled) }
+    }
+
+    override fun setT9ShapeHighlight(enabled: Boolean) {
+        preferences.edit { putBoolean(KEY_T9_SHAPE_HIGHLIGHT, enabled) }
+        update { copy(t9ShapeHighlight = enabled) }
+    }
+
+    override fun setT9OutlineHighlight(enabled: Boolean) {
+        preferences.edit { putBoolean(KEY_T9_OUTLINE_HIGHLIGHT, enabled) }
+        update { copy(t9OutlineHighlight = enabled) }
+    }
+
+    override fun setLongPressSwapsNoteMode(enabled: Boolean) {
+        preferences.edit { putBoolean(KEY_LONG_PRESS_SWAPS_NOTE_MODE, enabled) }
+        update { copy(longPressSwapsNoteMode = enabled) }
+    }
+
     override fun setShowHintDetails(enabled: Boolean) {
         preferences.edit { putBoolean(KEY_SHOW_HINT_DETAILS, enabled) }
         update { copy(showHintDetails = enabled) }
@@ -233,6 +261,10 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         positionLines = preferences.getBoolean(KEY_POSITION_LINES, true),
         positionBlock = preferences.getBoolean(KEY_POSITION_BLOCK, true),
         alternativeErrorColor = preferences.getBoolean(KEY_ALTERNATIVE_ERROR_COLOR, false),
+        showT9CandidateDots = preferences.getBoolean(KEY_SHOW_T9_CANDIDATE_DOTS, false),
+        t9ShapeHighlight = preferences.getBoolean(KEY_T9_SHAPE_HIGHLIGHT, true),
+        t9OutlineHighlight = preferences.getBoolean(KEY_T9_OUTLINE_HIGHLIGHT, false),
+        longPressSwapsNoteMode = preferences.getBoolean(KEY_LONG_PRESS_SWAPS_NOTE_MODE, true),
         showHintDetails = preferences.getBoolean(KEY_SHOW_HINT_DETAILS, true),
         showErrorDetails = preferences.getBoolean(KEY_SHOW_ERROR_DETAILS, true),
         highlightConflictingNumbers = preferences.getBoolean(KEY_HIGHLIGHT_CONFLICTING_NUMBERS, true),
@@ -286,6 +318,10 @@ class PreferencesSettingsRepository(context: Context) : SettingsRepository {
         const val KEY_POSITION_LINES = "position_lines"
         const val KEY_POSITION_BLOCK = "position_block"
         const val KEY_ALTERNATIVE_ERROR_COLOR = "alternative_error_color"
+        const val KEY_SHOW_T9_CANDIDATE_DOTS = "show_t9_candidate_dots"
+        const val KEY_T9_SHAPE_HIGHLIGHT = "t9_shape_highlight"
+        const val KEY_T9_OUTLINE_HIGHLIGHT = "t9_outline_highlight"
+        const val KEY_LONG_PRESS_SWAPS_NOTE_MODE = "long_press_swaps_note_mode"
         const val KEY_SHOW_HINT_DETAILS = "show_hint_details"
         const val KEY_SHOW_ERROR_DETAILS = "show_error_details"
         const val KEY_HIGHLIGHT_CONFLICTING_NUMBERS = "highlight_conflicting_numbers"

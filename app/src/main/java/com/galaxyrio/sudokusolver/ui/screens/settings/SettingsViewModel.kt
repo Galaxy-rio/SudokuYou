@@ -33,6 +33,10 @@ data class SettingsUiState(
     val positionLines: Boolean = true,
     val positionBlock: Boolean = true,
     val alternativeErrorColor: Boolean = false,
+    val showT9CandidateDots: Boolean = false,
+    val t9ShapeHighlight: Boolean = true,
+    val t9OutlineHighlight: Boolean = false,
+    val longPressSwapsNoteMode: Boolean = true,
     val showHintDetails: Boolean = true,
     val showErrorDetails: Boolean = true,
     val highlightConflictingNumbers: Boolean = true,
@@ -79,6 +83,14 @@ class SettingsViewModel(
     fun setAlternativeErrorColor(enabled: Boolean) =
         repository.setAlternativeErrorColor(enabled)
 
+    fun setShowT9CandidateDots(enabled: Boolean) = repository.setShowT9CandidateDots(enabled)
+
+    fun setT9ShapeHighlight(enabled: Boolean) = repository.setT9ShapeHighlight(enabled)
+
+    fun setT9OutlineHighlight(enabled: Boolean) = repository.setT9OutlineHighlight(enabled)
+
+    fun setLongPressSwapsNoteMode(enabled: Boolean) = repository.setLongPressSwapsNoteMode(enabled)
+
     fun setShowHintDetails(enabled: Boolean) = repository.setShowHintDetails(enabled)
 
     fun setShowErrorDetails(enabled: Boolean) = repository.setShowErrorDetails(enabled)
@@ -122,6 +134,10 @@ private fun AppSettings.asUiState(): SettingsUiState = SettingsUiState(
     positionLines = positionLines,
     positionBlock = positionBlock,
     alternativeErrorColor = alternativeErrorColor,
+    showT9CandidateDots = showT9CandidateDots,
+    t9ShapeHighlight = t9ShapeHighlight,
+    t9OutlineHighlight = t9OutlineHighlight,
+    longPressSwapsNoteMode = longPressSwapsNoteMode,
     showHintDetails = showHintDetails,
     showErrorDetails = showErrorDetails,
     highlightConflictingNumbers = highlightConflictingNumbers,

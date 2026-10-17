@@ -71,6 +71,9 @@ fun AppearanceSettingsScreen(
     onPositionLinesChange: (Boolean) -> Unit,
     onPositionBlockChange: (Boolean) -> Unit,
     onAlternativeErrorColorChange: (Boolean) -> Unit,
+    onShowT9CandidateDotsChange: (Boolean) -> Unit,
+    onT9ShapeHighlightChange: (Boolean) -> Unit,
+    onT9OutlineHighlightChange: (Boolean) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -240,6 +243,43 @@ fun AppearanceSettingsScreen(
                     index = 5,
                     count = 6,
                     onCheckedChange = onAlternativeErrorColorChange,
+                )
+            }
+
+            item(key = "t9_heading") {
+                SettingsSectionHeading(R.string.appearance_t9_section)
+            }
+
+            item(key = "t9_candidate_dots") {
+                SettingsSwitchItem(
+                    titleResource = R.string.appearance_t9_candidate_dots,
+                    summaryResource = R.string.appearance_t9_candidate_dots_summary,
+                    checked = uiState.showT9CandidateDots,
+                    index = 0,
+                    count = 3,
+                    onCheckedChange = onShowT9CandidateDotsChange,
+                )
+            }
+
+            item(key = "t9_shape_highlight") {
+                SettingsSwitchItem(
+                    titleResource = R.string.appearance_t9_shape_highlight,
+                    summaryResource = R.string.appearance_t9_shape_highlight_summary,
+                    checked = uiState.t9ShapeHighlight,
+                    index = 1,
+                    count = 3,
+                    onCheckedChange = onT9ShapeHighlightChange,
+                )
+            }
+
+            item(key = "t9_outline_highlight") {
+                SettingsSwitchItem(
+                    titleResource = R.string.appearance_t9_outline_highlight,
+                    summaryResource = R.string.appearance_t9_outline_highlight_summary,
+                    checked = uiState.t9OutlineHighlight,
+                    index = 2,
+                    count = 3,
+                    onCheckedChange = onT9OutlineHighlightChange,
                 )
             }
 

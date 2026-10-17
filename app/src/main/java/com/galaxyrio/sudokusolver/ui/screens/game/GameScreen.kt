@@ -123,6 +123,7 @@ import com.galaxyrio.sudokusolver.ui.components.GameHintPanel
 import com.galaxyrio.sudokusolver.ui.components.NumberPad
 import com.galaxyrio.sudokusolver.ui.components.SudokuBoard
 import com.galaxyrio.sudokusolver.ui.components.toComposeColor
+import com.galaxyrio.sudokusolver.ui.components.onLongPressAction
 import com.galaxyrio.sudokusolver.ui.guide.GuideStep
 import com.galaxyrio.sudokusolver.ui.guide.GuideSeries
 import com.galaxyrio.sudokusolver.ui.guide.GuideMotionDurationMillis
@@ -291,6 +292,7 @@ fun GameRoute(
             onCellSelected = viewModel::onCellSelected,
             onNumberSelected = viewModel::onNumberSelected,
             onAdvancedNumberSelected = viewModel::onAdvancedNumberSelected,
+            onAlternateNoteModeAction = viewModel::withAlternateNoteMode,
             onClearSelection = viewModel::clearSelection,
             onDeselectAll = viewModel::clearAllSelections,
             onUndo = viewModel::undo,
@@ -461,6 +463,7 @@ fun GameScreen(
     onShowHint: () -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
+    onAlternateNoteModeAction: (() -> Unit) -> Unit = { action -> action() },
 ) {
     when {
         uiState.isLoading -> {
@@ -490,6 +493,7 @@ fun GameScreen(
                 onCellSelected = onCellSelected,
                 onNumberSelected = onNumberSelected,
                 onAdvancedNumberSelected = onAdvancedNumberSelected,
+                onAlternateNoteModeAction = onAlternateNoteModeAction,
                 onClearSelection = onClearSelection,
                 onDeselectAll = onDeselectAll,
                 onUndo = onUndo,
@@ -595,6 +599,7 @@ private fun GameScaffold(
     onCellSelected: (Int, Int) -> Unit,
     onNumberSelected: (Int) -> Unit,
     onAdvancedNumberSelected: (Int) -> Unit,
+    onAlternateNoteModeAction: (() -> Unit) -> Unit,
     onClearSelection: () -> Unit,
     onDeselectAll: () -> Unit,
     onUndo: () -> Unit,
@@ -618,6 +623,9 @@ private fun GameScaffold(
     snackbarHostState: SnackbarHostState,
     modifier: Modifier,
 ) {
+    val onButtonLongClick = onAlternateNoteModeAction.takeIf {
+        uiState.longPressSwapsNoteMode && !uiState.isComplete
+    }
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surface,
@@ -672,6 +680,7 @@ private fun GameScaffold(
                 onToggleBivalueHighlights = onToggleBivalueHighlights,
                 onDeselectAll = onDeselectAll,
                 onAdvancedColorSelected = onAdvancedColorSelected,
+                onButtonLongClick = onButtonLongClick,
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -713,6 +722,7 @@ private fun GameScaffold(
                 onCellSelected = onCellSelected,
                 onNumberSelected = onNumberSelected,
                 onAdvancedNumberSelected = onAdvancedNumberSelected,
+                onButtonLongClick = onButtonLongClick,
                 onClearSelection = onClearSelection,
                 onToggleAdvancedNoteMode = onToggleAdvancedNoteMode,
                 onToggleBivalueHighlights = onToggleBivalueHighlights,
@@ -910,11 +920,13 @@ private fun GameBottomBar(
     onToggleBivalueHighlights: () -> Unit,
     onDeselectAll: () -> Unit,
     onAdvancedColorSelected: (Int) -> Unit,
+    onButtonLongClick: ((() -> Unit) -> Unit)?,
 ) {
     if (isAdvancedColorToolActive) {
         AdvancedColorBottomBar(
             selectedColorIndex = selectedAdvancedColorIndex,
             onColorSelected = onAdvancedColorSelected,
+            onButtonLongClick = onButtonLongClick,
         )
         return
     }
@@ -932,6 +944,7 @@ private fun GameBottomBar(
                 }
                 ExpressiveToolbarButton(
                     tool = tool,
+                    onButtonLongClick = onButtonLongClick,
                     contentDescription = stringResource(tool.actionDescriptionResource()),
                     enabled = enabled && when (tool) {
                         ToolbarTool.UNDO -> canUndo
@@ -965,6 +978,7 @@ private fun GameBottomBar(
 private fun AdvancedColorBottomBar(
     selectedColorIndex: Int,
     onColorSelected: (Int) -> Unit,
+    onButtonLongClick: ((() -> Unit) -> Unit)?,
 ) {
     BottomAppBar {
         AdvancedNoteColor.entries.forEachIndexed { index, noteColor ->
@@ -976,6 +990,7 @@ private fun AdvancedColorBottomBar(
                     index + 1,
                 ),
                 onClick = { onColorSelected(index) },
+                onButtonLongClick = onButtonLongClick,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -984,6 +999,7 @@ private fun AdvancedColorBottomBar(
             selected = selectedColorIndex == AdvancedNoteColor.entries.size,
             contentDescription = stringResource(R.string.game_advanced_erase_colors),
             onClick = { onColorSelected(AdvancedNoteColor.entries.size) },
+            onButtonLongClick = onButtonLongClick,
             modifier = Modifier.weight(1f),
         )
     }
@@ -995,6 +1011,7 @@ private fun AdvancedColorSwatch(
     selected: Boolean,
     contentDescription: String,
     onClick: () -> Unit,
+    onButtonLongClick: ((() -> Unit) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val outlineColor = if (selected) {
@@ -1009,6 +1026,7 @@ private fun AdvancedColorSwatch(
                 this.contentDescription = contentDescription
                 this.selected = selected
             }
+            .onLongPressAction(onButtonLongClick?.let { perform -> { perform(onClick) } })
             .clickable(
                 role = Role.Button,
                 onClick = onClick,
@@ -1035,6 +1053,7 @@ private fun ExpressiveToolbarButton(
     contentDescription: String,
     enabled: Boolean,
     onClick: () -> Unit,
+    onButtonLongClick: ((() -> Unit) -> Unit)?,
     modifier: Modifier = Modifier,
     checked: Boolean? = null,
 ) {
@@ -1082,6 +1101,10 @@ private fun ExpressiveToolbarButton(
     Box(
         modifier = modifier
             .fillMaxHeight()
+            .onLongPressAction(
+                action = onButtonLongClick?.let { perform -> { perform(onClick) } },
+                enabled = enabled,
+            )
             .then(interactionModifier)
             .semantics { this.contentDescription = contentDescription },
         contentAlignment = Alignment.Center,
@@ -1116,6 +1139,7 @@ private fun AdaptiveGameContent(
     onCellSelected: (Int, Int) -> Unit,
     onNumberSelected: (Int) -> Unit,
     onAdvancedNumberSelected: (Int) -> Unit,
+    onButtonLongClick: ((() -> Unit) -> Unit)?,
     onClearSelection: () -> Unit,
     onToggleAdvancedNoteMode: () -> Unit,
     onToggleBivalueHighlights: () -> Unit,
@@ -1162,6 +1186,7 @@ private fun AdaptiveGameContent(
                             isHintVisible = isHintVisible,
                             onBoardBoundsChanged = onBoardBoundsChanged,
                             onCellSelected = onCellSelected,
+                            onButtonLongClick = onButtonLongClick,
                             modifier = Modifier.size(boardSize).then(boardModifier),
                         )
                     }
@@ -1172,6 +1197,7 @@ private fun AdaptiveGameContent(
                     onNumberPadBoundsChanged = onNumberPadBoundsChanged,
                     onNumberSelected = onNumberSelected,
                     onAdvancedNumberSelected = onAdvancedNumberSelected,
+                    onButtonLongClick = onButtonLongClick,
                     onClearSelection = onClearSelection,
                     onToggleAdvancedNoteMode = onToggleAdvancedNoteMode,
                     onToggleBivalueHighlights = onToggleBivalueHighlights,
@@ -1192,6 +1218,7 @@ private fun AdaptiveGameContent(
                     isHintVisible = isHintVisible,
                     onBoardBoundsChanged = onBoardBoundsChanged,
                     onCellSelected = onCellSelected,
+                    onButtonLongClick = onButtonLongClick,
                     // The shared bounds must describe the board itself, not this layout's
                     // surrounding spacing. Keeping the padding outside the shared modifier
                     // makes the full-size board line up exactly with the saved-game thumbnail
@@ -1212,6 +1239,7 @@ private fun AdaptiveGameContent(
                     onNumberPadBoundsChanged = onNumberPadBoundsChanged,
                     onNumberSelected = onNumberSelected,
                     onAdvancedNumberSelected = onAdvancedNumberSelected,
+                    onButtonLongClick = onButtonLongClick,
                     onClearSelection = onClearSelection,
                     onToggleAdvancedNoteMode = onToggleAdvancedNoteMode,
                     onToggleBivalueHighlights = onToggleBivalueHighlights,
@@ -1235,6 +1263,7 @@ private fun GameBoard(
     isHintVisible: Boolean,
     onBoardBoundsChanged: (Rect) -> Unit,
     onCellSelected: (Int, Int) -> Unit,
+    onButtonLongClick: ((() -> Unit) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val trace = uiState.hintTrace
@@ -1288,6 +1317,9 @@ private fun GameBoard(
     SudokuBoard(
         sudoku = displayedSudoku,
         onCellClick = onCellSelected,
+        onCellLongClick = onButtonLongClick?.takeUnless { isHintVisible }?.let { perform ->
+            { row, col -> perform { onCellSelected(row, col) } }
+        },
         selectedRow = uiState.selectedCell?.row.takeUnless { isHintVisible },
         selectedCol = uiState.selectedCell?.col.takeUnless { isHintVisible },
         highlightNumbers = highlightedNumbers,
@@ -1323,6 +1355,7 @@ private fun GameControlArea(
     onNumberPadBoundsChanged: (Rect) -> Unit,
     onNumberSelected: (Int) -> Unit,
     onAdvancedNumberSelected: (Int) -> Unit,
+    onButtonLongClick: ((() -> Unit) -> Unit)?,
     onClearSelection: () -> Unit,
     onToggleAdvancedNoteMode: () -> Unit,
     onToggleBivalueHighlights: () -> Unit,
@@ -1371,6 +1404,10 @@ private fun GameControlArea(
                         onDashedLineClick = onToggleDashedLineTool,
                         onBackgroundClick = onClearSelection,
                         onPadBoundsChanged = onNumberPadBoundsChanged,
+                        candidateNumbers = uiState.t9CandidateNumbers,
+                        shapeHighlight = uiState.t9ShapeHighlight,
+                        outlineHighlight = uiState.t9OutlineHighlight,
+                        onButtonLongClick = onButtonLongClick,
                         modifier = Modifier.fillMaxSize(),
                     )
                 } else {
@@ -1379,6 +1416,10 @@ private fun GameControlArea(
                         onNumberClick = onNumberSelected,
                         onBackgroundClick = onClearSelection,
                         onPadBoundsChanged = onNumberPadBoundsChanged,
+                        candidateNumbers = uiState.t9CandidateNumbers,
+                        shapeHighlight = uiState.t9ShapeHighlight,
+                        outlineHighlight = uiState.t9OutlineHighlight,
+                        onButtonLongClick = onButtonLongClick,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }

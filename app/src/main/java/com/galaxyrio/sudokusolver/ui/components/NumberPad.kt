@@ -25,6 +25,7 @@ import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ButtonGroupScope
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +33,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
@@ -43,6 +49,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.galaxyrio.sudokusolver.R
@@ -58,6 +66,10 @@ fun NumberPad(
     onBackgroundClick: () -> Unit,
     modifier: Modifier = Modifier,
     onPadBoundsChanged: ((Rect) -> Unit)? = null,
+    candidateNumbers: Set<Int> = emptySet(),
+    shapeHighlight: Boolean = true,
+    outlineHighlight: Boolean = false,
+    onButtonLongClick: ((() -> Unit) -> Unit)? = null,
 ) {
     val backgroundInteraction = remember { MutableInteractionSource() }
     val clearSelectionLabel = stringResource(R.string.game_clear_selection)
@@ -93,6 +105,10 @@ fun NumberPad(
                 NumberButtonGroup(
                     numbers = rowNumbers,
                     selectedNumber = selectedNumber,
+                    candidateNumbers = candidateNumbers,
+                    shapeHighlight = shapeHighlight,
+                    outlineHighlight = outlineHighlight,
+                    onButtonLongClick = onButtonLongClick,
                     onNumberClick = onNumberClick,
                     modifier = Modifier
                         .weight(1f)
@@ -107,6 +123,10 @@ fun NumberPad(
 private fun NumberButtonGroup(
     numbers: List<Int>,
     selectedNumber: Int?,
+    candidateNumbers: Set<Int>,
+    shapeHighlight: Boolean,
+    outlineHighlight: Boolean,
+    onButtonLongClick: ((() -> Unit) -> Unit)?,
     onNumberClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -132,6 +152,10 @@ private fun NumberButtonGroup(
                     NumberButton(
                         number = number,
                         isSelected = selectedNumber == number,
+                        showCandidateDot = number in candidateNumbers,
+                        shapeHighlight = shapeHighlight,
+                        outlineHighlight = outlineHighlight,
+                        onButtonLongClick = onButtonLongClick,
                         onClick = { onNumberClick(number) },
                         interactionSource = interactionSource,
                         contentPadding = contentPadding,
@@ -145,14 +169,18 @@ private fun NumberButtonGroup(
                     )
                 },
                 menuContent = { menuState ->
+                    val onClick = {
+                        onNumberClick(number)
+                        menuState.dismiss()
+                    }
                     DropdownMenuItem(
+                        modifier = Modifier.onLongPressAction(
+                            onButtonLongClick?.let { perform -> { perform(onClick) } }
+                        ),
                         text = {
                             Text(number.toString(), color = numberColorScheme(number).onSurface)
                         },
-                        onClick = {
-                            onNumberClick(number)
-                            menuState.dismiss()
-                        },
+                        onClick = onClick,
                     )
                 },
             )
@@ -180,6 +208,10 @@ fun AdvancedNumberPad(
     onBackgroundClick: () -> Unit,
     modifier: Modifier = Modifier,
     onPadBoundsChanged: ((Rect) -> Unit)? = null,
+    candidateNumbers: Set<Int> = emptySet(),
+    shapeHighlight: Boolean = true,
+    outlineHighlight: Boolean = false,
+    onButtonLongClick: ((() -> Unit) -> Unit)? = null,
 ) {
     val backgroundInteraction = remember { MutableInteractionSource() }
     val clearSelectionLabel = stringResource(R.string.game_clear_selection)
@@ -208,7 +240,8 @@ fun AdvancedNumberPad(
     ) {
         val padWidth = minOf(maxWidth, 480.dp)
         val padHeight = minOf(maxHeight, padWidth * 0.60f, 264.dp)
-        val rowSpacing = 8.dp
+        // Outward focus rings need enough separation when adjacent rows are selected.
+        val rowSpacing = if (outlineHighlight) 12.dp else 8.dp
 
         Column(
             modifier = Modifier
@@ -226,10 +259,17 @@ fun AdvancedNumberPad(
                     advancedPadItem(
                         number = number,
                         isSelected = number in digitSelection,
+                        shapeHighlight = shapeHighlight,
+                        outlineHighlight = outlineHighlight,
+                        onButtonLongClick = onButtonLongClick,
                         contentDescription = number.toString(),
                         onClick = { onNumberClick(number) },
                     ) {
-                        Text(number.toString(), style = MaterialTheme.typography.titleLarge)
+                        NumberPadDigit(
+                            number = number,
+                            showCandidateDot = number in candidateNumbers,
+                            style = MaterialTheme.typography.titleLarge,
+                        )
                     }
                 }
             }
@@ -240,15 +280,25 @@ fun AdvancedNumberPad(
                     advancedPadItem(
                         number = number,
                         isSelected = number in digitSelection,
+                        shapeHighlight = shapeHighlight,
+                        outlineHighlight = outlineHighlight,
+                        onButtonLongClick = onButtonLongClick,
                         contentDescription = number.toString(),
                         onClick = { onNumberClick(number) },
                     ) {
-                        Text(number.toString(), style = MaterialTheme.typography.titleLarge)
+                        NumberPadDigit(
+                            number = number,
+                            showCandidateDot = number in candidateNumbers,
+                            style = MaterialTheme.typography.titleLarge,
+                        )
                     }
                 }
                 advancedPadItem(
                     isSelected = isAdvancedNoteMode,
+                    shapeHighlight = shapeHighlight,
+                    outlineHighlight = outlineHighlight,
                     contentDescription = advancedNoteModeDescription,
+                    onButtonLongClick = onButtonLongClick,
                     guideTarget = GuideTarget.ADVANCED_NOTES,
                     onClick = onAdvancedNoteModeClick,
                 ) {
@@ -260,7 +310,10 @@ fun AdvancedNumberPad(
             ) {
                 advancedPadItem(
                     isSelected = showBivalueHighlights,
+                    shapeHighlight = shapeHighlight,
+                    outlineHighlight = outlineHighlight,
                     contentDescription = bivalueDescription,
+                    onButtonLongClick = onButtonLongClick,
                     guideTarget = GuideTarget.BIVALUE,
                     onClick = onBivalueClick,
                 ) {
@@ -268,7 +321,10 @@ fun AdvancedNumberPad(
                 }
                 advancedPadItem(
                     isSelected = isPaintSelected,
+                    shapeHighlight = shapeHighlight,
+                    outlineHighlight = outlineHighlight,
                     contentDescription = paintDescription,
+                    onButtonLongClick = onButtonLongClick,
                     guideTarget = GuideTarget.PAINT,
                     onClick = onPaintClick,
                 ) {
@@ -279,7 +335,10 @@ fun AdvancedNumberPad(
                 }
                 advancedPadItem(
                     isSelected = frameHighlights,
+                    shapeHighlight = shapeHighlight,
+                    outlineHighlight = outlineHighlight,
                     contentDescription = frameDescription,
+                    onButtonLongClick = onButtonLongClick,
                     guideTarget = GuideTarget.FRAME,
                     onClick = onFrameClick,
                 ) {
@@ -287,7 +346,10 @@ fun AdvancedNumberPad(
                 }
                 advancedPadItem(
                     isSelected = isSolidLineSelected,
+                    shapeHighlight = shapeHighlight,
+                    outlineHighlight = outlineHighlight,
                     contentDescription = solidLineDescription,
+                    onButtonLongClick = onButtonLongClick,
                     guideTarget = GuideTarget.SOLID_LINE,
                     onClick = onSolidLineClick,
                 ) {
@@ -295,7 +357,10 @@ fun AdvancedNumberPad(
                 }
                 advancedPadItem(
                     isSelected = isDashedLineSelected,
+                    shapeHighlight = shapeHighlight,
+                    outlineHighlight = outlineHighlight,
                     contentDescription = dashedLineDescription,
+                    onButtonLongClick = onButtonLongClick,
                     guideTarget = GuideTarget.DASHED_LINE,
                     onClick = onDashedLineClick,
                 ) {
@@ -323,6 +388,9 @@ private fun AdvancedPadRow(
 
 private fun ButtonGroupScope.advancedPadItem(
     isSelected: Boolean,
+    shapeHighlight: Boolean,
+    outlineHighlight: Boolean,
+    onButtonLongClick: ((() -> Unit) -> Unit)?,
     contentDescription: String,
     onClick: () -> Unit,
     guideTarget: GuideTarget? = null,
@@ -335,6 +403,9 @@ private fun ButtonGroupScope.advancedPadItem(
             AdvancedPadButton(
                 number = number,
                 isSelected = isSelected,
+                shapeHighlight = shapeHighlight,
+                outlineHighlight = outlineHighlight,
+                onButtonLongClick = onButtonLongClick,
                 contentDescription = contentDescription,
                 onClick = onClick,
                 interactionSource = interactionSource,
@@ -350,14 +421,18 @@ private fun ButtonGroupScope.advancedPadItem(
             )
         },
         menuContent = { menuState ->
+            val onMenuClick = {
+                onClick()
+                menuState.dismiss()
+            }
             DropdownMenuItem(
+                modifier = Modifier.onLongPressAction(
+                    onButtonLongClick?.let { perform -> { perform(onMenuClick) } }
+                ),
                 text = {
                     Text(contentDescription, color = numberColorScheme(number).onSurface)
                 },
-                onClick = {
-                    onClick()
-                    menuState.dismiss()
-                },
+                onClick = onMenuClick,
             )
         },
     )
@@ -367,15 +442,19 @@ private fun ButtonGroupScope.advancedPadItem(
 private fun AdvancedPadButton(
     number: Int?,
     isSelected: Boolean,
+    shapeHighlight: Boolean,
+    outlineHighlight: Boolean,
+    onButtonLongClick: ((() -> Unit) -> Unit)?,
     contentDescription: String,
     onClick: () -> Unit,
     interactionSource: MutableInteractionSource,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    val colors = resolveNumberButtonColors(numberColorScheme(number), isSelected)
+    val colorScheme = numberColorScheme(number)
+    val colors = resolveNumberButtonColors(colorScheme, isSelected)
     val cornerPercent by animateIntAsState(
-        targetValue = if (isSelected) 24 else 50,
+        targetValue = if (isSelected && shapeHighlight) 24 else 50,
         animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
         label = "advanced_pad_shape",
     )
@@ -384,6 +463,8 @@ private fun AdvancedPadButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxHeight()
+            .numberPadFocusRing(isSelected && outlineHighlight, cornerPercent, colorScheme.secondary)
+            .onLongPressAction(onButtonLongClick?.let { perform -> { perform(onClick) } })
             .semantics {
                 selected = isSelected
                 this.contentDescription = contentDescription
@@ -401,6 +482,60 @@ private fun AdvancedPadButton(
 }
 
 private val AdvancedPadButtonCompressionLimit = 12.dp
+
+private fun Modifier.numberPadFocusRing(
+    visible: Boolean,
+    cornerPercent: Int,
+    color: Color,
+): Modifier = if (!visible) {
+    this
+} else {
+    // Material focus indicator: a 3 dp secondary-color ring, separated from the button by 2 dp.
+    // Draw before the Button's own clipping so the ring stays outside and preserves its size.
+    drawBehind {
+        val strokeWidth = 3.dp.toPx()
+        val outset = 2.dp.toPx() + strokeWidth / 2f
+        val radius = size.minDimension * cornerPercent / 100f + outset
+        drawRoundRect(
+            color = color,
+            topLeft = Offset(-outset, -outset),
+            size = Size(size.width + 2f * outset, size.height + 2f * outset),
+            cornerRadius = CornerRadius(radius),
+            style = Stroke(width = strokeWidth),
+        )
+    }
+}
+
+@Composable
+private fun NumberPadDigit(
+    number: Int,
+    showCandidateDot: Boolean,
+    style: TextStyle,
+) {
+    val color = LocalContentColor.current
+    val candidatePresentDescription = stringResource(R.string.game_candidate_present)
+    Text(
+        text = number.toString(),
+        style = style,
+        textAlign = TextAlign.Center,
+        maxLines = 1,
+        softWrap = false,
+        modifier = Modifier
+            .drawBehind {
+                // Overlay the mark without adding padding or changing the digit's measured size.
+                if (showCandidateDot) {
+                    drawCircle(
+                        color = color,
+                        radius = 2.dp.toPx(),
+                        center = Offset(size.width / 2f, 0f),
+                    )
+                }
+            }
+            .semantics {
+                if (showCandidateDot) stateDescription = candidatePresentDescription
+            },
+    )
+}
 
 @Composable
 private fun FrameToolGlyph(modifier: Modifier = Modifier) {
@@ -446,15 +581,20 @@ private fun LineToolGlyph(
 private fun NumberButton(
     number: Int,
     isSelected: Boolean,
+    showCandidateDot: Boolean,
+    shapeHighlight: Boolean,
+    outlineHighlight: Boolean,
+    onButtonLongClick: ((() -> Unit) -> Unit)?,
     onClick: () -> Unit,
     interactionSource: MutableInteractionSource,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
-    val colors = resolveNumberButtonColors(numberColorScheme(number), isSelected)
+    val colorScheme = numberColorScheme(number)
+    val colors = resolveNumberButtonColors(colorScheme, isSelected)
     val motionScheme = MaterialTheme.motionScheme
     val cornerPercent by animateIntAsState(
-        targetValue = if (isSelected) 24 else 50,
+        targetValue = if (isSelected && shapeHighlight) 24 else 50,
         animationSpec = motionScheme.defaultSpatialSpec(),
         label = "number_pad_shape",
     )
@@ -462,6 +602,8 @@ private fun NumberButton(
     Button(
         onClick = onClick,
         modifier = modifier
+            .numberPadFocusRing(isSelected && outlineHighlight, cornerPercent, colorScheme.secondary)
+            .onLongPressAction(onButtonLongClick?.let { perform -> { perform(onClick) } })
             .semantics { selected = isSelected },
         shape = RoundedCornerShape(percent = cornerPercent),
         colors = ButtonDefaults.buttonColors(
@@ -471,12 +613,10 @@ private fun NumberButton(
         interactionSource = interactionSource,
         contentPadding = contentPadding,
     ) {
-        Text(
-            text = number.toString(),
+        NumberPadDigit(
+            number = number,
+            showCandidateDot = showCandidateDot,
             style = MaterialTheme.typography.headlineSmall,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            softWrap = false,
         )
     }
 }

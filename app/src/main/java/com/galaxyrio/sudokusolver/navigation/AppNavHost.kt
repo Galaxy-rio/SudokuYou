@@ -272,6 +272,9 @@ fun AppNavHost(
                             onPositionBlockChange = settingsViewModel::setPositionBlock,
                             onAlternativeErrorColorChange =
                                 settingsViewModel::setAlternativeErrorColor,
+                            onShowT9CandidateDotsChange = settingsViewModel::setShowT9CandidateDots,
+                            onT9ShapeHighlightChange = settingsViewModel::setT9ShapeHighlight,
+                            onT9OutlineHighlightChange = settingsViewModel::setT9OutlineHighlight,
                             onBack = onBack,
                             modifier = Modifier.fillMaxSize(),
                         )
@@ -287,6 +290,8 @@ fun AppNavHost(
                             onCoordinateNotationChange =
                                 settingsViewModel::setCoordinateNotation,
                             onOpenToolbar = { navController.navigate(ToolbarSettingsDestination) },
+                            onLongPressSwapsNoteModeChange =
+                                settingsViewModel::setLongPressSwapsNoteMode,
                             onBack = onBack,
                             modifier = Modifier.fillMaxSize(),
                         )
