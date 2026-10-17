@@ -2,6 +2,20 @@
 
 All notable changes to Sudoku You are documented in this file.
 
+## [3.0.2] - 2026-10-17
+
+### English
+
+- Added more visual options for the T9 keypad, including candidate indicators and shape changes when keys are selected.
+- Added long-press input support for the T9 keypad.
+- Added toolbar customization.
+
+### 简体中文
+
+- T9 键盘新增更多视觉选项，包括候选数指示器和选中时的形态变化。
+- T9 键盘支持长按输入。
+- 工具栏现已支持自定义。
+
 ## [3.0.1] - 2026-10-04
 
 ### English

@@ -1,0 +1,3 @@
+• Added more visual options for the T9 keypad, including candidate indicators and shape changes when keys are selected
+• Added long-press input support for the T9 keypad
+• Added toolbar customization
