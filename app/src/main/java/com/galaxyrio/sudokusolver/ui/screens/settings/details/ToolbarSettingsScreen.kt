@@ -1,8 +1,9 @@
 package com.galaxyrio.sudokusolver.ui.screens.settings.details
 
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.interaction.DragInteraction
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,11 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.DragIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -27,6 +29,7 @@ import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +48,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.galaxyrio.sudokusolver.R
@@ -86,6 +90,7 @@ fun ToolbarSettingsScreen(
             }
         }
     }
+    val placementAnimationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<IntOffset>()
     val moveUpLabel = stringResource(R.string.toolbar_move_up)
     val moveDownLabel = stringResource(R.string.toolbar_move_down)
 
@@ -119,8 +124,24 @@ fun ToolbarSettingsScreen(
                 val label = stringResource(tool.titleResource())
                 val isDragging = reorder.draggedTool == tool
                 var showMoveMenu by remember { mutableStateOf(false) }
+                val interactionSource = remember { MutableInteractionSource() }
+                var dragInteraction by remember { mutableStateOf<DragInteraction.Start?>(null) }
+                fun endDragInteraction(cancelled: Boolean) {
+                    dragInteraction?.let { start ->
+                        interactionSource.tryEmit(
+                            if (cancelled) DragInteraction.Cancel(start) else DragInteraction.Stop(start)
+                        )
+                    }
+                    dragInteraction = null
+                }
+                DisposableEffect(interactionSource) {
+                    onDispose { endDragInteraction(cancelled = true) }
+                }
                 val inToolbar = index < configuration.toolCount
                 SegmentedListItem(
+                    onClick = { showMoveMenu = true },
+                    interactionSource = interactionSource,
+                    elevation = ListItemDefaults.elevation(),
                     shapes = ListItemDefaults.segmentedShapes(index, reorder.order.size),
                     colors = gameSettingsItemColors(),
                     leadingContent = {
@@ -144,9 +165,22 @@ fun ToolbarSettingsScreen(
                                 onClick = { showMoveMenu = true },
                                 modifier = Modifier.pointerInput(tool) {
                                     detectDragGestures(
-                                        onDragStart = { reorder.startDrag(tool) },
-                                        onDragEnd = reorder::finishDrag,
-                                        onDragCancel = reorder::cancelDrag,
+                                        onDragStart = {
+                                            reorder.startDrag(tool)
+                                            if (reorder.draggedTool == tool) {
+                                                val start = DragInteraction.Start()
+                                                dragInteraction = start
+                                                interactionSource.tryEmit(start)
+                                            }
+                                        },
+                                        onDragEnd = {
+                                            endDragInteraction(cancelled = false)
+                                            reorder.finishDrag()
+                                        },
+                                        onDragCancel = {
+                                            endDragInteraction(cancelled = true)
+                                            reorder.cancelDrag()
+                                        },
                                     ) { change, amount ->
                                         change.consume()
                                         reorder.dragBy(amount.y)
@@ -154,7 +188,7 @@ fun ToolbarSettingsScreen(
                                 },
                             ) {
                                 Icon(
-                                    Icons.Default.DragHandle,
+                                    Icons.Default.DragIndicator,
                                     contentDescription = stringResource(R.string.toolbar_reorder_tool, label),
                                 )
                             }
@@ -177,11 +211,11 @@ fun ToolbarSettingsScreen(
                     },
                     modifier = Modifier
                         .testTag("toolbar_tool_" + tool.id)
-                        .animateItem(placementSpec = if (isDragging) null else spring())
+                        .animateItem(placementSpec = if (isDragging) null else placementAnimationSpec)
                         .zIndex(if (isDragging) 1f else 0f)
                         .graphicsLayer {
+                            // Shape, elevation and their animations belong to SegmentedListItem.
                             translationY = reorder.translationFor(tool)
-                            shadowElevation = if (isDragging) 4.dp.toPx() else 0f
                         }
                         .semantics {
                             customActions = buildList {
@@ -221,12 +255,15 @@ private fun ToolbarCountSetting(count: Int, onCountChange: (Int) -> Unit) {
                         .testTag("toolbar_tool_count")
                         .semantics { contentDescription = label },
                 )
-                Row(Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
                     (ToolbarConfiguration.MIN_TOOL_COUNT..ToolbarConfiguration.MAX_TOOL_COUNT).forEach {
                         Text(
                             it.toString(),
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.width(16.dp),
                         )
                     }
                 }

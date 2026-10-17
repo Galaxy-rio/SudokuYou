@@ -16,6 +16,9 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -254,7 +257,8 @@ class ToolbarSettingsTest {
         tool(ToolbarTool.BIVALUE).performClick().assertIsOff()
         assertTrue(before.sameAs(bivalueCell.captureToImage().asAndroidBitmap()))
 
-        compose.onNodeWithContentDescription("1").performClick()
+        compose.onNode(hasText("1") and hasClickAction() and
+            SemanticsMatcher.keyNotDefined(SemanticsProperties.ContentDescription)).performClick()
         otherCell.performClick()
         val entered = game.uiState.value.sudoku
         tool(ToolbarTool.DESELECT).performClick()

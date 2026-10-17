@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.galaxyrio.sudokusolver.data.settings.ToolbarTool
+import kotlin.math.abs
 
 internal class ToolbarReorderState(
     private val listState: LazyListState,
@@ -42,10 +43,12 @@ internal class ToolbarReorderState(
         // Wait for the previous move to be laid out before considering another move.
         if (draggedItem.index != firstToolIndex + from) return
         val center = draggedTop + draggedHeight / 2f
-        val target = items.find {
-            it.key != tool.id && order.any { tool -> tool.id == it.key } &&
-                center >= it.offset && center < it.offset + it.size
-        } ?: return
+        // Use crossed row centers, including when a fast drag skips a gap or reaches a header.
+        val target = items.filter { item ->
+            item.key != tool.id && order.any { it.id == item.key } &&
+                ((item.index < draggedItem.index && center < item.offset + item.size / 2f) ||
+                    (item.index > draggedItem.index && center > item.offset + item.size / 2f))
+        }.minByOrNull { abs(center - (it.offset + it.size / 2f)) } ?: return
         val to = order.indexOfFirst { it.id == target.key }
         order = order.toMutableList().apply { add(to, removeAt(from)) }
     }
